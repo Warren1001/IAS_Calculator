@@ -9,7 +9,8 @@
 </head>
 <body>
   <h1>Work In Progress</h1>
-  <p>Multi skills, dual wielding, and wereforms not implemented yet</p>
+  <p>Fend, Strafe, Whirlwind, Wereforms not implemented yet.</p>
+  <p>Non-sequence multi-hit skills are correct, but context is different. Jab is wrong.</p>
   <div id="calculator">
     <label for="characterSelect">Character:</label>
     <select id="characterSelect">
@@ -69,125 +70,6 @@
     <input type="number" id="holyFreezeLevel" value="0" min="0">
     <input type="checkbox" id="decrepify">Decrepify</td>
   </div>
-  <div id="tableContainer">
-    <!--<table id="table"></table>-->
-  </div>
-    <!--<form name=form>
-      <table>
-        <tr>
-          <td>Character</td>
-          <td>
-            <select name=char size=1 onChange="neuChar()">
-              <option value=0>Amazon</option>
-              <option value=1>Assassin</option>
-              <option value=2>Barbarian</option>
-              <option value=3>Druid</option>
-              <option value=4>Necromancer</option>
-              <option value=5 selected>Paladin</option>
-              <option value=6>Sorceress</option>
-              <option value=7>A1 Merc - Rogue</option>
-              <option value=8>A2 Merc - Town Guard</option>
-              <option value=9>A5 Merc - Barbarian</option>
-            </select>
-            <select name=charform size=1 onChange="neuCharform()"></select>
-          </td>
-        </tr>
-        <tr>
-          <td>Primary Weapon<br><small><input type=checkbox name=autowsm onChange="toggleAutoWSM()"> Auto-WSM Bugged</small></td>
-          <td>
-            <select name=waffe size=1 onChange="neuWaffe()"></select>
-            <select name=barbschwert size=1 onChange="neuBarbschwert()"></select>
-          </td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>
-            <input type=text name=infoWaffe1 size=32 value="Waffenlos [0]" readonly>
-          </td>
-        </tr>
-        <tr>
-          <td>Weapon IAS</td>
-          <td>
-            <select name=wIAS1 size=1 onChange="berechneWerte()"></select>
-            <input type=checkbox name=IASstufen onChange="setzeIASstufen()">change interval
-          </td>
-        </tr>
-        <tr>
-          <td>Secondary Weapon</td>
-          <td>
-            <select name=zweitwaffe size=1 onChange="neuZweitwaffe()"></select>
-          </td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>
-            <input type=text name=infoWaffe2 size=32 readonly>
-          </td>
-        </tr>
-        <tr>
-          <td>Weapon IAS</td>
-          <td><select name=wIAS2 size=1 onChange="berechneWerte()"></select></td>
-        </tr>
-        <tr>
-          <td>Non-weapon (Gear) IAS</td>
-          <td>
-            <select name=IAS size=1 onChange="berechneWerte()"></select>
-          </td>
-        </tr>
-        <tr>
-          <td>Skill</td>
-          <td>
-            <select name=skill size=1 onChange="berechneWerte()"></select>
-          </td>
-        </tr>
-        <tr>
-          <td>Fanaticism</td>
-          <td>
-            <select name=fana size=1 onChange="berechneWerte()">
-              <option value=0 selected>-</option>
-            </select>
-          </td>
-        </tr>
-        <tr>
-          <td>Frenzy</td>
-          <td>
-            <select name=frenzy size=1 onChange="berechneWerte()">
-              <option value=0 selected>-</option>
-            </select>
-          </td>
-        </tr>
-        <tr>
-        <td>Werewolf</td>
-          <td>
-            <select name=wolf size=1 onChange="berechneWerte()">
-              <option value=0 selected>-</option>
-            </select>
-          </td>
-        </tr>
-        <tr>
-        <td>Burst of Speed</td>
-          <td>
-            <select name=tempo size=1 onChange="berechneWerte()">
-              <option value=0 selected>-</option>
-            </select>
-          </td>
-        </tr>
-        <tr>
-          <td>Holy Freeze</td>
-          <td>
-            <select name=holyfrost size=1 onChange="berechneWerte()">
-              <option value=0 selected>-</option>
-            </select>
-          <input type=checkbox name=altern onChange="berechneWerte()">Decrepify</td>
-        </tr>
-        <tr>
-          <td colspan=2>
-            <button colspan=2 onclick="berechneBreakpoints(event)">Show IAS Table</button>
-          </td>
-        </tr>
-      </table>
-    </form>
-    <script>neuChar(document.myform);</script> required for all the boxes to populate on first generation
-    <i>credit to ingame.de for the calc.</i>-->
+  <div id="tableContainer"></div>
   </body>
 </html>
