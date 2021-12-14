@@ -106,7 +106,7 @@ function berechneFPA(framesPerDirection, acceleration, startingFrame) {
 	else if (document.myform.skill.value == 26) { // if skill is feral rage
 		FPA = Math.ceil(256 * 7 / Math.floor(animationSpeed * acceleration / 100)) + Math.ceil((256 * 13 - Math.floor(animationSpeed * acceleration / 100) * Math.ceil(256 * 7 / Math.floor(animationSpeed * acceleration / 100))) / (2 * Math.floor(animationSpeed * acceleration / 100))) - 1;
 	}
-	console.log("")
+	//console.log("")
 	return FPA;
 }
 
@@ -542,7 +542,7 @@ function berechneBreakpoints(event) {
 				}
 			}
 		}
-		// if skill is dragon talon, zeal, or fury
+		// if skill is dragon talon or zeal
 		if (skills[document.myform.skill.value][4] == 0) {
 			console.log("4");
 			for (i = Math.max(100 + SIAS - WSMprimaer, 15); i <= 175; i++) {
@@ -618,11 +618,13 @@ function berechneBreakpoints(event) {
 		}
 		// if skill is fend
 		if (skills[document.myform.skill.value][4] == 40) {
-			console.log("6");
+			console.log("6, start=" + start);
 			for (i = Math.max(100 + SIAS - WSMprimaer, 15); i <= 175; i++) {
 				frames = actionsFrames[weapons[document.myform.waffe.value][2]][document.myform.char.value];
+				console.log("--- start i=" + i + " ---")
 				rollback1 = berechneFPA(frames, i, start);
 				rollback1++;
+				console.log("rollback1=" + rollback1);
 				RBframe = Math.floor(Math.floor((256 * start + Math.floor(256 * i / 100) * rollback1) / 256) * skills[document.myform.skill.value][4] / 100);
 				rollback2 = berechneFPA(frames, i, RBframe);
 				rollback2++;
@@ -695,12 +697,14 @@ function berechneBreakpoints(event) {
 			}
 			for (i = 0; i <= verticalPlotLength - 1; i++) {
 				for (j = 0; j <= horizontalPlotLength - 1; j++) {
+					// feral rage
 					if (document.myform.skill.value == 26) {
 						breakpoints[breakpoints.length] = Math.ceil(256 * 7 / Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + 5 * j) / (120 + (5 * i + 5 * j))), 15), 175) / 100)) + Math.ceil((256 * 13 - Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + 5 * j) / (120 + (5 * i + 5 * j))), 15), 175) / 100) * Math.ceil(256 * 7 / Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + 5 * j) / (120 + (5 * i + 5 * j))), 15), 175) / 100))) / (2 * Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + 5 * j) / (120 + (5 * i + 5 * j))), 15), 175) / 100))) - 1;
 						if ((OIAS > 70) && (j == 0)) {
 							breakpoints2[breakpoints2.length] = Math.ceil(256 * 7 / Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + parseInt(OIAS)) / (120 + (5 * i + parseInt(OIAS)))), 15), 175) / 100)) + Math.ceil((256 * 13 - Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + parseInt(OIAS)) / (120 + (5 * i + parseInt(OIAS)))), 15), 175) / 100) * Math.ceil(256 * 7 / Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + parseInt(OIAS)) / (120 + (5 * i + parseInt(OIAS)))), 15), 175) / 100))) / (2 * Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + parseInt(OIAS)) / (120 + (5 * i + parseInt(OIAS)))), 15), 175) / 100))) - 1;
 						}
 					}
+					// fury
 					if (document.myform.skill.value == 29) {
 						temp = (Math.ceil(256 * 7 /Math.floor(Math.floor(256 * 9 /Math.floor(256 * frames /Math.floor((100 + 5 * i - WSMprimaer) * 256 / 100 ) ) ) * Math.min( Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + 5 * j) / (120 +(5 * i + 5 * j))), 15), 175)/100)) * 4 +Math.ceil(256 * 13 /Math.floor(Math.floor(256 * 9 /Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer)* 256 / 100)))* Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + 5 * j)/ (120 + (5 * i + 5 * j))), 15), 175)/ 100)) - 1)/ 5
 						if (parseInt(temp) == parseFloat(temp)) {
@@ -715,6 +719,7 @@ function berechneBreakpoints(event) {
 							breakpoints2[breakpoints2.length] = temp;
 						}
 					}
+					// not feral rage or fury, so normal swing, hunger, or rabies
 					if ((document.myform.skill.value != 26) && (document.myform.skill.value != 29)) {
 						var tempframe = 12;
 						var tempframe2 = 10;
