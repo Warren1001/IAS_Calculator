@@ -591,7 +591,7 @@ function berechneBreakpoints(event) {
 			console.log("5");
 			let temp2 = new Array(5);
 			let isOdd = false;
-			for (i = Math.max(100 + SIAS - WSMprimaer, 15); i <= 175; i++) {
+			for (i = Math.max(/*100 + SIAS - WSMprimaer*/15, 15); i <= 175; i++) {
 				frames = actionsFrames[weapons[document.myform.waffe.value][2]][document.myform.char.value];
 				rollback1 = berechneFPA(frames, i, start);
 				rollback1++;
