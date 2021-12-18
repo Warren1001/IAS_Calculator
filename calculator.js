@@ -15,6 +15,7 @@ function loadPage() {
 	const isOneHanded = document.getElementById("isOneHanded");
 	const skillSelect = document.getElementById("skillSelect");
 	const tableContainer = document.getElementById("tableContainer");
+	const fanaticismContainer = document.getElementById("fanaticismContainer");
 	const fanaticismLevelInput = document.getElementById("fanaticismLevel");
 	const burstOfSpeedContainer = document.getElementById("burstOfSpeedContainer");
 	const burstOfSpeedLevelInput = document.getElementById("burstOfSpeedLevel");
@@ -22,6 +23,7 @@ function loadPage() {
 	const werewolfLevelInput = document.getElementById("werewolfLevel");
 	const frenzyContainer = document.getElementById("frenzyContainer");
 	const frenzyLevelInput = document.getElementById("frenzyLevel");
+	const holyFreezeContainer = document.getElementById("holyFreezeContainer");
 	const holyFreezeLevelInput = document.getElementById("holyFreezeLevel");
 	const decrepify = document.getElementById("decrepify");
 
@@ -165,6 +167,17 @@ function loadPage() {
 		skill = parseInt(skillSelect.value);
 		skillData = SKILLS[skill];
 		console.log("New skill selected: " + skill + " - " + skillData[0]);
+
+		if (skill == WHIRLWIND) {
+			hideElement(fanaticismContainer);
+			hideElement(frenzyContainer);
+			hideElement(holyFreezeContainer);
+		} else {
+			unhideElement(fanaticismContainer);
+			if (character == BARBARIAN) unhideElement(frenzyContainer);
+			unhideElement(holyFreezeContainer);
+		}
+
 		if (!firstRun) displayFrames();
 	}
 
@@ -343,6 +356,7 @@ function loadPage() {
 
 		} else {
 
+			console.log("here");
 			let framesPerDirection = calculateFramesPerDirection(false, primaryWeapon);
 			displayTable(framesPerDirection, true);
 
@@ -351,19 +365,26 @@ function loadPage() {
 	}
 
 	function displayTable(framesPerDirection, isPrimary) {
-		displayTable(framesPerDirection, calculateStartingFrame(isPrimary ? primaryWeapon : secondaryWeapon), isPrimary);
-	}
 
-	function displayTable(framesPerDirection, startingFrame, isPrimary) {
+		console.log("here 3");
 
-		if (skill == FEND) {
-			//displayFendTable();
+		if (skill == FEND || skill == STRAFE || skill == WHIRLWIND) {
+			displayBreakpointTableFromHardcode();
 			return;
 		}
 		if (skill == DRAGON_TALON || skill == ZEAL) {
 			displayReducedSequenceTable();
 			return;
 		}
+		if (skill == FRENZY) {
+			//displayFrenzyTable();
+			return;
+		}
+
+		let weapon = isPrimary ? primaryWeapon : secondaryWeapon;
+		let isSequenceSkill = skill == FRENZY || skill == JAB;
+		let startingFrame = calculateStartingFrame(weapon);
+		let animationSpeed = calculateAnimationSpeed(weapon.weaponType);
 
 		console.log("--- start ---");
 		let WSM = 0;
@@ -384,8 +405,7 @@ function loadPage() {
 		} else {
 			WSM = (isPrimary ? primaryWeapon : secondaryWeapon).WSM;
 		}
-
-		let breakpoints = calculateBreakpointTable(framesPerDirection, startingFrame, WSM, (isPrimary ? primaryWeapon : secondaryWeapon).weaponType, false);
+		let breakpoints = calculateBreakpointTable(framesPerDirection, startingFrame, WSM, animationSpeed, isSequenceSkill);
 		displayBreakpointTable(breakpoints);
 
 		console.log("--- end ---");
@@ -460,9 +480,16 @@ function loadPage() {
 		console.log("--- end fend ---");
 	}*/
 
-	function calculateBreakpointTable(framesPerDirection, startingFrame, WSM, weaponType, isSequenceSkill) {
-		let animationSpeed = calculateAnimationSpeed(weaponType);
+	function calculateBreakpointTable(framesPerDirection, startingFrame, WSM, animationSpeed, isSequenceSkill) {
+
 		let SIAS = calculateSIAS();
+
+		console.log("framesPerDirection: " + framesPerDirection);
+		console.log("animationSpeed: " + animationSpeed);
+		console.log("startingFrame: " + startingFrame);
+		console.log("SIAS: " + SIAS);
+		console.log("WSM: " + WSM);
+
 		// credit to BinaryAzeotrope for helping come up with these formulas
 		let unroundedMin = (256 * (framesPerDirection - startingFrame)) / (Math.max(15, Math.min(SIAS - WSM + 220, EIAS_LIMIT))) * (100 / animationSpeed);
 		//console.log("unroundedMin: " + unroundedMin);
@@ -475,12 +502,6 @@ function loadPage() {
 		}
 		let max = Math.ceil(unroundedMax.toFixed(5))/* - 1*/; // temp fix, duplicate starting frames handled by unique gearIAS filtering below
 
-		/*console.log("framesPerDirection: " + framesPerDirection);
-		console.log("animationSpeed: " + animationSpeed);
-		console.log("startingFrame: " + startingFrame);
-		console.log("SIAS: " + SIAS);
-		console.log("WSM: " + WSM);*/
-
 		console.log("min=" + min + ",max=" + max);
 
 		let breakpoints = new Map();
@@ -488,6 +509,7 @@ function loadPage() {
 		for (FPA = max; FPA >= min; FPA--) {
 
 			let acceleration = Math.max(15, Math.min(EIAS_LIMIT, Math.ceil(Math.ceil(256 * (framesPerDirection - startingFrame) / (FPA + 1)) * 100 / animationSpeed)));
+			console.log("acceleration=" + acceleration + " at FPA=" + FPA);
 			let gearIAS = Math.max(0, Math.ceil(120 * (acceleration - 100 - SIAS + WSM) / (120 - (acceleration - 100 - SIAS + WSM))));
 
 			let actualFPA = FPA;
@@ -501,27 +523,200 @@ function loadPage() {
 		return breakpoints;
 	}
 
+	function displayBreakpointTableFromHardcode() {
+
+		let WSM = primaryWeapon.WSM;
+		let SIAS = calculateSIAS();
+		let EIAS = Math.max(15, 100 + SIAS - WSM);
+		let breakpointTable;
+
+		if (skill == FEND) {
+			if (primaryWeapon.weaponType == SPEAR) {
+				breakpointTable = FEND_SPEAR_TABLE;
+			} else if (primaryWeapon.weaponType == ONE_HANDED_THRUSTING) {
+				breakpointTable = FEND_ONE_HANDED_THRUSTING_TABLE;
+			}
+		} else if (skill == STRAFE) {
+			if (primaryWeapon.weaponType == BOW) {
+				breakpointTable = STRAFE_BOW_TABLE;
+			} else if (primaryWeapon.weaponType == CROSSBOW) {
+				breakpointTable = STRAFE_EVEN_CROSSBOW_TABLE;
+			}
+		} else if (skill == WHIRLWIND) {
+			SIAS = 0;
+
+			if (isDualWielding) {
+				if (wsmBugged) {
+					WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2 - secondaryWeapon.WSM + primaryWeapon.WSM;
+				} else {
+					WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2;
+				}
+			}
+
+			EIAS = Math.max(15, 100 + SIAS - WSM);
+
+			if (character == ASSASSIN && primaryWeapon.weaponType == CLAW) {
+				breakpointTable = WHIRLWIND_CLAW_TABLE;
+			} else if (character == BARBARIAN) {
+				if (primaryWeapon.weaponType == UNARMED || primaryWeapon.weaponType == ONE_HANDED_SWINGING ||
+					primaryWeapon.weaponType == ONE_HANDED_THRUSTING || primaryWeapon.weaponType == TWO_HANDED_SWORD) {
+					breakpointTable = WHIRLWIND_ONE_HANDED_TABLE;
+				} else {
+					breakpointTable = WHIRLWIND_TWO_HANDED_TABLE;
+				}
+			}
+		}
+
+		let table = breakpointTable.getTableAfter(EIAS);
+		let tableIAS = (skill == WHIRLWIND ? table.getAdjustedTable(WSM) : table.convertToIASTable(EIAS));
+		let breakpoints = new Map();
+		//console.log("calculateBreakpointTableFromHardcode (WSM=" + WSM + "):");
+		for (let index in tableIAS) {
+			let breakpoint = tableIAS[index];
+		//	console.log(breakpoint[0] + ", " + breakpoint[1]);
+			breakpoints.set(breakpoint[0], breakpoint[1]);
+		}
+		displayBreakpointTable(breakpoints);
+
+		if (skill == STRAFE && primaryWeapon.weaponType == CROSSBOW) {
+
+			breakpointTable = STRAFE_ODD_CROSSBOW_TABLE;
+			table = breakpointTable.getTableAfter(EIAS);
+			tableIAS = table.convertToIASTable(EIAS);
+			breakpoints = new Map();
+			//console.log("calculateBreakpointTableFromHardcode (WSM=" + WSM + "):");
+			for (let index in tableIAS) {
+				let breakpoint = tableIAS[index];
+			//	console.log(breakpoint[0] + ", " + breakpoint[1]);
+				breakpoints.set(breakpoint[0], breakpoint[1]);
+			}
+
+			displayBreakpointTable(breakpoints);
+
+		} else if (skill == WHIRLWIND && isDualWielding && primaryWeapon != secondaryWeapon) {
+
+			if (wsmBugged) {
+				WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2;
+			} else {
+				WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2 - primaryWeapon.WSM + secondaryWeapon.WSM;
+			}
+			EIAS = Math.max(15, 100 + SIAS - WSM);
+
+			table = breakpointTable.getTableAfter(EIAS);
+			tableIAS = table.getAdjustedTable(WSM);
+			breakpoints = new Map();
+			//console.log("calculateBreakpointTableFromHardcode (WSM=" + WSM + "):");
+			for (let index in tableIAS) {
+				let breakpoint = tableIAS[index];
+			//	console.log(breakpoint[0] + ", " + breakpoint[1]);
+				breakpoints.set(breakpoint[0], breakpoint[1]);
+			}
+
+			displayBreakpointTable(breakpoints);
+
+		}
+
+	}
+
+	/*function calculateFrenzySecondHitBreakpointTable(secondaryWSM, firstSwingFPA, primaryWSM) {
+
+		let framesPerDirection = 17;
+		let startingFrame = 0;
+		let animationSpeed = 256;
+		let SIAS = calculateSIAS();
+
+		// credit to BinaryAzeotrope for helping come up with these formulas
+		let unroundedMin = (256 * (framesPerDirection - startingFrame) - (firstSwingFPA * Math.max(15, Math.min(SIAS - primaryWSM + 220, EIAS_LIMIT)))) / (Math.max(15, Math.min(SIAS - secondaryWSM + 220, EIAS_LIMIT))) * (100 / animationSpeed);
+		//console.log("unroundedMin: " + unroundedMin);
+		let min = Math.ceil(unroundedMin.toFixed(5)) - 1;
+		let unroundedMax = (256 * (framesPerDirection - startingFrame) - (firstSwingFPA * Math.max(15, Math.min(SIAS - primaryWSM + 220, EIAS_LIMIT)))) / (Math.max(15, Math.min(SIAS - secondaryWSM + 100, EIAS_LIMIT))) * (100 / animationSpeed);
+		//console.log("unroundedMax: " + unroundedMax);
+		if (parseInt(unroundedMax) == parseFloat(unroundedMax)) {
+			unroundedMax++;
+			console.log("increased unroundedMax by 1");
+		}
+		let max = Math.ceil(unroundedMax.toFixed(5))// - 1; // temp fix, duplicate starting frames handled by unique gearIAS filtering below
+
+		console.log("min=" + min + ",max=" + max);
+
+		let breakpoints = new Map();
+
+		for (FPA = max; FPA >= min; FPA--) {
+
+			let acceleration = Math.max(15, Math.min(EIAS_LIMIT, Math.ceil(Math.ceil(256 * (framesPerDirection - startingFrame) / (FPA + 1)) * 100 / animationSpeed)));
+			//console.log("acceleration=" + acceleration + " at FPA=" + FPA);
+			let gearIAS = Math.max(0, Math.ceil(120 * (acceleration - 100 - SIAS + WSM) / (120 - (acceleration - 100 - SIAS + WSM))));
+
+			let actualFPA = FPA + 1;
+
+			breakpoints.set(gearIAS, actualFPA);
+		}
+
+		return breakpoints;
+	}*/
+
 	function displayReducedSequenceTable() {
 		console.log("--- start reduced sequence ---");
 
 		let framesPerDirection = (skill == DRAGON_TALON ? 4 : ACTIONS_FRAMES[primaryWeapon.weaponType.type][character]);
+		let animationSpeed = calculateAnimationSpeed(primaryWeapon.weaponType);
 		let startingFrame = 0; // starting frames only apply to sorcs and zons using normal attack, strafe, or fend
 
 		if (character == BARBARIAN && primaryWeapon.weaponType == TWO_HANDED_SWORD && isOneHanded) framesPerDirection = 7;
 		console.log("framesPerDirection=" + framesPerDirection + ",startingFrame=" + startingFrame);
 
-		let sequenceBreakpoints = calculateBreakpointTable(framesPerDirection, startingFrame, primaryWeapon.WSM, primaryWeapon.weaponType, true);
+		let sequenceBreakpoints = calculateBreakpointTable(framesPerDirection, startingFrame, primaryWeapon.WSM, animationSpeed, true);
 
 		framesPerDirection = (skill == DRAGON_TALON ? 13 : primaryWeapon.weaponType.getFramesPerDirection(character));
 		if (character == BARBARIAN && primaryWeapon.weaponType == TWO_HANDED_SWORD && isOneHanded) framesPerDirection = 16;
 
-		let finishingBreakpoints = calculateBreakpointTable(framesPerDirection, startingFrame, primaryWeapon.WSM, primaryWeapon.weaponType, false);
+		let finishingBreakpoints = calculateBreakpointTable(framesPerDirection, startingFrame, primaryWeapon.WSM, animationSpeed, false);
 
 		console.log("-- starting final --");
 		let breakpoints = mergeSequenceTables(sequenceBreakpoints, finishingBreakpoints);
 		displayBreakpointTable(breakpoints);
 		
 	}
+
+	/**
+	 * credits to chthonvii for putting all the information about frenzy together in their calc: https://chthonvii.github.io/resurrectedfrenzyiascalc/
+	 * this here is essentially a copy paste ("paraphrased") to work here
+	 */
+	/*function displayFrenzyTable() {
+
+		let framesPerDirection = 9; // not sure why, the only link i can see as to why this is is two-handed sword framesPerDirection for barbarian is 18, half of this. no other correlation noted
+		let startingFrame = 0; // starting frames only apply to sorcs and zons using normal attack, strafe, or fend
+		let animationSpeed = 256; // only using claws and laying traps have different animationSpeed, rest are 256
+
+		let averageWSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2;
+		// chthonvii mentions that there was a difference for the average wsm based on if it was wsm bugged or not
+		// also mentions that raising it to the ceiling might be the point of matter for a negative value, and is unsure if the same would be true for a positive number
+		// their suspicion is likely right, truncating doesnt necessarily floor or ceiling, so negative numbers would ceiling and positive numbers would floor
+		// ill implement it chthonvii's way as is and then do my own testing afterwards
+		if (wsmBugged) {
+			averageWSM = Math.ceil(averageWSM);
+		} else {
+			averageWSM = Math.floor(averageWSM);
+		}
+
+		// strange interaction of WSM, must be specific to frenzy
+		var primaryWSM = primaryWeapon.WSM + secondaryWeapon.WSM - averageWSM;
+		var secondaryWSM = secondaryWeapon.WSM * 2 - averageWSM;
+		if (wsmBugged) {
+			primaryWSM = primaryWeapon.WSM - secondaryWeapon.WSM + averageWSM;
+			secondaryWSM = averageWSM;
+		}
+
+		let primaryWeaponBreakpointTable = calculateBreakpointTable(framesPerDirection, startingFrame, primaryWSM, animationSpeed, false);
+
+		framesPerDirection = 17; // 17 is the sequence frame for frenzy for 1HS, 1HT, and 2HS weapons, the only weapons a barbarian can frenzy with
+
+		let secondaryWeaponBreakpointTable = calculateFrenzySecondHitBreakpointTable(secondaryWSM, ??, primaryWSM); // the last hit in a sequence skill is not a sequence swing
+
+		displayBreakpointTable(primaryWeaponBreakpointTable);
+		displayBreakpointTable(secondaryWeaponBreakpointTable);
+
+	}*/
 
 	function mergeSequenceTables(...tables) {
 		let uniqueKeys = new Set();
@@ -679,6 +874,7 @@ function loadPage() {
 		if ((character == AMAZON || character == SORCERESS) && (skill == STANDARD || skill == STRAFE || skill == FEND)) {
 			startingFrame = weapon.weaponType.startingFrame;
 		}
+		console.log("calculateStartingFrame: " + startingFrame);
 		return startingFrame;
 	}
 
@@ -770,6 +966,451 @@ function noNegativeValues(input) {
     	}
 	}
 }
+
+class BreakpointTable {
+
+	constructor(breakpoints) {
+		this.breakpoints = breakpoints;
+	}
+
+	addBreakpoint(EIAS, FPA) {
+		this.breakpoints.push([EIAS, FPA]);
+	}
+
+	getFPA(EIAS) {
+		for (let i = 0; i < this.breakpoints.length; i++) {
+			let breakpoint = this.breakpoints[i];
+			if (EIAS < breakpoint[0]) {
+				return (i == 0 ? this.breakpoint[1] : this.breakpoints[i - 1][1]);
+			}
+		}
+		console.log("error, somehow exited getFPA loop");
+	}
+
+	getTableAfter(EIAS) {
+		console.log("getTableAfter: EIAS=" + EIAS);
+		let filterEIAS = -1;
+		for (let i = 0; i < this.breakpoints.length; i++) {
+			let breakpoint = this.breakpoints[i];
+			if (EIAS < breakpoint[0]) {
+				filterEIAS = (i == 0 ? breakpoint[0] : this.breakpoints[i - 1][0]);
+				break;
+			}
+		}
+		if (filterEIAS == -1) {
+			return new BreakpointTable([[0, this.breakpoints[this.breakpoints.length - 1][1]]]);
+		}
+		let filteredBreakpoints = this.breakpoints.filter(a => a[0] >= filterEIAS);
+		//console.log("getTableAfter (EIAS=" + EIAS + "):");
+		for (let b1 in filteredBreakpoints) {
+			let b = filteredBreakpoints[b1];
+			console.log(b[0] + ", " + b[1]);
+		}
+		return new BreakpointTable(filteredBreakpoints);
+	}
+
+	getAdjustedTable(WSM) {
+		let adjustedBreakpoints = new Array(this.breakpoints.length);
+		console.log("getAdjustedTable (length=" + this.breakpoints.length + "):");
+		for (let i = 0; i < this.breakpoints.length; i++) {
+			let breakpoint = this.breakpoints[i];
+			let EIAS = breakpoint[0] - 100 + WSM;
+			let frames = breakpoint[1];
+
+			if (EIAS < 0) {
+				if (i == 0) EIAS = 0; // first breakpoint might be slightly negative
+			}
+
+			console.log("EIAS=" + EIAS + ",frames=" + frames);
+			adjustedBreakpoints.push([EIAS, frames]);
+		}
+		return adjustedBreakpoints;
+	}
+
+	convertToIASTable(EIAS) {
+		if (EIAS < 0) {
+			console.log("-- error -- EIAS was < 0: " + EIAS);
+		}
+		let breakpointsIAS = new Array(this.breakpoints.length);
+		console.log("convertToIASTable (length=" + this.breakpoints.length + "):");
+		for (let i = 0; i < this.breakpoints.length; i++) {
+			let breakpoint = this.breakpoints[i];
+			let targetEIAS = breakpoint[0];
+			let frames = breakpoint[1];
+			let IAS = Math.ceil(120 * (targetEIAS - EIAS) / (120 - (targetEIAS - EIAS)));
+
+			if (IAS < 0) {
+				if (i == 0) IAS = 0; // first breakpoint might be slightly negative
+				else break; // the upper breakpoints at really low EIAS values roll over into negative gear ias, skip those as theyre not possible to obtain
+			}
+
+			console.log("targetEIAS=" + targetEIAS + ",frames=" + frames + ",IAS=" + IAS);
+			breakpointsIAS.push([IAS, frames]);
+		}
+		return breakpointsIAS;
+	}
+
+}
+
+const WHIRLWIND_CLAW_TABLE = new BreakpointTable([
+	[90, 8],
+	[91, 6],
+	[113, 4]
+]);
+
+const WHIRLWIND_ONE_HANDED_TABLE = new BreakpointTable([
+	[15, 16],
+	[62, 14],
+	[70, 12],
+	[81, 10],
+	[90, 8],
+	[108, 6],
+	[134, 4]
+]);
+
+const WHIRLWIND_TWO_HANDED_TABLE = new BreakpointTable([
+	[80, 14],
+	[83, 12],
+	[96, 10],
+	[106, 8],
+	[127, 6],
+	[159, 4]
+]);
+
+const FEND_SPEAR_TABLE = new BreakpointTable([
+	[15, "61/(48)/94"],
+	[16, "58/(45)/89"],
+	[17, "54/(42)/83"],
+	[18, "51/(39)/77"],
+	[19, "48/(38)/74"],
+	[20, "46/(36)/70"],
+	[21, "44/(34)/67"],
+	[22, "42/(32)/63"],
+	[23, "40/(31)/61"],
+	[24, "38/(30)/58"],
+	[25, "36/(28)/55"],
+	[26, "35/(28)/54"],
+	[27, "34/(26)/51"],
+	[28, "33/(26)/50"],
+	[29, "32/(25)/48"],
+	[30, "31/(24)/47"],
+	[31, "30/(23)/45"],
+	[32, "29/(23)/44"],
+	[33, "28/(22)/42"],
+	[34, "27/(21)/41"],
+	[35, "26/(21)/40"],
+	[36, "26/(20)/38"],
+	[37, "25/(20)/38"],
+	[38, "24/(19)/36"],
+	[40, "23/(18)/35"],
+	[41, "23/(18)/34"],
+	[42, "22/(17)/33"],
+	[43, "21/(17)/32"],
+	[44, "21/(16)/31"],
+	[46, "20/(16)/30"],
+	[47, "20/(15)/29"],
+	[48, "19/(15)/29"],
+	[49, "19/(15)/28"],
+	[50, "18/(14)/27"],
+	[52, "18/(14)/26"],
+	[54, "17/(13)/25"],
+	[57, "16/(13)/24"],
+	[59, "16/(12)/23"],
+	[61, "15/(12)/22"],
+	[64, "15/(11)/21"],
+	[65, "14/(11)/21"],
+	[67, "14/(11)/20"],
+	[70, "13/(11)/20"],
+	[71, "13/(10)/19"],
+	[74, "13/(10)/18"],
+	[75, "12/(10)/18"],
+	[79, "12/(9)/17"],
+	[83, "11/(9)/16"],
+	[88, "11/(8)/15"],
+	[91, "10/(8)/15"],
+	[94, "10/(8)/14"],
+	[100, "9/(7)/13"],
+	[108, "9/(7)/12"],
+	[113, "8/(7)/12"],
+	[117, "8/(6)/11"],
+	[128, "8/(6)/10"],
+	[129, "7/(6)/10"],
+	[141, "7/(5)/9"],
+	[150, "6/(5)/9"],
+	[156, "6/(5)/8"],
+	[175, "6/(4)/7"]
+]);
+
+const FEND_ONE_HANDED_THRUSTING_TABLE = new BreakpointTable([
+	[15, "48/(41)/80"],
+	[16, "45/(39)/76"],
+	[17, "42/(36)/71"],
+	[18, "39/(34)/66"],
+	[19, "38/(32)/63"],
+	[20, "36/(31)/60"],
+	[21, "34/(29)/57"],
+	[22, "32/(28)/54"],
+	[23, "31/(27)/52"],
+	[24, "30/(26)/50"],
+	[25, "28/(24)/47"],
+	[26, "28/(24)/46"],
+	[27, "26/(23)/44"],
+	[28, "26/(22)/43"],
+	[29, "25/(21)/41"],
+	[30, "24/(21)/40"],
+	[31, "23/(20)/38"],
+	[32, "23/(19)/37"],
+	[33, "22/(19)/36"],
+	[34, "21/(18)/35"],
+	[35, "21/(18)/34"],
+	[36, "20/(17)/33"],
+	[37, "20/(17)/32"],
+	[38, "19/(16)/31"],
+	[40, "18/(16)/30"],
+	[41, "18/(15)/29"],
+	[42, "17/(15)/28"],
+	[43, "17/(14)/27"],
+	[44, "16/(14)/27"],
+	[45, "16/(14)/26"],
+	[47, "15/(13)/25"],
+	[49, "15/(13)/24"],
+	[50, "14/(12)/23"],
+	[53, "14/(12)/22"],
+	[54, "13/(12)/22"],
+	[55, "13/(11)/21"],
+	[58, "13/(11)/20"],
+	[59, "12/(11)/20"],
+	[61, "12/(10)/19"],
+	[64, "11/(10)/18"],
+	[67, "11/(9)/17"],
+	[71, "10/(9)/16"],
+	[75, "10/(8)/15"],
+	[79, "9/(8)/15"],
+	[81, "9/(8)/14"],
+	[86, "9/(7)/13"],
+	[88, "8/(7)/13"],
+	[93, "8/(7)/12"],
+	[100, "7/(6)/11"],
+	[110, "7/(6)/10"],
+	[115, "7/(5)/10"],
+	[117, "6/(6)/9"],
+	[121, "6/(5)/9"],
+	[134, "6/(4)/8"],
+	[141, "5/(5)/7"],
+	[150, "5/(4)/7"],
+	[161, "5/(4)/6"],
+	[172, "5/(3)/6"]
+]);
+
+const STRAFE_ODD_CROSSBOW_TABLE = new BreakpointTable([
+	[15, "61/(34)/107"],
+	[16, "58/(32)/102"],
+	[17, "54/(30)/95"],
+	[18, "51/(28)/89"],
+	[19, "48/(27)/85"],
+	[20, "46/(26)/80"],
+	[21, "44/(25)/77"],
+	[22, "42/(23)/73"],
+	[23, "40/(23)/70"],
+	[24, "38/(21)/67"],
+	[25, "36/(20)/63"],
+	[26, "35/(20)/62"],
+	[27, "34/(19)/59"],
+	[28, "33/(19)/57"],
+	[29, "32/(18)/55"],
+	[30, "31/(17)/53"],
+	[31, "30/(17)/51"],
+	[32, "29/(16)/50"],
+	[33, "28/(16)/48"],
+	[34, "27/(15)/47"],
+	[35, "26/(15)/46"],
+	[36, "26/(14)/44"],
+	[37, "25/(14)/43"],
+	[38, "24/(14)/42"],
+	[39, "24/(13)/41"],
+	[40, "23/(13)/40"],
+	[41, "23/(13)/39"],
+	[42, "22/(12)/38"],
+	[43, "21/(12)/37"],
+	[44, "21/(12)/36"],
+	[45, "21/(12)/35"],
+	[46, "20/(11)/35"],
+	[47, "20/(11)/34"],
+	[48, "19/(11)/33"],
+	[49, "19/(11)/32"],
+	[50, "18/(10)/31"],
+	[52, "18/(10)/30"],
+	[54, "17/(10)/29"],
+	[56, "17/(9)/28"],
+	[57, "16/(9)/28"],
+	[58, "16/(9)/27"],
+	[60, "16/(9)/26"],
+	[61, "15/(9)/26"],
+	[62, "15/(9)/25"],
+	[63, "15/(8)/25"],
+	[65, "14/(8)/24"],
+	[67, "14/(8)/23"],
+	[70, "13/(8)/22"],
+	[72, "13/(7)/22"],
+	[74, "13/(7)/21"],
+	[75, "12/(7)/21"],
+	[77, "12/(7)/20"],
+	[81, "12/(7)/19"],
+	[83, "11/(7)/19"],
+	[84, "11/(6)/19"],
+	[85, "11/(6)/18"],
+	[90, "11/(6)/17"],
+	[91, "10/(6)/17"],
+	[95, "10/(6)/16"],
+	[100, "9/(5)/15"],
+	[108, "9/(5)/14"],
+	[112, "9/4/(5)/14"],
+	[113, "8/(5)/14"],
+	[115, "8/(5)/13"],
+	[121, "8/5/(4/5)/12"],
+	[125, "8/(4)/11"],
+	[129, "7/(4)/12"],
+	[134, "7/(4)/11"],
+	[143, "7/3/(4)/11"],
+	[146, "7/3/(4)/10"],
+	[150, "6/4/(3/4)/9"],
+	[167, "6/(3)/8"]
+]);
+
+const STRAFE_EVEN_CROSSBOW_TABLE = new BreakpointTable([
+	[15, "61/(34)/107"],
+	[16, "58/(32)/102"],
+	[17, "54/(30)/95"],
+	[18, "51/(28)/89"],
+	[19, "48/(27)/85"],
+	[20, "46/(26)/80"],
+	[21, "44/(25)/77"],
+	[22, "42/(23)/73"],
+	[23, "40/(23)/70"],
+	[24, "38/(21)/67"],
+	[25, "36/(20)/63"],
+	[26, "35/(20)/62"],
+	[27, "34/(19)/59"],
+	[28, "33/(19)/57"],
+	[29, "32/(18)/55"],
+	[30, "31/(17)/53"],
+	[31, "30/(17)/51"],
+	[32, "29/(16)/50"],
+	[33, "28/(16)/48"],
+	[34, "27/(15)/47"],
+	[35, "26/(15)/46"],
+	[36, "26/(14)/44"],
+	[37, "25/(14)/43"],
+	[38, "24/(14)/42"],
+	[39, "24/(13)/41"],
+	[40, "23/(13)/40"],
+	[41, "23/(13)/39"],
+	[42, "22/(12)/38"],
+	[43, "21/(12)/37"],
+	[44, "21/(12)/36"],
+	[45, "21/(12)/35"],
+	[46, "20/(11)/35"],
+	[47, "20/(11)/34"],
+	[48, "19/(11)/33"],
+	[49, "19/(11)/32"],
+	[50, "18/(10)/31"],
+	[52, "18/(10)/30"],
+	[54, "17/(10)/29"],
+	[56, "17/(9)/28"],
+	[57, "16/(9)/28"],
+	[58, "16/(9)/27"],
+	[60, "16/(9)/26"],
+	[61, "15/(9)/26"],
+	[62, "15/(9)/25"],
+	[63, "15/(8)/25"],
+	[65, "14/(8)/24"],
+	[67, "14/(8)/23"],
+	[70, "13/(8)/22"],
+	[72, "13/(7)/22"],
+	[74, "13/(7)/21"],
+	[75, "12/(7)/21"],
+	[77, "12/(7)/20"],
+	[81, "12/(7)/19"],
+	[83, "11/(7)/19"],
+	[84, "11/(6)/19"],
+	[85, "11/(6)/18"],
+	[90, "11/(6)/17"],
+	[91, "10/(6)/17"],
+	[95, "10/(6)/16"],
+	[100, "9/(5)/15"],
+	[108, "9/(5)/14"],
+	[112, "9/4/(5)/14"],
+	[113, "8/(5)/14"],
+	[115, "8/(5)/13"],
+	[121, "8/(5/4)/13"],
+	[124, "8/(5/4)/12"],
+	[125, "8/(4)/11"],
+	[129, "7/(4)/12"],
+	[134, "7/(4)/11"],
+	[143, "7/3/(4)/11"],
+	[146, "7/3/(4)/10"],
+	[150, "6/(4/3)/10"],
+	[161, "6/(4/3)/9"],
+	[167, "6/(3)/8"]
+]);
+
+const STRAFE_BOW_TABLE = new BreakpointTable([
+	[15, "41/21/21/21/74"],
+	[16, "39/20/20/20/70"],
+	[17, "36/18/18/18/65"],
+	[18, "34/17/17/17/61"],
+	[19, "32/16/16/16/58"],
+	[20, "31/16/16/16/55"],
+	[21, "29/15/15/15/53"],
+	[22, "28/14/14/14/50"],
+	[23, "27/14/14/14/48"],
+	[24, "26/13/13/13/46"],
+	[25, "24/12/12/12/43"],
+	[26, "24/12/12/12/42"],
+	[27, "23/12/12/12/40"],
+	[28, "22/11/11/11/39"],
+	[29, "21/11/11/11/38"],
+	[30, "21/11/11/11/37"],
+	[31, "20/10/10/10/35"],
+	[32, "19/10/10/10/34"],
+	[33, "19/10/10/10/33"],
+	[34, "18/9/9/9/32"],
+	[35, "18/9/9/9/31"],
+	[36, "17/9/9/9/30"],
+	[37, "17/9/9/9/29"],
+	[38, "16/8/8/8/29"],
+	[39, "16/8/8/8/28"],
+	[40, "16/8/8/8/27"],
+	[41, "15/8/8/8/27"],
+	[42, "15/8/8/8/26"],
+	[43, "14/7/7/7/25"],
+	[45, "14/7/7/7/24"],
+	[47, "13/7/7/7/23"],
+	[49, "13/7/7/7/22"],
+	[50, "12/6/6/6/21"],
+	[53, "12/6/6/6/20"],
+	[55, "11/6/6/6/20"],
+	[56, "11/6/6/6/19"],
+	[59, "11/6/6/6/18"],
+	[61, "10/5/5/5/18"],
+	[62, "10/5/5/5/17"],
+	[65, "10/5/5/5/16"],
+	[67, "9/5/5/5/16"],
+	[69, "9/5/5/5/15"],
+	[74, "9/5/5/5/14"],
+	[75, "8/4/4/4/14"],
+	[79, "8/4/4/4/13"],
+	[85, "8/4/4/4/12"],
+	[86, "7/4/4/4/12"],
+	[92, "7/4/4/4/11"],
+	[100, "6/3/3/3/10"],
+	[111, "6/3/3/3/9"],
+	[121, "5/3/3/3/9"],
+	[123, "5/3/3/3/8"],
+	[138, "5/3/3/3/7"],
+	[150, "4/2/2/2/7"],
+	[158, "4/2/2/2/6"]
+]);
 
 const AMAZON = 0;
 const ASSASSIN = 1;
