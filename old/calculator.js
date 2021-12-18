@@ -533,12 +533,13 @@ function berechneBreakpoints(event) {
 		}
 		if (document.myform.skill.value == 19) { // if skill is whirlwind
 
-			for (i = 100 + IASprimaer - OIAS - WSMprimaer; i <= 175; i++) {
+			for (i = /*100 + IASprimaer - OIAS - WSMprimaer*/15; i <= 175; i++) {
 				var temp = berechneFPA(frames, i, 0);
 				ergebnis = wirbelwind(temp);
 				if (temp1 != ergebnis) {
 					breakpoints[breakpoints.length] = [i - 100 + WSMprimaer, ergebnis];
 					temp1 = ergebnis;
+					console.log("[" + i + ", " + ergebnis + "],");
 				}
 			}
 		}
@@ -588,6 +589,8 @@ function berechneBreakpoints(event) {
 		// if skill is strafe
 		if (skills[document.myform.skill.value][4] == 50) {
 			console.log("5");
+			let temp2 = new Array(5);
+			let isOdd = false;
 			for (i = Math.max(100 + SIAS - WSMprimaer, 15); i <= 175; i++) {
 				frames = actionsFrames[weapons[document.myform.waffe.value][2]][document.myform.char.value];
 				rollback1 = berechneFPA(frames, i, start);
@@ -595,24 +598,52 @@ function berechneBreakpoints(event) {
 				RBframe = Math.floor(Math.floor((256 * start + Math.floor(256 * i / 100) * rollback1) / 256) * skills[document.myform.skill.value][4] / 100);
 				rollback2 = berechneFPA(frames, i, RBframe);
 				rollback2++;
-				RBframe = Math.floor(Math.floor((256 * RBframe + Math.floor(256 * i / 100) * rollback2) / 256) * skills[document.myform.skill.value][4] / 100);
-				rollback3 = berechneFPA(frames, i, RBframe);
+				let RBframe3 = Math.floor(Math.floor((256 * RBframe + Math.floor(256 * i / 100) * rollback2) / 256) * skills[document.myform.skill.value][4] / 100);
+				rollback3 = berechneFPA(frames, i, RBframe3);
 				rollback3++;
-				RBframe = Math.floor(Math.floor((256 * RBframe + Math.floor(256 * i / 100) * rollback3) / 256) * skills[document.myform.skill.value][4] / 100);
-				rollback4 = berechneFPA(frames, i, RBframe);
+				let RBframe4 = Math.floor(Math.floor((256 * RBframe3 + Math.floor(256 * i / 100) * rollback3) / 256) * skills[document.myform.skill.value][4] / 100);
+				rollback4 = berechneFPA(frames, i, RBframe4);
 				rollback4++;
 				frames = weaponTypes[weapons[document.myform.waffe.value][2]][document.myform.char.value][0];
-				RBframe = Math.floor(Math.floor((256 * RBframe + Math.floor(256 * i / 100) * rollback4) / 256) * skills[document.myform.skill.value][4] / 100);
+				RBframe = Math.floor(Math.floor((256 * (isOdd ? RBframe4 : RBframe3) + Math.floor(256 * i / 100) * (isOdd ? rollback4 : rollback3)) / 256) * skills[document.myform.skill.value][4] / 100);
 				rollback5 = berechneFPA(frames, i, RBframe);
-				if ((rollback2 == rollback3) || (rollback3 == rollback4)) {
-					ergebnis = rollback1 + rollback2 + rollback3 + rollback4 + rollback5;
-				}
-				if (temp1 != ergebnis) {
+				//if ((rollback2 == rollback3) || (rollback3 == rollback4)) {
+				//	ergebnis = rollback1 + rollback2 + rollback3 + rollback4 + rollback5;
+				//}
+				//if (temp1 != ergebnis) {
+				if (temp2[0] != rollback1 || temp2[1] != rollback2 || temp2[2] != rollback3 || temp2[3] != rollback4 || temp2[4] != rollback5) {
 					var bp = Math.ceil(120 * (i - 100 - SIAS + WSMprimaer) / (120 - (i - 100 - SIAS + WSMprimaer)));
-					if (bp < 0) break;
+					//if (bp < 0) break;
 					breakpoints[breakpoints.length] = [bp, rollback1 + "/" + rollback2 + "/" + rollback3 + "/" + rollback4 + "/" + rollback5];
 					breakpointsAPS[breakpointsAPS.length] = parseInt(2500 / ((rollback1 + rollback2 + rollback3 * 4 + rollback4 * 3 + rollback5) / 10)) / 100;
 					temp1 = ergebnis;
+					temp2[0] = rollback1;
+					temp2[1] = rollback2;
+					temp2[2] = rollback3;
+					temp2[3] = rollback4;
+					temp2[4] = rollback5;
+
+					if (!isOdd) {
+						if (rollback2 == rollback4) {
+							if (rollback2 == rollback3) {
+								console.log("[" + i + ", \"" + (rollback1 + "/(" + rollback2 + ")/" + rollback5) + "\"],");
+							} else {
+								console.log("[" + i + ", \"" + (rollback1 + "/(" + rollback2 + "/" + rollback3 + ")/" + rollback5) + "\"],");
+							}
+						} else {
+							console.log("[" + i + ", \"" + (rollback1 + "/" + rollback2 + "/(" + rollback3 + ")/" + rollback5) + "\"],");
+						}
+					}
+					else {
+						if (rollback2 == rollback3) {
+							console.log("[" + i + ", \"" + (rollback1 + "/(" + rollback2 + ")/" + rollback5) + "\"],");
+						} else if (rollback2 == rollback4) {
+							console.log("[" + i + ", \"" + (rollback1 + "/" + rollback2 + "/(" + rollback3 + "/" + rollback4 + ")/" + rollback5) + "\"],");
+						} else {
+							console.log("[" + i + ", \"" + (rollback1 + "/" + rollback2 + "/(" + rollback3 + ")/" + rollback5) + "\"],");
+						}
+						
+					}
 				}
 			}
 		}
@@ -621,10 +652,10 @@ function berechneBreakpoints(event) {
 			console.log("6, start=" + start);
 			for (i = Math.max(100 + SIAS - WSMprimaer, 15); i <= 175; i++) {
 				frames = actionsFrames[weapons[document.myform.waffe.value][2]][document.myform.char.value];
-				console.log("--- start i=" + i + " ---")
+				//console.log("--- start i=" + i + " ---")
 				rollback1 = berechneFPA(frames, i, start);
 				rollback1++;
-				console.log("rollback1=" + rollback1);
+				//console.log("rollback1=" + rollback1);
 				RBframe = Math.floor(Math.floor((256 * start + Math.floor(256 * i / 100) * rollback1) / 256) * skills[document.myform.skill.value][4] / 100);
 				rollback2 = berechneFPA(frames, i, RBframe);
 				rollback2++;
@@ -633,11 +664,17 @@ function berechneBreakpoints(event) {
 				rollback3 = berechneFPA(frames, i, RBframe);
 				ergebnis = rollback1 + rollback2 + rollback3;
 				if (temp1 != ergebnis) {
+					//let a = i - 15;
+					//console.log("i=" + i + ",a=" + a);
+					//a = a - 85;
 					var bp = Math.ceil(120 * (i - 100 - SIAS + WSMprimaer) / (120 - (i - 100 - SIAS + WSMprimaer)));
-					if (bp < 0) break;
+					//if (bp < 0) break;
 					breakpoints[breakpoints.length] = [bp, rollback1 + "/" + rollback2 + "/" + rollback3];
 					breakpointsAPS[breakpointsAPS.length] = parseInt(2500 / ((rollback1 + rollback2 + rollback3) / 3)) / 100;
 					temp1 = ergebnis;
+
+					console.log("[" + i + ", \"" + (rollback1 + "/(" + rollback2 + ")/" + rollback3) + "\"],");
+
 				}
 			}
 		}
@@ -838,7 +875,7 @@ function SchreibeDaten() {
 }
 
 function wirbelwind(temp) {
-	var temp;
+	//var temp;
 	var ergebnis = 4;
 	if (temp > 11) {
 		ergebnis = 6;
@@ -858,6 +895,7 @@ function wirbelwind(temp) {
 	if (temp > 25) {
 		ergebnis = 16;
 	}
+	//console.log("temp=" + temp + ",result=" + ergebnis);
 	return ergebnis;
 }
 
