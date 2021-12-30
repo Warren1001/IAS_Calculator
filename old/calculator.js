@@ -725,13 +725,44 @@ function berechneBreakpoints(event) {
 			}
 		} else {
 			frames = weaponTypes[weapons[document.myform.waffe.value][2]][document.myform.char.value][0];
+			// if weapon is two handed sword
 			if (weapons[document.myform.waffe.value][2] == 3) {
-				frames = weaponTypes[2][document.myform.char.value][0];
+				frames = weaponTypes[2][document.myform.char.value][0]; // set to one handed swinging
 			}
 			var AnimSpeed = 256;
+			// if weapon is claw
 			if (weapons[document.myform.waffe.value][2] == 1) {
 				AnimSpeed = 208;
 			}
+			let temp = 0;
+			for (w = 0; w <= 25; w += 5) {
+				for (i = 0; i <= 120; i++) {
+					let tempframe = 12;
+					let tempframe2 = 10;
+					// form is werewolf
+					if (document.myform.charform.value == 2) {
+						tempframe = 13;
+						tempframe2 = 9;
+					}
+					let gIAS = i;
+					let wIAS = w;
+					let IAS = gIAS + wIAS;
+					let testAcceleration = Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * IAS / (120 + IAS)), 15), 175);
+					//let testAccelerationA = testAcceleration - (100 - WSMprimaer + SIAS);
+					let K = Math.floor(256 * tempframe2 / Math.floor(256 * frames / Math.floor((100 + wIAS - WSMprimaer) * AnimSpeed / 100)));
+					let testFrame = Math.ceil(256 * tempframe / Math.floor(K * testAcceleration / 100)) - 1;
+					if (temp != testFrame) {
+						let skip = temp == 0;
+						temp = testFrame;
+						if (!skip) console.log("gIAS=" + gIAS + ",wIAS=" + wIAS + ",k=" + K + ",a=" + testAcceleration + ",f=" + testFrame);
+					}
+					//let testAcceleration2 = Math.min(Math.max(Math.ceil(Math.ceil(256 * tempframe / (testFrame + 1)) * 100 / K), 15), 175);
+					//let testAcceleration2A = testAcceleration2 - (100 - WSMprimaer + SIAS + Math.floor(120 * IAS / (120 + IAS)));
+					//let testgIAS = Math.max(0, Math.ceil(120 * testAcceleration2A / (120 - testAcceleration2A)));
+				}
+				temp = 0;
+			}
+			
 			for (i = 0; i <= verticalPlotLength - 1; i++) {
 				for (j = 0; j <= horizontalPlotLength - 1; j++) {
 					// feral rage
@@ -760,14 +791,23 @@ function berechneBreakpoints(event) {
 					if ((document.myform.skill.value != 26) && (document.myform.skill.value != 29)) {
 						var tempframe = 12;
 						var tempframe2 = 10;
+						// form is werewolf
 						if (document.myform.charform.value == 2) {
 							tempframe = 13;
 							tempframe2 = 9;
 						}
+						// if skill is hunger or rabies
 						if (skills[document.myform.skill.value][2] == 6) {
 							tempframe = 10;
 						}
-						breakpoints[breakpoints.length] = Math.ceil(256 * tempframe / Math.floor(Math.floor(256 * tempframe2 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * AnimSpeed / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + 5 * j) / (120 + (5 * i + 5 * j))), 15), 175) / 100)) - 1;
+						//console.log("tempframe=" + tempframe + ",tempframe2=" + tempframe2 + ",frames=" + frames + ",OIAS=" + OIAS + ",SIAS=" + SIAS);
+						let accel = Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + 5 * j) / (120 + (5 * i + 5 * j))), 15), 175);
+						let bp = Math.ceil(256 * tempframe / Math.floor(Math.floor(256 * tempframe2 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * AnimSpeed / 100))) * accel / 100)) - 1;
+						breakpoints[breakpoints.length] = bp;
+						if (temp != bp) {
+							temp = bp;
+							//console.log("bp=" + bp + ",accel=" + accel);
+						}
 						if ((OIAS > 70) && (j == 0)) {
 							breakpoints2[breakpoints2.length] = Math.ceil(256 * tempframe / Math.floor(Math.floor(256 * tempframe2 / Math.floor(256 * frames / Math.floor((100 + 5 * i - WSMprimaer) * AnimSpeed / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (5 * i + parseInt(OIAS)) / (120 + (5 * i + parseInt(OIAS)))), 15), 175) / 100)) - 1;
 						}
@@ -775,9 +815,11 @@ function berechneBreakpoints(event) {
 				}
 			}
 			for (k = 0; k <= verticalPlotLength - 1; k++) {
+				// if wias is not evenly divisable by 5 and skill is feral rage
 				if ((parseInt(WIAS / 5) != parseFloat(WIAS / 5)) && (document.myform.skill.value == 26)) {
 					breakpoints[breakpoints.length] = Math.ceil(256 * 7 / Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + parseInt(WIAS) - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (parseInt(WIAS) + 5 * k) / (120 + (parseInt(WIAS) + 5 * k))), 15), 175) / 100)) + Math.ceil((256 * 13 - Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + parseInt(WIAS) - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (parseInt(WIAS) + 5 * k) / (120 + (parseInt(WIAS) + 5 * k))), 15), 175) / 100) * Math.ceil(256 * 7 / Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + parseInt(WIAS) - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (parseInt(WIAS) + 5 * k) / (120 + (parseInt(WIAS) + 5 * k))), 15), 175) / 100))) / (2 * Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + parseInt(WIAS) - WSMprimaer) * 256 / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (parseInt(WIAS) + 5 * k) / (120 + (parseInt(WIAS) + 5 * k))), 15), 175) / 100))) - 1;
 				}
+				// if wias is not evenly divisable by 5 and skill is fury
 				if ((parseInt(WIAS / 5) != parseFloat(WIAS / 5)) && (document.myform.skill.value == 29)) {
 					temp = (Math.ceil(256 * 7 / Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + parseInt(WIAS) - WSMprimaer) * 256 / 100))) * Math.min(100 - WSMprimaer + SIAS + Math.floor(120 * (parseInt(WIAS) + 5 * k) / (120 + (parseInt(WIAS) + 5 * k))), 175) / 100)) * 4 + Math.ceil(256 * 13 / Math.floor(Math.floor(256 * 9 / Math.floor(256 * frames / Math.floor((100 + parseInt(WIAS) - WSMprimaer) * 256 / 100))) * Math.min(100 - WSMprimaer + SIAS + Math.floor(120 * (parseInt(WIAS) + 5 * k) / (120 + (parseInt(WIAS) + 5 * k))), 175) / 100)) - 1) / 5;
 					if (parseInt(temp) == parseFloat(temp)) {
@@ -785,6 +827,7 @@ function berechneBreakpoints(event) {
 					}
 					breakpoints[breakpoints.length] = temp;
 				}
+				// if wias is not evenly divisable by 5 and skill is not feral rage or fury, so normal swing, hunger, or rabies
 				if ((parseInt(WIAS / 5) != parseFloat(WIAS / 5)) && (document.myform.skill.value != 26) && (document.myform.skill.value != 29)) {
 					breakpoints[breakpoints.length] = Math.ceil(256 * tempframe / Math.floor(Math.floor(256 * tempframe2 / Math.floor(256 * frames / Math.floor((100 + parseInt(WIAS) - WSMprimaer) * AnimSpeed / 100))) * Math.min(Math.max(100 - WSMprimaer + SIAS + Math.floor(120 * (parseInt(WIAS) + 5 * k) / (120 + (parseInt(WIAS) + 5 * k))), 15), 175) / 100)) - 1;
 				}
