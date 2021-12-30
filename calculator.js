@@ -1,6 +1,7 @@
 window.addEventListener("load", loadPage, false);
 
-const EIAS_LIMIT = 175; // for a brief period of D2R, this limit did not exist. rip bugged ias frames :(
+const EIAS_MAX = 175; // for a brief period of D2R, this limit did not exist. rip bugged ias frames :(
+const EIAS_MIN = 15;
 
 function loadPage() {
 
@@ -9,6 +10,8 @@ function loadPage() {
 	const formSelect = document.getElementById("formSelect");
 	const optionWerewolf = formSelect.options[2];
 	const primaryWeaponSelect = document.getElementById("primaryWeaponSelect");
+	const primaryWeaponIASContainer = document.getElementById("primaryWeaponIASContainer");
+	const primaryWeaponIAS = document.getElementById("primaryWeaponIAS");
 	const secondaryWeaponContainer = document.getElementById("secondaryWeaponContainer");
 	const secondaryWeaponSelect = document.getElementById("secondaryWeaponSelect");
 	const isOneHandedContainer = document.getElementById("isOneHandedContainer");
@@ -40,6 +43,7 @@ function loadPage() {
 	characterSelect.addEventListener("change", characterChanged, false);
 	formSelect.addEventListener("change", formChanged, false);
 	primaryWeaponSelect.addEventListener("change", primaryWeaponChanged, false);
+	primaryWeaponIAS.addEventListener("change", primaryWeaponIASChanged, false);
 	secondaryWeaponSelect.addEventListener("change", secondaryWeaponChanged, false);
 	isOneHanded.addEventListener("change", isOneHandedChanged, false);
 	skillSelect.addEventListener("change", skillChanged, false);
@@ -49,6 +53,7 @@ function loadPage() {
 	frenzyLevelInput.addEventListener("change", frenzyChanged, false);
 	holyFreezeLevelInput.addEventListener("change", holyFreezeChanged, false);
 	decrepify.addEventListener("change", decrepifyChanged, false);
+	noNegativeValues(primaryWeaponIAS);
 	noNegativeValues(fanaticismLevelInput);
 	noNegativeValues(burstOfSpeedLevelInput);
 	noNegativeValues(werewolfLevelInput);
@@ -108,6 +113,11 @@ function loadPage() {
 	function formChanged() {
 		form = formSelect.value;
 		console.log("New form selected: " + form);
+		if (form == HUMAN) {
+			hideElement(primaryWeaponIASContainer);
+		} else {
+			unhideElement(primaryWeaponIASContainer);
+		}
 		if (form == WEREWOLF) {
 			unhideElement(werewolfContainer);
 		} else {
@@ -178,6 +188,12 @@ function loadPage() {
 			unhideElement(holyFreezeContainer);
 		}
 
+		if (!firstRun) displayFrames();
+	}
+
+	function primaryWeaponIASChanged() {
+		var primaryWeaponIASValue = primaryWeaponIAS.value;
+		console.log("Primary weapon IAS: " + primaryWeaponIASValue);
 		if (!firstRun) displayFrames();
 	}
 
@@ -328,6 +344,10 @@ function loadPage() {
 
 	}
 
+	function getPrimaryWeaponIAS() {
+		return (form == HUMAN ? 0 : parseInt(primaryWeaponIAS.value));
+	}
+
 	function displayFrames() {
 		
 		removeAllChildNodes(tableContainer);
@@ -351,12 +371,11 @@ function loadPage() {
 
 		} else if (skill == FEND) {
 
-			framesPerDirection = ACTIONS_FRAMES[primaryWeapon.weaponType.type][character];
+			framesPerDirection = ACTION_FRAMES[primaryWeapon.weaponType.type][character];
 			displayTable(framesPerDirection, true);
 
 		} else {
 
-			console.log("here");
 			let framesPerDirection = calculateFramesPerDirection(false, primaryWeapon);
 			displayTable(framesPerDirection, true);
 
@@ -366,10 +385,8 @@ function loadPage() {
 
 	function displayTable(framesPerDirection, isPrimary) {
 
-		console.log("here 3");
-
 		if (skill == FEND || skill == STRAFE || skill == WHIRLWIND) {
-			displayBreakpointTableFromHardcode();
+			displayAccelerationNeededFromHardcode();
 			return;
 		}
 		if (skill == DRAGON_TALON || skill == ZEAL) {
@@ -405,129 +422,92 @@ function loadPage() {
 		} else {
 			WSM = (isPrimary ? primaryWeapon : secondaryWeapon).WSM;
 		}
-		let breakpoints = calculateBreakpointTable(framesPerDirection, startingFrame, WSM, animationSpeed, isSequenceSkill);
-		displayBreakpointTable(breakpoints);
+		//let EIAS = calculateEIAS(WSM);
+		let accelerationNeeded = calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, isSequenceSkill, WSM);
+		displayAccelerationNeeded(accelerationNeeded);
 
 		console.log("--- end ---");
 	}
 
-	function displayBreakpointTable(breakpoints) {
+	function displayAccelerationNeeded(breakpoints) {
 		let table = document.createElement("table");
 		table.className = "table";
 		tableContainer.appendChild(table);
 
-		for (const [gearIAS, FPA] of breakpoints) {
-			addTableRow(table, gearIAS, FPA);
+		breakpoints = convertAccelerationNeededTableToIAS(breakpoints);
+
+		for (const [accelerationIndex, FPA] of breakpoints) {
+			addTableRow(table, accelerationIndex, FPA);
 		}
 	}
 
-	/*function displayFendTable() {
-		console.log("--- start fend ---");
-		let animationSpeed = 256;
-		let startingFrame = calculateStartingFrame(primaryWeapon);
-		let SIAS = calculateSIAS();
-		let WSM = primaryWeapon.WSM;
-		let framesPerDirection = ACTIONS_FRAMES[primaryWeapon.weaponType.type][character];
-		console.log("startingFrame=" + startingFrame + ",SIAS=" + SIAS + ",WSM=" + WSM + ",framesPerDirection=" + framesPerDirection);
+	function calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, isSequenceSkill, WSM) {
 
-		let bounds = calculateMinimumAndMaximumFrameLength(framesPerDirection, startingFrame, primaryWeapon.WSM, primaryWeapon.weaponType, true);
-		let min = bounds[0];
-		let max = bounds[1];
-
-		let table = document.createElement("table");
-		table.className = "table";
-		tableContainer.appendChild(table);
-
-		let breakpoints = new Map();
-
-		for (FPA = max; FPA >= min; FPA--) {
-
-			let acceleration = 110;//Math.max(15, Math.min(EIAS_LIMIT, Math.ceil(Math.ceil(256 * (framesPerDirection - startingFrame) / (FPA + 1)) * 100 / animationSpeed)));
-			let gearIAS = Math.max(0, Math.ceil(120 * (acceleration - 100 - SIAS + WSM) / (120 - (acceleration - 100 - SIAS + WSM))));
-			let rollbackStartingFrame = Math.floor(Math.floor((256 * startingFrame + Math.floor(256 * acceleration / 100) * FPA) / 256) * 40 / 100);
-			console.log("FPA=" + FPA + ",acceleration=" + acceleration + ",rollbackStartingFrame=" + rollbackStartingFrame);
-			let min2 = Math.ceil((256 * (framesPerDirection - rollbackStartingFrame)) / (Math.max(15, Math.min(SIAS - WSM + 220, EIAS_LIMIT))) * (100 / animationSpeed).toFixed(5)) - 1;
-			let max2 = Math.ceil((256 * (framesPerDirection - rollbackStartingFrame)) / (Math.max(15, Math.min(SIAS - WSM + 100, EIAS_LIMIT))) * (100 / animationSpeed).toFixed(5));
-
-			let breakpoints2 = new Map();
-
-			for (FPA2 = max2; FPA2 >= min2; FPA2--) {
-				let acceleration2 = Math.max(15, Math.min(EIAS_LIMIT, Math.ceil(Math.ceil(256 * (framesPerDirection - rollbackStartingFrame) / (FPA2 + 1)) * 100 / animationSpeed)));
-				let gearIAS2 = Math.max(0, Math.ceil(120 * (acceleration2 - 100 - SIAS + WSM) / (120 - (acceleration2 - 100 - SIAS + WSM))));
-
-				let actualFPA2 = FPA2 + 1;
-				breakpoints2.set(gearIAS2, actualFPA2);
-			}
-
-			for (const [gearIAS0, FPA0] of breakpoints2) {
-				//addTableRow(table, gearIAS, FPA);
-				console.log(gearIAS0 + "  |  " + FPA0);
-			}
-
-			let actualFPA = FPA + 1;
-			breakpoints.set(gearIAS, actualFPA);
-
-		}
-
-		for (const [gearIAS, FPA] of breakpoints) {
-			addTableRow(table, gearIAS, FPA);
-		}
-
-		//for (const [gearIAS, FPA] of breakpoints) {
-		//	let rollbackStartingFrame = Math.floor(Math.floor((256 * startingFrame + Math.floor(256 * acceleration / 100) * FPA) / 256) * 40 / 100);
-		//}
-
-		console.log("--- end fend ---");
-	}*/
-
-	function calculateBreakpointTable(framesPerDirection, startingFrame, WSM, animationSpeed, isSequenceSkill) {
-
-		let SIAS = calculateSIAS();
-
-		console.log("framesPerDirection: " + framesPerDirection);
 		console.log("animationSpeed: " + animationSpeed);
 		console.log("startingFrame: " + startingFrame);
-		console.log("SIAS: " + SIAS);
 		console.log("WSM: " + WSM);
+		let BASE_EIAS = calculateEIAS(WSM, 0);
+		let EIAS = BASE_EIAS;
 
+		let accelerationModifier = animationSpeed;
+		if (form != HUMAN) {
+			let framesPerDirection0 = framesPerDirection;
+			let framesPerDirection1 = (form == WEREWOLF ? 13 : 12);
+			let framesPerDirection2 = (form == WEREWOLF ? 9 : 10);
+			if (skill == HUNGER || skill == RABIES) framesPerDirection1 = 10;
+			let wIAS = getPrimaryWeaponIAS();
+			console.log("wIAS: " + wIAS);
+			EIAS = calculateEIAS(WSM, wIAS);
+			framesPerDirection = framesPerDirection1;
+			accelerationModifier = Math.floor(256 * framesPerDirection2 / Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
+		}
+		console.log("framesPerDirection: " + framesPerDirection);
+		console.log("BASE_EIAS: " + BASE_EIAS);
+		console.log("EIAS: " + EIAS);
+		console.log("accelerationModifier: " + accelerationModifier);
+		let offset = (isSequenceSkill ? 0 : 1);
+		let maxAccelerationIndex = 120; // TODO 120 for gear ias, diff for other sources
 		// credit to BinaryAzeotrope for helping come up with these formulas
-		let unroundedMin = (256 * (framesPerDirection - startingFrame)) / (Math.max(15, Math.min(SIAS - WSM + 220, EIAS_LIMIT))) * (100 / animationSpeed);
-		//console.log("unroundedMin: " + unroundedMin);
-		let min = Math.ceil(unroundedMin.toFixed(5)) - 1;
-		let unroundedMax = (256 * (framesPerDirection - startingFrame)) / (Math.max(15, Math.min(SIAS - WSM + 100, EIAS_LIMIT))) * (100 / animationSpeed);
-		//console.log("unroundedMax: " + unroundedMax);
-		if (parseInt(unroundedMax) == parseFloat(unroundedMax)) {
-			unroundedMax++;
-			console.log("increased unroundedMax by 1");
-		}
-		let max = Math.ceil(unroundedMax.toFixed(5))/* - 1*/; // temp fix, duplicate starting frames handled by unique gearIAS filtering below
+		let slowestFrame = Math.ceil(256 * (framesPerDirection - startingFrame) / Math.floor(accelerationModifier * EIAS									  	   / 100)) - offset;
+		let fastestFrame = Math.ceil(256 * (framesPerDirection - startingFrame) / Math.floor(accelerationModifier * limitToEIASBounds(EIAS + maxAccelerationIndex) / 100)) - offset;
 
-		console.log("min=" + min + ",max=" + max);
+		console.log("slowestFrame=" + slowestFrame + ",fastestFrame=" + fastestFrame);
 
-		let breakpoints = new Map();
+		let accelerationNeeded = new Map();
 
-		for (FPA = max; FPA >= min; FPA--) {
+		for (FPA = slowestFrame; FPA >= fastestFrame; FPA--) {
 
-			let acceleration = Math.max(15, Math.min(EIAS_LIMIT, Math.ceil(Math.ceil(256 * (framesPerDirection - startingFrame) / (FPA + 1)) * 100 / animationSpeed)));
-			console.log("acceleration=" + acceleration + " at FPA=" + FPA);
-			let gearIAS = Math.max(0, Math.ceil(120 * (acceleration - 100 - SIAS + WSM) / (120 - (acceleration - 100 - SIAS + WSM))));
+			let acceleration = limitToEIASBounds(Math.ceil(Math.ceil(256 * (framesPerDirection - startingFrame) / (FPA + offset)) * 100 / accelerationModifier));
+			console.log("acceleration=" + acceleration + ",FPA=" + FPA);
 
-			let actualFPA = FPA;
-			if (isSequenceSkill) {
-				actualFPA++;
-			}
+			accelerationNeeded.set(acceleration - BASE_EIAS, FPA);
+			//let gearIAS = Math.max(0, Math.ceil(120 * (acceleration - SIAS + WSM) / (120 - (acceleration - SIAS + WSM))));
 
-			breakpoints.set(gearIAS, actualFPA);
+			//let actualFPA = FPA; // TODO
+			//if (isSequenceSkill) {
+			//	actualFPA++;
+			//}
+
 		}
 
-		return breakpoints;
+		return accelerationNeeded;
 	}
 
-	function displayBreakpointTableFromHardcode() {
+	function calculateEIAS(WSM, IAS) {
+		let SIAS = calculateSIAS();
+		let IAS_EIAS = convertIAStoEIAS(IAS);
+		return limitToEIASBounds(100 + SIAS - WSM + IAS_EIAS);
+	}
+
+	function convertIAStoEIAS(IAS) {
+		let EIAS = Math.floor(120 * IAS / (120 + IAS));
+		return EIAS;
+	}
+
+	function displayAccelerationNeededFromHardcode() {
 
 		let WSM = primaryWeapon.WSM;
-		let SIAS = calculateSIAS();
-		let EIAS = Math.max(15, 100 + SIAS - WSM);
+		let EIAS = calculateEIAS(WSM, 0);
 		let breakpointTable;
 
 		if (skill == FEND) {
@@ -542,7 +522,7 @@ function loadPage() {
 			} else if (primaryWeapon.weaponType == CROSSBOW) {
 				breakpointTable = STRAFE_EVEN_CROSSBOW_TABLE;
 			}
-		} else if (skill == WHIRLWIND) {
+		} else if (skill == WHIRLWIND) { // TODO
 			SIAS = 0;
 
 			if (isDualWielding) {
@@ -553,7 +533,7 @@ function loadPage() {
 				}
 			}
 
-			EIAS = Math.max(15, 100 + SIAS - WSM);
+			EIAS = Math.max(15, SIAS - WSM);
 
 			if (character == ASSASSIN && primaryWeapon.weaponType == CLAW) {
 				breakpointTable = WHIRLWIND_CLAW_TABLE;
@@ -568,155 +548,97 @@ function loadPage() {
 		}
 
 		let table = breakpointTable.getTableAfter(EIAS);
-		let tableIAS = (skill == WHIRLWIND ? table.getAdjustedTable(WSM) : table.convertToIASTable(EIAS));
-		let breakpoints = new Map();
+		let accelerationNeeded = table.getAdjustedTable(EIAS); // TODO for whirlwind
+		//if (skill == WHIRLWIND) table = table.getAdjustedTable(EIAS);
+		//let tableIAS = (skill == WHIRLWIND ? table.getAdjustedTable(WSM) : table.convertToIASTable(EIAS));
+		//let breakpoints = new Map();
 		//console.log("calculateBreakpointTableFromHardcode (WSM=" + WSM + "):");
-		for (let index in tableIAS) {
-			let breakpoint = tableIAS[index];
+		//for (let index in tableIAS) {
+		//	let breakpoint = tableIAS[index];
 		//	console.log(breakpoint[0] + ", " + breakpoint[1]);
-			breakpoints.set(breakpoint[0], breakpoint[1]);
-		}
-		displayBreakpointTable(breakpoints);
+		//	breakpoints.set(breakpoint[0], breakpoint[1]);
+		//}
+		displayAccelerationNeeded(accelerationNeeded); // breakpoints
 
 		if (skill == STRAFE && primaryWeapon.weaponType == CROSSBOW) {
 
 			breakpointTable = STRAFE_ODD_CROSSBOW_TABLE;
 			table = breakpointTable.getTableAfter(EIAS);
-			tableIAS = table.convertToIASTable(EIAS);
-			breakpoints = new Map();
+			accelerationNeeded = table.getAdjustedTable(EIAS);
+			//tableIAS = table.convertToIASTable(EIAS);
+			//breakpoints = new Map();
 			//console.log("calculateBreakpointTableFromHardcode (WSM=" + WSM + "):");
-			for (let index in tableIAS) {
-				let breakpoint = tableIAS[index];
+			//for (let index in tableIAS) {
+			//	let breakpoint = tableIAS[index];
 			//	console.log(breakpoint[0] + ", " + breakpoint[1]);
-				breakpoints.set(breakpoint[0], breakpoint[1]);
-			}
+			//	breakpoints.set(breakpoint[0], breakpoint[1]);
+			//}
 
-			displayBreakpointTable(breakpoints);
+			displayAccelerationNeeded(accelerationNeeded); // breakpoints
 
-		} else if (skill == WHIRLWIND && isDualWielding && primaryWeapon != secondaryWeapon) {
+		} else if (skill == WHIRLWIND && isDualWielding && primaryWeapon != secondaryWeapon) { // TODO
 
 			if (wsmBugged) {
 				WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2;
 			} else {
 				WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2 - primaryWeapon.WSM + secondaryWeapon.WSM;
 			}
-			EIAS = Math.max(15, 100 + SIAS - WSM);
+			EIAS = Math.max(15, SIAS - WSM);
 
 			table = breakpointTable.getTableAfter(EIAS);
-			tableIAS = table.getAdjustedTable(WSM);
-			breakpoints = new Map();
+			accelerationNeeded = table.getAdjustedTable(EIAS); // TODO
+			//breakpoints = new Map();
 			//console.log("calculateBreakpointTableFromHardcode (WSM=" + WSM + "):");
-			for (let index in tableIAS) {
-				let breakpoint = tableIAS[index];
+			//for (let index in tableIAS) {
+			//	let breakpoint = tableIAS[index];
 			//	console.log(breakpoint[0] + ", " + breakpoint[1]);
-				breakpoints.set(breakpoint[0], breakpoint[1]);
-			}
+			//	breakpoints.set(breakpoint[0], breakpoint[1]);
+			//}
 
-			displayBreakpointTable(breakpoints);
+			displayAccelerationNeeded(accelerationNeeded); // breakpoints
 
 		}
 
 	}
 
-	/*function calculateFrenzySecondHitBreakpointTable(secondaryWSM, firstSwingFPA, primaryWSM) {
-
-		let framesPerDirection = 17;
-		let startingFrame = 0;
-		let animationSpeed = 256;
-		let SIAS = calculateSIAS();
-
-		// credit to BinaryAzeotrope for helping come up with these formulas
-		let unroundedMin = (256 * (framesPerDirection - startingFrame) - (firstSwingFPA * Math.max(15, Math.min(SIAS - primaryWSM + 220, EIAS_LIMIT)))) / (Math.max(15, Math.min(SIAS - secondaryWSM + 220, EIAS_LIMIT))) * (100 / animationSpeed);
-		//console.log("unroundedMin: " + unroundedMin);
-		let min = Math.ceil(unroundedMin.toFixed(5)) - 1;
-		let unroundedMax = (256 * (framesPerDirection - startingFrame) - (firstSwingFPA * Math.max(15, Math.min(SIAS - primaryWSM + 220, EIAS_LIMIT)))) / (Math.max(15, Math.min(SIAS - secondaryWSM + 100, EIAS_LIMIT))) * (100 / animationSpeed);
-		//console.log("unroundedMax: " + unroundedMax);
-		if (parseInt(unroundedMax) == parseFloat(unroundedMax)) {
-			unroundedMax++;
-			console.log("increased unroundedMax by 1");
-		}
-		let max = Math.ceil(unroundedMax.toFixed(5))// - 1; // temp fix, duplicate starting frames handled by unique gearIAS filtering below
-
-		console.log("min=" + min + ",max=" + max);
-
-		let breakpoints = new Map();
-
-		for (FPA = max; FPA >= min; FPA--) {
-
-			let acceleration = Math.max(15, Math.min(EIAS_LIMIT, Math.ceil(Math.ceil(256 * (framesPerDirection - startingFrame) / (FPA + 1)) * 100 / animationSpeed)));
-			//console.log("acceleration=" + acceleration + " at FPA=" + FPA);
-			let gearIAS = Math.max(0, Math.ceil(120 * (acceleration - 100 - SIAS + WSM) / (120 - (acceleration - 100 - SIAS + WSM))));
-
-			let actualFPA = FPA + 1;
-
-			breakpoints.set(gearIAS, actualFPA);
-		}
-
-		return breakpoints;
-	}*/
-
 	function displayReducedSequenceTable() {
-		console.log("--- start reduced sequence ---");
+		//console.log("--- start reduced sequence ---");
 
-		let framesPerDirection = (skill == DRAGON_TALON ? 4 : ACTIONS_FRAMES[primaryWeapon.weaponType.type][character]);
+		let framesPerDirection = (skill == DRAGON_TALON ? 4 : ACTION_FRAMES[primaryWeapon.weaponType.type][character]);
 		let animationSpeed = calculateAnimationSpeed(primaryWeapon.weaponType);
 		let startingFrame = 0; // starting frames only apply to sorcs and zons using normal attack, strafe, or fend
+		let WSM = primaryWeapon.WSM;
+		//let EIAS = calculateEIAS(WSM);
 
 		if (character == BARBARIAN && primaryWeapon.weaponType == TWO_HANDED_SWORD && isOneHanded) framesPerDirection = 7;
-		console.log("framesPerDirection=" + framesPerDirection + ",startingFrame=" + startingFrame);
+		//console.log("framesPerDirection=" + framesPerDirection + ",startingFrame=" + startingFrame);
 
-		let sequenceBreakpoints = calculateBreakpointTable(framesPerDirection, startingFrame, primaryWeapon.WSM, animationSpeed, true);
+		let sequenceAccelerationNeeded = calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, true, WSM);
 
 		framesPerDirection = (skill == DRAGON_TALON ? 13 : primaryWeapon.weaponType.getFramesPerDirection(character));
 		if (character == BARBARIAN && primaryWeapon.weaponType == TWO_HANDED_SWORD && isOneHanded) framesPerDirection = 16;
 
-		let finishingBreakpoints = calculateBreakpointTable(framesPerDirection, startingFrame, primaryWeapon.WSM, animationSpeed, false);
+		let finishingAccelerationNeeded = calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, false, WSM);
 
-		console.log("-- starting final --");
-		let breakpoints = mergeSequenceTables(sequenceBreakpoints, finishingBreakpoints);
-		displayBreakpointTable(breakpoints);
+		//console.log("-- starting final --");
+		let breakpoints = mergeSequenceTables(sequenceAccelerationNeeded, finishingAccelerationNeeded);
+		displayAccelerationNeeded(breakpoints);
 		
 	}
 
-	/**
-	 * credits to chthonvii for putting all the information about frenzy together in their calc: https://chthonvii.github.io/resurrectedfrenzyiascalc/
-	 * this here is essentially a copy paste ("paraphrased") to work here
-	 */
-	/*function displayFrenzyTable() {
+	function convertAccelerationNeededTableToIAS(table) {
 
-		let framesPerDirection = 9; // not sure why, the only link i can see as to why this is is two-handed sword framesPerDirection for barbarian is 18, half of this. no other correlation noted
-		let startingFrame = 0; // starting frames only apply to sorcs and zons using normal attack, strafe, or fend
-		let animationSpeed = 256; // only using claws and laying traps have different animationSpeed, rest are 256
+		let IASTable = new Map();
 
-		let averageWSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2;
-		// chthonvii mentions that there was a difference for the average wsm based on if it was wsm bugged or not
-		// also mentions that raising it to the ceiling might be the point of matter for a negative value, and is unsure if the same would be true for a positive number
-		// their suspicion is likely right, truncating doesnt necessarily floor or ceiling, so negative numbers would ceiling and positive numbers would floor
-		// ill implement it chthonvii's way as is and then do my own testing afterwards
-		if (wsmBugged) {
-			averageWSM = Math.ceil(averageWSM);
-		} else {
-			averageWSM = Math.floor(averageWSM);
+		let alreadyExistingIAS = getPrimaryWeaponIAS();
+
+		for (const [accelerationNeeded, FPA] of table) {
+			let IAS = Math.max(0, Math.ceil(120 * accelerationNeeded / (120 - accelerationNeeded)) - alreadyExistingIAS);
+			IASTable.set(IAS, FPA);
 		}
 
-		// strange interaction of WSM, must be specific to frenzy
-		var primaryWSM = primaryWeapon.WSM + secondaryWeapon.WSM - averageWSM;
-		var secondaryWSM = secondaryWeapon.WSM * 2 - averageWSM;
-		if (wsmBugged) {
-			primaryWSM = primaryWeapon.WSM - secondaryWeapon.WSM + averageWSM;
-			secondaryWSM = averageWSM;
-		}
-
-		let primaryWeaponBreakpointTable = calculateBreakpointTable(framesPerDirection, startingFrame, primaryWSM, animationSpeed, false);
-
-		framesPerDirection = 17; // 17 is the sequence frame for frenzy for 1HS, 1HT, and 2HS weapons, the only weapons a barbarian can frenzy with
-
-		let secondaryWeaponBreakpointTable = calculateFrenzySecondHitBreakpointTable(secondaryWSM, ??, primaryWSM); // the last hit in a sequence skill is not a sequence swing
-
-		displayBreakpointTable(primaryWeaponBreakpointTable);
-		displayBreakpointTable(secondaryWeaponBreakpointTable);
-
-	}*/
+		return IASTable;
+	}
 
 	function mergeSequenceTables(...tables) {
 		let uniqueKeys = new Set();
@@ -732,7 +654,7 @@ function loadPage() {
 		let lastSequenceLength = new Array(sequences);
 		let sequenceString = "";
 
-		console.log("sequences=" + sequences + ",iterations=" + iterations);
+		//console.log("sequences=" + sequences + ",iterations=" + iterations);
 
 		for (let o = 0; o < sequences; o++) {
 			let first = [...tables[o]][0];
@@ -746,7 +668,7 @@ function loadPage() {
 		mergedTable.set(0, sequenceString);
 
 		for (let i = 0; i < iterations; i++) {
-			console.log("-- start iteration " + i + " --")
+			//console.log("-- start iteration " + i + " --")
 			let nextTableIndex = 0;
 			let smallestIAS = 999;
 			let connectedFrame = 0;
@@ -755,14 +677,14 @@ function loadPage() {
 				let [firstKey] = tables[o].keys();
 				let [firstValue] = tables[o].values();
 				if (firstKey < smallestIAS) {
-					console.log("firstKey=" + firstKey + " was smaller than smallestIAS=" + smallestIAS);
+					//console.log("firstKey=" + firstKey + " was smaller than smallestIAS=" + smallestIAS);
 					smallestIAS = firstKey;
 					connectedFrame = firstValue;
 					nextTableIndex = o;
 				}
 			}
 			if (smallestIAS == 999) continue;
-			console.log("smallestIAS=" + smallestIAS + ",connectedFrame=" + connectedFrame);
+			//console.log("smallestIAS=" + smallestIAS + ",connectedFrame=" + connectedFrame);
 			tables[nextTableIndex].delete(smallestIAS);
 			lastSequenceLength[nextTableIndex] = connectedFrame;
 
@@ -874,7 +796,7 @@ function loadPage() {
 		if ((character == AMAZON || character == SORCERESS) && (skill == STANDARD || skill == STRAFE || skill == FEND)) {
 			startingFrame = weapon.weaponType.startingFrame;
 		}
-		console.log("calculateStartingFrame: " + startingFrame);
+		//console.log("calculateStartingFrame: " + startingFrame);
 		return startingFrame;
 	}
 
@@ -943,6 +865,10 @@ function loadPage() {
 		return holyFreezeSIAS;
 	}
 
+	function limitToEIASBounds(EIAS) {
+		return Math.max(EIAS_MIN, Math.min(EIAS_MAX, EIAS));
+	}
+
 }
 
 function hideElement(element) {
@@ -988,7 +914,7 @@ class BreakpointTable {
 	}
 
 	getTableAfter(EIAS) {
-		console.log("getTableAfter: EIAS=" + EIAS);
+		//console.log("getTableAfter: EIAS=" + EIAS);
 		let filterEIAS = -1;
 		for (let i = 0; i < this.breakpoints.length; i++) {
 			let breakpoint = this.breakpoints[i];
@@ -1002,32 +928,32 @@ class BreakpointTable {
 		}
 		let filteredBreakpoints = this.breakpoints.filter(a => a[0] >= filterEIAS);
 		//console.log("getTableAfter (EIAS=" + EIAS + "):");
-		for (let b1 in filteredBreakpoints) {
-			let b = filteredBreakpoints[b1];
-			console.log(b[0] + ", " + b[1]);
-		}
+		//for (let b1 in filteredBreakpoints) {
+		//	let b = filteredBreakpoints[b1];
+		//	console.log(b[0] + ", " + b[1]);
+		//}
 		return new BreakpointTable(filteredBreakpoints);
 	}
 
-	getAdjustedTable(WSM) {
-		let adjustedBreakpoints = new Array(this.breakpoints.length);
-		console.log("getAdjustedTable (length=" + this.breakpoints.length + "):");
+	getAdjustedTable(EIAS) {
+		let adjustedBreakpoints = new Map();
+		//console.log("getAdjustedTable (length=" + this.breakpoints.length + "):");
 		for (let i = 0; i < this.breakpoints.length; i++) {
 			let breakpoint = this.breakpoints[i];
-			let EIAS = breakpoint[0] - 100 + WSM;
+			let neededAcceleration = breakpoint[0] - EIAS;
 			let frames = breakpoint[1];
 
-			if (EIAS < 0) {
-				if (i == 0) EIAS = 0; // first breakpoint might be slightly negative
+			if (neededAcceleration < 0) {
+				if (i == 0) neededAcceleration = 0; // first breakpoint might be slightly negative
 			}
 
-			console.log("EIAS=" + EIAS + ",frames=" + frames);
-			adjustedBreakpoints.push([EIAS, frames]);
+			//console.log("neededAcceleration=" + neededAcceleration + ",frames=" + frames);
+			adjustedBreakpoints.set(neededAcceleration, frames);
 		}
 		return adjustedBreakpoints;
 	}
 
-	convertToIASTable(EIAS) {
+	/*convertToIASTable(EIAS) {
 		if (EIAS < 0) {
 			console.log("-- error -- EIAS was < 0: " + EIAS);
 		}
@@ -1048,7 +974,7 @@ class BreakpointTable {
 			breakpointsIAS.push([IAS, frames]);
 		}
 		return breakpointsIAS;
-	}
+	}*/
 
 }
 
@@ -1495,7 +1421,7 @@ const BOW = new WeaponType(7, 0, new Map([[AMAZON, 14], [ASSASSIN, 16], [BARBARI
 const CROSSBOW = new WeaponType(8, 0, new Map([[AMAZON, 20], [ASSASSIN, 21], [BARBARIAN, 20], [DRUID, 20], [NECROMANCER, 20], [PALADIN, 20], [SORCERESS, 20]]));
 const THROWING = new WeaponType(9, 0, new Map([[AMAZON, 16], [ASSASSIN, 16], [BARBARIAN, 16], [DRUID, 18], [NECROMANCER, 20], [PALADIN, 16], [SORCERESS, 20]]));
 
-const ACTIONS_FRAMES = [
+const ACTION_FRAMES = [
 	[8, 6, 6, 8, 8, 7, 9],
 	[0, 0, 0, 0, 0, 0, 0],
 	[10, 7, 7, 9, 9, 7, 12],
