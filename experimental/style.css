@@ -1,0 +1,18 @@
+
+#calculator, #tableContainer {
+  float: left;
+}
+
+.table {
+  border: 1px solid;
+  float:  left;
+}
+
+.tableEntry {
+  border:  1px solid;
+  min-width: 30px;
+}
+
+input[type='number']{
+    width: 40px;
+} 
