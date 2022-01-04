@@ -87,6 +87,7 @@ function load() {
 	holyFreezeLevelInput.addEventListener("change", holyFreezeChanged, false);
 	decrepify.addEventListener("change", decrepifyChanged, false);
 	noNegativeValues(primaryWeaponIAS);
+	noNegativeValues(gearIAS);
 	noNegativeValues(fanaticismLevelInput);
 	noNegativeValues(burstOfSpeedLevelInput);
 	noNegativeValues(werewolfLevelInput);
@@ -480,149 +481,93 @@ function load() {
 
 	}
 
-	function getPrimaryWeaponIAS() {
-		return form == HUMAN ? 0 : parseInt(primaryWeaponIAS.value);
+	function getWeaponIAS(isPrimary) {
+		return isPrimary ? parseInt(primaryWeaponIAS.value) : parseInt(secondaryWeaponIAS.value);
 	}
 
 	function displayFrames() {
 
 		removeAllChildNodes(tableContainer);
 
-		if (skill == STANDARD) { // TODO temp solution
-
-			let framesPerDirection = calculateFramesPerDirection(false, primaryWeapon);
-			displayTable(framesPerDirection, true);
-
-			if (primaryWeapon.type.hasAlternateAnimation(character)) {
-				let alternateFramesPerDirection = calculateFramesPerDirection(true, primaryWeapon);
-				displayTable(alternateFramesPerDirection, true);
-				if (isDualWielding && primaryWeapon != secondaryWeapon) {
-					alternateFramesPerDirection = 12; // seems this is hardcoded for off hand swings of any class
-					displayTable(alternateFramesPerDirection, false);
-				}
-			} else if (isDualWielding) {
-				framesPerDirection = 12; // seems this is hardcoded for off hand swings of any class, would like to test this
-				displayTable(framesPerDirection, false);
-			}
-
-		} else if (skill == FEND) {
-
-			framesPerDirection = primaryWeapon.type.getActionFrame(character);
-			displayTable(framesPerDirection, true);
-
-		} else {
-
-			let framesPerDirection = calculateFramesPerDirection(false, primaryWeapon);
-			displayTable(framesPerDirection, true);
-
-		}
-
-	}
-
-	function displayTable(framesPerDirection, isPrimary) {
-
 		if (form != HUMAN) {
-			displayAccelerationNeeded(calculateAccelerationNeededWereform(framesPerDirection));
-			return
+			displayWereformTables();
+		} else if (skill == FRENZY) {
+			displayFrenzyTable();
+		} else if (skill == WHIRLWIND) {
+			displayWhirlwindTable(primaryWeapon, true);
+			if (isDualWielding) displayWhirlwindTable(secondaryWeapon, false);
+		} else if (skill == STRAFE) {
+			displayStrafeTable();
+		} else if (skill == FEND || skill == ZEAL || skill == DRAGON_TALON) {
+			displaySimpleRollbackTable();
 		}
+		else {
 
-		if (skill == FEND || skill == STRAFE || skill == WHIRLWIND) {
-			displayAccelerationNeededFromHardcode();
-			return;
-		}
-		if (skill == DRAGON_TALON || skill == ZEAL) {
-			displayReducedSequenceTable();
-			return;
-		}
-
-		let weapon = isPrimary ? primaryWeapon : secondaryWeapon;
-		let isSequenceSkill = skill == FRENZY || skill == JAB;
-		let startingFrame = getStartingFrame(weapon.type);
-		let animationSpeed = calculateAnimationSpeed(weapon.type);
-
-		console.log("--- start ---");
-		let WSM = 0;
-		if (isDualWielding) {
-			if (isPrimary) {
-				if (wsmBugged) {
-					WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2 - secondaryWeapon.WSM + primaryWeapon.WSM;
-				} else {
-					WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2;
-				}
-			} else {
-				if (wsmBugged) {
-					WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2;
-				} else {
-					WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2 - primaryWeapon.WSM + secondaryWeapon.WSM;
-				}
+			displayStandardTable(true, false);
+			if (skill == STANDARD) {
+				if (primaryWeapon.type.hasAlternateAnimation(character)) displayStandardTable(true, true);
+				if (isDualWielding) displayStandardTable(false, false);
 			}
-		} else {
-			WSM = (isPrimary ? primaryWeapon : secondaryWeapon).WSM;
+
 		}
 
-		let accelerationNeeded = calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, isSequenceSkill, WSM);
-		displayAccelerationNeeded(accelerationNeeded);
-
-		console.log("--- end ---");
 	}
 
-	function displayAccelerationNeeded(breakpoints) {
+	function displayTable(breakpoints) {
 		let table = document.createElement("table");
 		table.className = "table";
 		tableContainer.appendChild(table);
-
-		breakpoints = convertAccelerationNeededTableToShowBy(breakpoints);
 
 		for (const [showByIndex, FPA] of breakpoints) {
 			addTableRow(table, showByIndex, FPA);
 		}
 	}
 
-	function calculateAccelerationNeededWereform(framesPerDirection) {
+	function displayWereformTables() {
+
+		console.log(" -- start displayWereformTables -- ");
 
 		let weapon = primaryWeapon;
 		let WSM = weapon.WSM;
 		let animationSpeed = calculateAnimationSpeed(weapon.type);
-
+		let wIAS = getWeaponIAS(true);
+		let EIAS = calculateEIAS(WSM, wIAS);
 
 		console.log("animationSpeed: " + animationSpeed);
-		console.log("startingFrame: " + startingFrame);
 		console.log("WSM: " + WSM);
-		let wIAS = getPrimaryWeaponIAS();
 		console.log("wIAS: " + wIAS);
-		let EIAS = calculateEIAS(WSM, wIAS);
-		//let EIAS = BASE_EIAS;
-
-		let framesPerDirection0 = framesPerDirection;
-		let framesPerDirection1 = (form == WEREWOLF ? 13 : 12);
-		let framesPerDirection2 = (form == WEREWOLF ? 9 : 10);
-		if (skill == HUNGER || skill == RABIES) framesPerDirection1 = 10;
-		else if (skill == FERAL_RAGE || skill == FURY) {
-			framesPerDirection1 = 7;
-			framesPerDirection2 = 9;
-		}
-		//EIAS = calculateEIAS(WSM, wIAS);
-		framesPerDirection = framesPerDirection1;
-		let accelerationModifier = Math.floor(256 * framesPerDirection2 / Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
-		
-
-		console.log("framesPerDirection: " + framesPerDirection);
-		//console.log("BASE_EIAS: " + BASE_EIAS);
 		console.log("EIAS: " + EIAS);
+
+		let framesPerDirection0 = calculateFramesPerDirection(false, weapon);
+		let framesPerDirection1 = 0;
+		let framesPerDirection2 = 0;
+		if (form == WEREWOLF) {
+			if (skill == FERAL_RAGE || skill == FURY) framesPerDirection1 = 7;
+			else if (skill == RABIES) framesPerDirection1 = 10;
+			else framesPerDirection1 = 13;
+			framesPerDirection2 = 9;
+		} else {
+			if (skill == HUNGER) framesPerDirection1 = 10;
+			else framesPerDirection1 = 12;
+			framesPerDirection2 = 10;
+		}
+
+		let accelerationModifier = Math.floor(256 * framesPerDirection2 /
+			Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
 		console.log("accelerationModifier: " + accelerationModifier);
 
-		let offset = (skill == FERAL_RAGE || skill == FURY ? 0 : 1);
-		let accelerationNeeded = new Map();
+		let offset = skill == FERAL_RAGE || skill == FURY ? 0 : 1;
+		let accelerationTable = new Map();
 
 		let temp = 0;
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
-			let frameLengthDivisor = Math.floor(accelerationModifier * limitToEIASBounds(EIAS + acceleration) / 100);
-			let FPA = Math.ceil(256 * (framesPerDirection - startingFrame) / frameLengthDivisor) - offset;
+			let frameLengthDivisor = Math.floor(accelerationModifier * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * (framesPerDirection1 - startingFrame) / frameLengthDivisor) - offset;
 			if (skill == FURY) {
 				let FPA2 = Math.ceil(256 * 13 / frameLengthDivisor) - 1;
 				if (temp != FPA + FPA2) {
 					temp = FPA + FPA2;
-					accelerationNeeded.set(acceleration, "(" + FPA + ")/" + FPA2);
+					accelerationTable.set(acceleration, "(" + FPA + ")/" + FPA2);
 					console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2);
 				}
 			} else {
@@ -631,56 +576,231 @@ function load() {
 				}
 				if (temp != FPA) {
 					temp = FPA;
-					accelerationNeeded.set(acceleration, FPA);
+					accelerationTable.set(acceleration, FPA);
 					console.log("acceleration=" + acceleration + ",FPA=" + FPA);
 				}
 			}
 		}
 
-		return accelerationNeeded;
+		displayBreakpoints(accelerationTable);
+
+		console.log(" -- end displayWereformTables -- ");
 	}
 
-	function calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, isSequenceSkill, WSM) {
+	function displayStandardTable(isPrimary, isAlternate) {
 
+		console.log(" -- start displayStandardTable for isPrimary=" + isPrimary + ",isAlternate=" + isAlternate + " -- ");
+
+		let weapon = isPrimary ? primaryWeapon : secondaryWeapon;
+		let weaponType = weapon.type;
+		// offhands are hardcoded to 12 framesPerDirection ? TODO does this switch with wsm bugging?
+		let framesPerDirection = isPrimary ? (isAlternate ? weaponType.getAlternateFramesPerDirection(character) : calculateFramesPerDirection(weaponType)) : 12;
+		let animationSpeed = calculateAnimationSpeed(weaponType);
+		let startingFrame = getStartingFrame(weaponType);
+		let WSM = getWSM(isPrimary);
+		let EIAS = calculateEIAS(WSM, 0);
+		let offset = skill == IMPALE || skill == JAB || skill == FISTS_OF_FIRE || skill == CLAWS_OF_THUNDER
+			|| skill == BLADES_OF_ICE || skill == DRAGON_CLAW || skill == DOUBLE_SWING
+			|| skill == DOUBLE_THROW ? 0 : 1;
+
+		console.log("framesPerDirection: " + framesPerDirection);
 		console.log("animationSpeed: " + animationSpeed);
 		console.log("startingFrame: " + startingFrame);
 		console.log("WSM: " + WSM);
+		console.log("EIAS: " + EIAS);
 
-		let EIAS = calculateEIAS(WSM, 0);
+		let accelerationTable = new Map();
 
-		if (skill == FRENZY) {
-			framesPerDirection = 9;
+		let temp = 0;
+		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * (framesPerDirection - startingFrame) / frameLengthDivisor) - offset;
+			if (temp != FPA) {
+				temp = FPA;
+				accelerationTable.set(acceleration, FPA);
+				console.log("acceleration=" + acceleration + ",FPA=" + FPA);
+			}
 		}
 
-		console.log("framesPerDirection: " + framesPerDirection);
-		//console.log("BASE_EIAS: " + BASE_EIAS);
-		console.log("EIAS: " + EIAS);
-		//console.log("accelerationModifier: " + accelerationModifier);
+		displayBreakpoints(accelerationTable);
 
-		let offset = isSequenceSkill ? 0 : 1;
+		console.log(" -- end displayStandardTable for isPrimary=" + isPrimary + ",isAlternate=" + isAlternate + " -- ");
+
+	}
+
+	function displayFrenzyTable() {
+
+		console.log(" -- start displayFrenzyTables -- ");
+
+		let framesPerDirection1 = 9;
+		let framesPerDirection2 = 17;
+		let animationSpeed = 256;
+		console.log("framesPerDirection1: " + framesPerDirection1);
+		console.log("framesPerDirection2: " + framesPerDirection2);
+		console.log("animationSpeed: " + animationSpeed);
+
+		// frenzy seems to have its own way of calculating WSM
+		let averageWSM = parseInt((primaryWeapon.WSM + secondaryWeapon.WSM) / 2); // TODO might be wrong
+		let primaryWSM = wsmBugged ? primaryWeapon.WSM - secondaryWeapon.WSM + averageWSM : primaryWeapon.WSM + secondaryWeapon.WSM - averageWSM;
+		let secondaryWSM = wsmBugged ? averageWSM : 2 * secondaryWeapon.WSM - averageWSM;
+		console.log("primaryWSM: " + primaryWSM);
+		console.log("secondaryWSM: " + secondaryWSM);
+
+		let primaryEIAS = calculateEIAS(primaryWSM, getWeaponIAS(true));
+		let secondaryEIAS = calculateEIAS(secondaryWSM, getWeaponIAS(false));
+		console.log("primaryEIAS: " + primaryEIAS);
+		console.log("secondaryEIAS: " + secondaryEIAS);
+
 		let accelerationNeeded = new Map();
 
 		let temp = 0;
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
-			let frameLengthDivisor = Math.floor(animationSpeed * limitToEIASBounds(EIAS + acceleration) / 100);
-			let FPA = Math.ceil(256 * (framesPerDirection - startingFrame) / frameLengthDivisor) - offset;
-			if (skill == FRENZY) {
-				let FPA2 = Math.ceil((256 * 17 - FPA * frameLengthDivisor) / frameLengthDivisor);
-				if (temp != FPA + FPA2) {
-					temp = FPA + FPA2;
-					accelerationNeeded.set(acceleration, FPA + "/" + FPA2 + "|" + FPA);
-					console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2);
-				}
-			} else {
-				if (temp != FPA) {
-					temp = FPA;
-					accelerationNeeded.set(acceleration, FPA);
-					console.log("acceleration=" + acceleration + ",FPA=" + FPA);
-				}
+			let acceleration1 = showBy == SHOW_BY_SECONDARY_WEAPON_IAS ? 0 : acceleration;
+			let acceleration2 = showBy == SHOW_BY_PRIMARY_WEAPON_IAS ? 0 : acceleration;
+			let frameLengthDivisor1 = Math.floor(animationSpeed * limitEIAS(primaryEIAS + acceleration1) / 100);
+			let frameLengthDivisor2 = Math.floor(animationSpeed * limitEIAS(secondaryEIAS + acceleration2) / 100);
+			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor1) - 1;
+			let FPA2 = Math.ceil((256 * framesPerDirection2 - FPA * frameLengthDivisor1) / frameLengthDivisor2);
+			if (temp != FPA + FPA2) {
+				temp = FPA + FPA2;
+				accelerationNeeded.set(acceleration, FPA + "/" + FPA2);
+				console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2);
 			}
 		}
 
-		return accelerationNeeded;
+		displayBreakpoints(accelerationTable);
+
+		console.log(" -- end displayFrenzyTables -- ");
+
+	}
+
+	/**
+	 * Fend, Dragon Talon, and Zeal
+	 */
+	function displaySimpleRollbackTable() {
+
+		console.log(" -- start displaySimpleRollbackTable -- ");
+
+		let weapon = primaryWeapon;
+		let weaponType = weapon.type;
+		let framesPerDirection1 = calculateActionFrame(weaponType);
+		let framesPerDirection2 = calculateFramesPerDirection(weaponType);
+		let animationSpeed = calculateAnimationSpeed(weaponType);
+		let startingFrame = getStartingFrame(weaponType);
+		let WSM = weapon.WSM;
+		let EIAS = calculateEIAS(WSM, 0);
+		let rollbackFactor = skill == FEND ? 40 : 0;
+		console.log("framesPerDirection: " + framesPerDirection);
+		console.log("animationSpeed: " + animationSpeed);
+		console.log("startingFrame: " + startingFrame);
+		console.log("WSM: " + WSM);
+		console.log("EIAS: " + EIAS);
+		console.log("rollbackFactor: " + rollbackFactor);
+
+		let accelerationTable = new Map();
+
+		let temp = 0;
+		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * (framesPerDirection1 - startingFrame) / frameLengthDivisor);
+			let rollback = Math.floor(Math.floor((256 * startingFrame + frameLengthDivisor * FPA) / 256) * rollbackFactor / 100);
+			let FPA2 = Math.ceil(256 * (framesPerDirection1 - rollback) / frameLengthDivisor);
+			rollback = Math.floor(Math.floor((256 * rollback + frameLengthDivisor * FPA2) / 256) * rollbackFactor / 100);
+			let FPA3 = Math.ceil(256 * (framesPerDirection2 - rollback) / frameLengthDivisor) - 1;
+			if (temp != FPA + FPA2 + FPA3) {
+				temp = FPA + FPA2 + FPA3;
+				accelerationTable.set(acceleration, FPA + "+(" + FPA2 + ")+" + FPA3);
+				console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3);
+			}
+		}
+
+		displayBreakpoints(accelerationTable);
+
+		console.log(" -- end displaySimpleRollbackTable -- ");
+
+	}
+
+	function displayStrafeTable() {
+
+		console.log(" -- start displayStrafeTable -- ");
+
+		let weapon = primaryWeapon;
+		let weaponType = weapon.type;
+		let framesPerDirection1 = calculateActionFrame(weaponType);
+		let framesPerDirection2 = calculateFramesPerDirection(weaponType);
+		let animationSpeed = calculateAnimationSpeed(weaponType);
+		let startingFrame = getStartingFrame(weaponType);
+		let WSM = weapon.WSM;
+		let EIAS = calculateEIAS(WSM, 0);
+		let rollbackFactor = 50;
+		console.log("framesPerDirection: " + framesPerDirection);
+		console.log("animationSpeed: " + animationSpeed);
+		console.log("startingFrame: " + startingFrame);
+		console.log("WSM: " + WSM);
+		console.log("EIAS: " + EIAS);
+		console.log("rollbackFactor: " + rollbackFactor);
+
+		let accelerationEvenTable = new Map();
+		let accelerationOddTable = new Map();
+
+		let tempEven = new Array(4);
+		let tempOdd = new Array(5);
+		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * (framesPerDirection1 - startingFrame) / frameLengthDivisor);
+			let rollback = Math.floor(Math.floor((256 * startingFrame + frameLengthDivisor * FPA) / 256) * rollbackFactor / 100);
+			let FPA2 = Math.ceil(256 * (framesPerDirection1 - rollback) / frameLengthDivisor);
+			let rollback2 = Math.floor(Math.floor((256 * rollback + frameLengthDivisor * FPA2) / 256) * rollbackFactor / 100);
+			let FPA3 = Math.ceil(256 * (framesPerDirection1 - rollback2) / frameLengthDivisor);
+			let rollback3 = Math.floor(Math.floor((256 * rollback2 + frameLengthDivisor * FPA3) / 256) * rollbackFactor / 100);
+			let FPA4 = Math.ceil(256 * (framesPerDirection1 - rollback3) / frameLengthDivisor);
+			let rollback4 = Math.floor(Math.floor((256 * rollback3 + frameLengthDivisor * FPA4) / 256) * rollbackFactor / 100);
+			let evenFPA =  Math.ceil(256 * (framesPerDirection2 - rollback3) / frameLengthDivisor);
+			let oddFPA =  Math.ceil(256 * (framesPerDirection2 - rollback4) / frameLengthDivisor);
+			if (tempEven[0] != FPA || tempEven[1] != FPA2 || tempEven[2] != FPA3 || tempEven[3] != evenFPA) {
+				tempEven[0] = FPA;
+				tempEven[1] = FPA2;
+				tempEven[2] = FPA3;
+				tempEven[3] = evenFPA;
+				if (FPA2 == FPA4) {
+					if (FPA2 == FPA3) {
+						accelerationEvenTable.set(acceleration, FPA + "+(" + FPA2 + ")+" + evenFPA);
+					} else {
+						accelerationEvenTable.set(acceleration, FPA + "+(" + FPA2 + "+" + FPA3 + ")+" + evenFPA);
+					}
+				} else {
+					accelerationEvenTable.set(acceleration, FPA + "+" + FPA2 + "+(" + FPA3 + ")+" + evenFPA);
+				}
+				console.log("(even) acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3 + ",FPA4=" + FPA4 + ",evenFPA=" + evenFPA);
+			}
+			if (tempOdd[0] != FPA || tempOdd[1] != FPA2 || tempOdd[2] != FPA3 || tempOdd[3] != FPA4 || tempOdd[4] != oddFPA) {
+				tempOdd[0] = FPA;
+				tempOdd[1] = FPA2;
+				tempOdd[2] = FPA3;
+				tempOdd[3] = FPA4;
+				tempOdd[4] = oddFPA;
+				if (rollback2 == rollback3) {
+					accelerationOddTable.set(acceleration, FPA + "+(" + FPA2 + ")+" + oddFPA);
+				} else if (rollback2 == rollback4) {
+					accelerationOddTable.set(acceleration, FPA + "+" + FPA2 + "+(" + FPA3 + "+" + FPA4 + ")+" + oddFPA);
+				} else {
+					accelerationEvenTable.set(acceleration, FPA + "+" + FPA2 + "+(" + FPA3 + ")+" + oddFPA);
+				}
+				console.log("(odd) acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3 + ",FPA4=" + FPA4 + ",oddFPA=" + oddFPA);
+			}
+		}
+
+		displayBreakpoints(accelerationTable);
+
+		console.log(" -- end displayStrafeTable -- ");
+
+	}
+
+	function displayAlternateAnimationsTables() {
+
+		
+		let framesPerDirection = calculateFramesPerDirection(false, )
+
 	}
 
 	function calculateEIAS(WSM, wIAS) {
@@ -689,7 +809,7 @@ function load() {
 		let IAS = wIAS;
 		if (showBy != SHOW_BY_IAS) IAS += parseInt(gearIAS.value);
 		let IAS_EIAS = convertIAStoEIAS(IAS);
-		return limitToEIASBounds(100 + SIAS - WSM + IAS_EIAS);
+		return limitEIAS(100 + SIAS - WSM + IAS_EIAS);
 	}
 
 	function convertIAStoEIAS(IAS) {
@@ -700,114 +820,63 @@ function load() {
 		return Math.ceil(120 * EIAS / (120 - EIAS));
 	}
 
-	function displayAccelerationNeededFromHardcode() {
+	function getWSM(isPrimary) {
+		if (!isDualWielding) return primaryWeapon.WSM;
+		let primaryWSM = primaryWeapon.WSM;
+		let secondaryWSM = secondaryWeapon.WSM;
+		let averageWSM = parseInt((primaryWSM + secondaryWSM) / 2);
+		return (wsmBugged || !isPrimary) ?
+			averageWSM - (isPrimary ? secondaryWSM : primaryWSM) + (isPrimary ? primaryWSM : secondaryWSM)
+			: averageWSM;
+	}
 
-		let WSM = primaryWeapon.WSM;
-		let EIAS = calculateEIAS(WSM, 0);
-		let breakpointTable;
+	function displayWhirlwindTable(isPrimary) {
 
-		if (skill == FEND) {
-			if (primaryWeapon.type == TWO_HANDED_THRUSTING) {
-				breakpointTable = FEND_TWO_HANDED_THRUSTING_TABLE;
-			} else if (primaryWeapon.type == ONE_HANDED_THRUSTING) {
-				breakpointTable = FEND_ONE_HANDED_THRUSTING_TABLE;
-			}
-		} else if (skill == STRAFE) {
-			if (primaryWeapon.type == BOW) {
-				breakpointTable = STRAFE_BOW_TABLE;
-			} else if (primaryWeapon.type == CROSSBOW) {
-				breakpointTable = STRAFE_EVEN_CROSSBOW_TABLE;
-			}
-		} else if (skill == WHIRLWIND) { // TODO
-			SIAS = 0;
+		console.log(" -- start displayWhirlwindTable for isPrimary=" + isPrimary + " -- ");
 
-			if (isDualWielding) {
-				if (wsmBugged) {
-					WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2 - secondaryWeapon.WSM + primaryWeapon.WSM;
-				} else {
-					WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2;
-				}
-			}
+		let weapon = isPrimary? primaryWeapon : secondaryWeapon;
+		let framesPerDirection = calculateFramesPerDirection(weapon.type);
+		let animationSpeed = calculateAnimationSpeed(weapon.type);
+		let WSM = getWSM(isPrimary);
+		let EIAS = 100 - WSM;
 
-			EIAS = Math.max(15, SIAS - WSM);
+		console.log("framesPerDirection: " + framesPerDirection);
+		console.log("animationSpeed: " + animationSpeed);
+		console.log("WSM: " + WSM);
+		console.log("EIAS: " + EIAS);
 
-			if (character == ASSASSIN && primaryWeapon.type == CLAW) {
-				breakpointTable = WHIRLWIND_CLAW_TABLE;
-			} else if (character == BARBARIAN) {
-				if (primaryWeapon.type == UNARMED || primaryWeapon.type == ONE_HANDED_SWINGING ||
-					primaryWeapon.type == ONE_HANDED_THRUSTING || primaryWeapon.type == TWO_HANDED_SWORD) {
-					breakpointTable = WHIRLWIND_ONE_HANDED_TABLE;
-				} else {
-					breakpointTable = WHIRLWIND_TWO_HANDED_TABLE;
-				}
+		let accelerationTable = new Map();
+
+		let temp = 0;
+		for (let acceleration = 0; acceleration <= 120; acceleration++) {
+			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * framesPerDirection / frameLengthDivisor) - 1;
+			FPA = calculateWhirlwindFPA(FPA);
+			if (temp != FPA) {
+				temp = FPA;
+				accelerationTable.set(acceleration, FPA);
+				console.log("acceleration=" + acceleration + ",FPA=" + FPA);
+				if (FPA == 4) break;
 			}
 		}
 
-		let table = breakpointTable.getTableAfter(EIAS);
-		let accelerationNeeded = table.getAdjustedTable(EIAS); // TODO for whirlwind
+		displayBreakpoints(accelerationTable);
 
-		displayAccelerationNeeded(accelerationNeeded);
-
-		if (skill == STRAFE && primaryWeapon.type == CROSSBOW) {
-
-			breakpointTable = STRAFE_ODD_CROSSBOW_TABLE;
-			table = breakpointTable.getTableAfter(EIAS);
-			accelerationNeeded = table.getAdjustedTable(EIAS);
-
-			displayAccelerationNeeded(accelerationNeeded);
-
-		} else if (skill == WHIRLWIND && isDualWielding && primaryWeapon != secondaryWeapon) { // TODO
-
-			if (wsmBugged) {
-				WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2;
-			} else {
-				WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2 - primaryWeapon.WSM + secondaryWeapon.WSM;
-			}
-			EIAS = Math.max(15, SIAS - WSM);
-
-			table = breakpointTable.getTableAfter(EIAS);
-			accelerationNeeded = table.getAdjustedTable(EIAS); // TODO
-
-			displayAccelerationNeeded(accelerationNeeded);
-
-		}
+		console.log(" -- end displayWhirlwindTable for isPrimary=" + isPrimary + " -- ");
 
 	}
 
-	function displayReducedSequenceTable() {
-
-		let framesPerDirection = (skill == DRAGON_TALON ? 4 : primaryWeapon.type.getActionFrame(character));
-		let animationSpeed = calculateAnimationSpeed(primaryWeapon.type);
-		let startingFrame = 0; // starting frames only apply to sorcs and zons using normal attack, strafe, or fend
-		let WSM = primaryWeapon.WSM;
-
-		if (character == BARBARIAN && primaryWeapon.type == TWO_HANDED_SWORD && isOneHanded) framesPerDirection = 7;
-
-		let sequenceAccelerationNeeded = calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, true, WSM);
-
-		framesPerDirection = (skill == DRAGON_TALON ? 13 : primaryWeapon.type.getFramesPerDirection(character));
-		if (character == BARBARIAN && primaryWeapon.type == TWO_HANDED_SWORD && isOneHanded) framesPerDirection = 16;
-
-		let finishingAccelerationNeeded = calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, false, WSM);
-
-		let breakpoints = mergeSequenceTables(sequenceAccelerationNeeded, finishingAccelerationNeeded);
-		displayAccelerationNeeded(breakpoints);
-
-	}
-
-	function convertAccelerationNeededTableToShowBy(table) {
+	function displayBreakpoints(table) {
 
 		let newTable = new Map();
-		//let alreadyExistingIAS = getPrimaryWeaponIAS();
 
-		if (showingBySkill()) {
+		if (skill == WHIRLWIND) displayTable(table);
+		else if (showingBySkill()) {
 			let skill = getShowingBySkill();
 			for (const [accelerationNeeded, FPA] of table) {
 				let level = skill.getLevelFromEIAS(accelerationNeeded);
-				//if (!newTable.has(level)) {
-					console.log("acceleration=" + accelerationNeeded + ",FPA=" + FPA + ",level=" + level);
-					newTable.set(level, FPA);
-				//}
+				newTable.set(level, FPA);
+				console.log("acceleration=" + accelerationNeeded + ",FPA=" + FPA + ",level=" + level);
 			}
 			
 		} else if (showBy == SHOW_BY_IAS) {
@@ -819,83 +888,23 @@ function load() {
 			console.log("conversion not yet implemented");
 		}
 
-		return newTable;
-	}
-
-	function mergeSequenceTables(...tables) {
-
-		let uniqueKeys = new Set();
-		tables.forEach(table => {
-			for (const value of table.values()) {
-				uniqueKeys.add(value);
-			}
-		});
-
-		let mergedTable = new Map();
-		let sequences = tables.length;
-		let iterations = uniqueKeys.size - 1;
-		let lastSequenceLength = new Array(sequences);
-		let sequenceString = "";
-
-		for (let o = 0; o < sequences; o++) {
-			let first = [...tables[o]][0];
-			lastSequenceLength[o] = first[1];
-			tables[o].delete(first[0]);
-			sequenceString += first[1];
-			if (o != sequences - 1) {
-				sequenceString += "/";
-			}
-		}
-		mergedTable.set(0, sequenceString);
-
-		for (let i = 0; i < iterations; i++) {
-			let nextTableIndex = 0;
-			let smallestIAS = 999;
-			let connectedFrame = 0;
-			for (let o = 0; o < sequences; o++) {
-				if (tables[o].length == 0) continue;
-				let [firstKey] = tables[o].keys();
-				let [firstValue] = tables[o].values();
-				if (firstKey < smallestIAS) {
-					smallestIAS = firstKey;
-					connectedFrame = firstValue;
-					nextTableIndex = o;
-				}
-			}
-			if (smallestIAS == 999) continue;
-			tables[nextTableIndex].delete(smallestIAS);
-			lastSequenceLength[nextTableIndex] = connectedFrame;
-
-
-			sequenceString = "";
-			for (let o = 0; o < sequences; o++) {
-				let frame = lastSequenceLength[o];
-				sequenceString += frame;
-				if (o != sequences - 1) {
-					sequenceString += "/";
-				}
-			}
-			mergedTable.set(smallestIAS, sequenceString);
-
-		}
-
-		return mergedTable;
+		displayTable(newTable);
 	}
 
 	function isCharacterSelected() {
-		return character == AMAZON || character == ASSASSIN || character == BARBARIAN || character == DRUID || character == NECROMANCER || character == PALADIN || character == SORCERESS; // readability
+		return character == AMAZON || character == ASSASSIN || character == BARBARIAN
+			|| character == DRUID || character == NECROMANCER || character == PALADIN || character == SORCERESS; // readability
 	}
 
-	function calculateFramesPerDirection(alternate, weapon) {
+	function calculateFramesPerDirection(weaponType) {
 
-		let type = weapon.type;
-		if (character == BARBARIAN && type == TWO_HANDED_SWORD && (isOneHanded.checked || isDualWielding)) type = ONE_HANDED_SWINGING;
+		if (character == BARBARIAN && type == TWO_HANDED_SWORD && (isOneHanded.checked || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
 
-		let framesPerDirection = (alternate ? type.getAlternateFramesPerDirection(character) : type.getFramesPerDirection(character));
+		let framesPerDirection = weaponType.getFramesPerDirection(character);
 
 		if (skill == THROW) {
 			framesPerDirection = THROWING.getFramesPerDirection(character);
-		} else if (skill == DRAGON_TAIL) {
+		} else if (skill == DRAGON_TAIL || skill == DRAGON_TALON) {
 			framesPerDirection = 13;
 		} else if (skill == SMITE) {
 			framesPerDirection = 12;
@@ -909,18 +918,18 @@ function load() {
 			} else if (character == MERC_A2) {
 				framesPerDirection = 14;
 			} else {
-				framesPerDirection = getSequence(type);
+				framesPerDirection = getSequence(weaponType);
 			}
 		}
 
 		return framesPerDirection;
 	}
 
-	function calculateAnimationSpeed(type) {
+	function calculateAnimationSpeed(weaponType) {
 		let animationSpeed = 256;
 		if (skill == LAYING_TRAPS) {
 			animationSpeed = 128;
-		} else if (type == CLAW && !(skill == FISTS_OF_FIRE || skill == CLAWS_OF_THUNDER ||
+		} else if (weaponType == CLAW && !(skill == FISTS_OF_FIRE || skill == CLAWS_OF_THUNDER ||
 			skill == BLADES_OF_ICE || skill == DRAGON_CLAW || skill == DRAGON_TAIL || skill == DRAGON_TALON)) {
 			animationSpeed = 208;
 		}
@@ -946,7 +955,7 @@ function load() {
 		return SIAS;
 	}
 
-	function limitToEIASBounds(EIAS) {
+	function limitEIAS(EIAS) {
 		return Math.max(EIAS_MIN, Math.min(EIAS_MAX, EIAS));
 	}
 
@@ -960,12 +969,39 @@ function load() {
 		return 0;
 	}
 
-	function getStartingFrame(type) {
+	function getStartingFrame(weaponType) {
 		if ((character == AMAZON || character == SORCERESS) && (skill == STANDARD || skill == STRAFE || skill == FEND)) {
-			if (type == UNARMED) return 1;
-			if (type == ONE_HANDED_THRUSTING || type == TWO_HANDED_SWORD || type == ONE_HANDED_THRUSTING || type == TWO_HANDED_THRUSTING || type == TWO_HANDED) return 2;
+			if (weaponType == UNARMED) return 1;
+			if (weaponType == ONE_HANDED_THRUSTING || weaponType == TWO_HANDED_SWORD || weaponType == ONE_HANDED_THRUSTING
+					|| weaponType == TWO_HANDED_THRUSTING || weaponType == TWO_HANDED) return 2;
 		}
 		return 0;
+	}
+
+	function calculateActionFrame(weaponType) {
+		if (skill == DRAGON_TALON) return 4;
+		if (character == BARBARIAN && weaponType == TWO_HANDED_SWORD && (isOneHanded || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
+		return weaponType.getActionFrame(character);
+	}
+
+	/**
+	 * [calculatedFPA, adjustedFPA]
+	 */
+	const adjustedWhirlwindFPAs = new Map([
+		[11, 4], // 0-11
+		[14, 6], // 12-14
+		[17, 8], // 15-17
+		[19, 10], // 18-19
+		[22, 12], // 20-22
+		[25, 14] // 23-25
+	//  [99, 16] // 26+
+	]);
+
+	function calculateWhirlwindFPA(FPA) {
+		for (const [calculatedFPA, adjustedFPA] of adjustedWhirlwindFPAs) {
+			if (FPA <= calculatedFPA) return adjustedFPA;
+		}
+		return 16;
 	}
 
 }
@@ -1460,416 +1496,3 @@ WEAPONS.set("None", new Weapon("None", 0, UNARMED))
 	.set("Yari", new Weapon("Yari", 0, TWO_HANDED_THRUSTING))
 	.set("Yew Wand", new Weapon("Yew Wand", 10, ONE_HANDED_SWINGING))
 	.set("Zweihander", new Weapon("Zweihander", -10, TWO_HANDED_SWORD));
-
-class BreakpointTable {
-
-	constructor(breakpoints) {
-		this.breakpoints = breakpoints;
-	}
-
-	addBreakpoint(EIAS, FPA) {
-		this.breakpoints.push([EIAS, FPA]);
-	}
-
-	getFPA(EIAS) {
-		for (let i = 0; i < this.breakpoints.length; i++) {
-			let breakpoint = this.breakpoints[i];
-			if (EIAS < breakpoint[0]) {
-				return (i == 0 ? this.breakpoint[1] : this.breakpoints[i - 1][1]);
-			}
-		}
-	}
-
-	getTableAfter(EIAS) {
-		let filterEIAS = -1;
-		for (let i = 0; i < this.breakpoints.length; i++) {
-			let breakpoint = this.breakpoints[i];
-			if (EIAS < breakpoint[0]) {
-				filterEIAS = (i == 0 ? breakpoint[0] : this.breakpoints[i - 1][0]);
-				break;
-			}
-		}
-		if (filterEIAS == -1) {
-			return new BreakpointTable([[0, this.breakpoints[this.breakpoints.length - 1][1]]]);
-		}
-		let filteredBreakpoints = this.breakpoints.filter(a => a[0] >= filterEIAS);
-		return new BreakpointTable(filteredBreakpoints);
-	}
-
-	getAdjustedTable(EIAS) {
-		let adjustedBreakpoints = new Map();
-		for (let i = 0; i < this.breakpoints.length; i++) {
-			let breakpoint = this.breakpoints[i];
-			let neededAcceleration = breakpoint[0] - EIAS;
-			let frames = breakpoint[1];
-
-			if (neededAcceleration < 0) {
-				if (i == 0) neededAcceleration = 0; // first breakpoint might be slightly negative
-			}
-
-			adjustedBreakpoints.set(neededAcceleration, frames);
-		}
-		return adjustedBreakpoints;
-	}
-
-}
-
-const WHIRLWIND_CLAW_TABLE = new BreakpointTable([ // TODO
-	[90, 8],
-	[91, 6],
-	[113, 4]
-]);
-
-const WHIRLWIND_ONE_HANDED_TABLE = new BreakpointTable([
-	[15, 16],
-	[62, 14],
-	[70, 12],
-	[81, 10],
-	[90, 8],
-	[108, 6],
-	[134, 4]
-]);
-
-const WHIRLWIND_TWO_HANDED_TABLE = new BreakpointTable([
-	[80, 14],
-	[83, 12],
-	[96, 10],
-	[106, 8],
-	[127, 6],
-	[159, 4]
-]);
-
-const FEND_TWO_HANDED_THRUSTING_TABLE = new BreakpointTable([
-	[15, "61/(48)/94"],
-	[16, "58/(45)/89"],
-	[17, "54/(42)/83"],
-	[18, "51/(39)/77"],
-	[19, "48/(38)/74"],
-	[20, "46/(36)/70"],
-	[21, "44/(34)/67"],
-	[22, "42/(32)/63"],
-	[23, "40/(31)/61"],
-	[24, "38/(30)/58"],
-	[25, "36/(28)/55"],
-	[26, "35/(28)/54"],
-	[27, "34/(26)/51"],
-	[28, "33/(26)/50"],
-	[29, "32/(25)/48"],
-	[30, "31/(24)/47"],
-	[31, "30/(23)/45"],
-	[32, "29/(23)/44"],
-	[33, "28/(22)/42"],
-	[34, "27/(21)/41"],
-	[35, "26/(21)/40"],
-	[36, "26/(20)/38"],
-	[37, "25/(20)/38"],
-	[38, "24/(19)/36"],
-	[40, "23/(18)/35"],
-	[41, "23/(18)/34"],
-	[42, "22/(17)/33"],
-	[43, "21/(17)/32"],
-	[44, "21/(16)/31"],
-	[46, "20/(16)/30"],
-	[47, "20/(15)/29"],
-	[48, "19/(15)/29"],
-	[49, "19/(15)/28"],
-	[50, "18/(14)/27"],
-	[52, "18/(14)/26"],
-	[54, "17/(13)/25"],
-	[57, "16/(13)/24"],
-	[59, "16/(12)/23"],
-	[61, "15/(12)/22"],
-	[64, "15/(11)/21"],
-	[65, "14/(11)/21"],
-	[67, "14/(11)/20"],
-	[70, "13/(11)/20"],
-	[71, "13/(10)/19"],
-	[74, "13/(10)/18"],
-	[75, "12/(10)/18"],
-	[79, "12/(9)/17"],
-	[83, "11/(9)/16"],
-	[88, "11/(8)/15"],
-	[91, "10/(8)/15"],
-	[94, "10/(8)/14"],
-	[100, "9/(7)/13"],
-	[108, "9/(7)/12"],
-	[113, "8/(7)/12"],
-	[117, "8/(6)/11"],
-	[128, "8/(6)/10"],
-	[129, "7/(6)/10"],
-	[141, "7/(5)/9"],
-	[150, "6/(5)/9"],
-	[156, "6/(5)/8"],
-	[175, "6/(4)/7"]
-]);
-
-const FEND_ONE_HANDED_THRUSTING_TABLE = new BreakpointTable([
-	[15, "48/(41)/80"],
-	[16, "45/(39)/76"],
-	[17, "42/(36)/71"],
-	[18, "39/(34)/66"],
-	[19, "38/(32)/63"],
-	[20, "36/(31)/60"],
-	[21, "34/(29)/57"],
-	[22, "32/(28)/54"],
-	[23, "31/(27)/52"],
-	[24, "30/(26)/50"],
-	[25, "28/(24)/47"],
-	[26, "28/(24)/46"],
-	[27, "26/(23)/44"],
-	[28, "26/(22)/43"],
-	[29, "25/(21)/41"],
-	[30, "24/(21)/40"],
-	[31, "23/(20)/38"],
-	[32, "23/(19)/37"],
-	[33, "22/(19)/36"],
-	[34, "21/(18)/35"],
-	[35, "21/(18)/34"],
-	[36, "20/(17)/33"],
-	[37, "20/(17)/32"],
-	[38, "19/(16)/31"],
-	[40, "18/(16)/30"],
-	[41, "18/(15)/29"],
-	[42, "17/(15)/28"],
-	[43, "17/(14)/27"],
-	[44, "16/(14)/27"],
-	[45, "16/(14)/26"],
-	[47, "15/(13)/25"],
-	[49, "15/(13)/24"],
-	[50, "14/(12)/23"],
-	[53, "14/(12)/22"],
-	[54, "13/(12)/22"],
-	[55, "13/(11)/21"],
-	[58, "13/(11)/20"],
-	[59, "12/(11)/20"],
-	[61, "12/(10)/19"],
-	[64, "11/(10)/18"],
-	[67, "11/(9)/17"],
-	[71, "10/(9)/16"],
-	[75, "10/(8)/15"],
-	[79, "9/(8)/15"],
-	[81, "9/(8)/14"],
-	[86, "9/(7)/13"],
-	[88, "8/(7)/13"],
-	[93, "8/(7)/12"],
-	[100, "7/(6)/11"],
-	[110, "7/(6)/10"],
-	[115, "7/(5)/10"],
-	[117, "6/(6)/9"],
-	[121, "6/(5)/9"],
-	[134, "6/(4)/8"],
-	[141, "5/(5)/7"],
-	[150, "5/(4)/7"],
-	[161, "5/(4)/6"],
-	[172, "5/(3)/6"]
-]);
-
-const STRAFE_ODD_CROSSBOW_TABLE = new BreakpointTable([
-	[15, "61/(34)/107"],
-	[16, "58/(32)/102"],
-	[17, "54/(30)/95"],
-	[18, "51/(28)/89"],
-	[19, "48/(27)/85"],
-	[20, "46/(26)/80"],
-	[21, "44/(25)/77"],
-	[22, "42/(23)/73"],
-	[23, "40/(23)/70"],
-	[24, "38/(21)/67"],
-	[25, "36/(20)/63"],
-	[26, "35/(20)/62"],
-	[27, "34/(19)/59"],
-	[28, "33/(19)/57"],
-	[29, "32/(18)/55"],
-	[30, "31/(17)/53"],
-	[31, "30/(17)/51"],
-	[32, "29/(16)/50"],
-	[33, "28/(16)/48"],
-	[34, "27/(15)/47"],
-	[35, "26/(15)/46"],
-	[36, "26/(14)/44"],
-	[37, "25/(14)/43"],
-	[38, "24/(14)/42"],
-	[39, "24/(13)/41"],
-	[40, "23/(13)/40"],
-	[41, "23/(13)/39"],
-	[42, "22/(12)/38"],
-	[43, "21/(12)/37"],
-	[44, "21/(12)/36"],
-	[45, "21/(12)/35"],
-	[46, "20/(11)/35"],
-	[47, "20/(11)/34"],
-	[48, "19/(11)/33"],
-	[49, "19/(11)/32"],
-	[50, "18/(10)/31"],
-	[52, "18/(10)/30"],
-	[54, "17/(10)/29"],
-	[56, "17/(9)/28"],
-	[57, "16/(9)/28"],
-	[58, "16/(9)/27"],
-	[60, "16/(9)/26"],
-	[61, "15/(9)/26"],
-	[62, "15/(9)/25"],
-	[63, "15/(8)/25"],
-	[65, "14/(8)/24"],
-	[67, "14/(8)/23"],
-	[70, "13/(8)/22"],
-	[72, "13/(7)/22"],
-	[74, "13/(7)/21"],
-	[75, "12/(7)/21"],
-	[77, "12/(7)/20"],
-	[81, "12/(7)/19"],
-	[83, "11/(7)/19"],
-	[84, "11/(6)/19"],
-	[85, "11/(6)/18"],
-	[90, "11/(6)/17"],
-	[91, "10/(6)/17"],
-	[95, "10/(6)/16"],
-	[100, "9/(5)/15"],
-	[108, "9/(5)/14"],
-	[112, "9/4/(5)/14"],
-	[113, "8/(5)/14"],
-	[115, "8/(5)/13"],
-	[121, "8/5/(4/5)/12"],
-	[125, "8/(4)/11"],
-	[129, "7/(4)/12"],
-	[134, "7/(4)/11"],
-	[143, "7/3/(4)/11"],
-	[146, "7/3/(4)/10"],
-	[150, "6/4/(3/4)/9"],
-	[167, "6/(3)/8"]
-]);
-
-const STRAFE_EVEN_CROSSBOW_TABLE = new BreakpointTable([
-	[15, "61/(34)/107"],
-	[16, "58/(32)/102"],
-	[17, "54/(30)/95"],
-	[18, "51/(28)/89"],
-	[19, "48/(27)/85"],
-	[20, "46/(26)/80"],
-	[21, "44/(25)/77"],
-	[22, "42/(23)/73"],
-	[23, "40/(23)/70"],
-	[24, "38/(21)/67"],
-	[25, "36/(20)/63"],
-	[26, "35/(20)/62"],
-	[27, "34/(19)/59"],
-	[28, "33/(19)/57"],
-	[29, "32/(18)/55"],
-	[30, "31/(17)/53"],
-	[31, "30/(17)/51"],
-	[32, "29/(16)/50"],
-	[33, "28/(16)/48"],
-	[34, "27/(15)/47"],
-	[35, "26/(15)/46"],
-	[36, "26/(14)/44"],
-	[37, "25/(14)/43"],
-	[38, "24/(14)/42"],
-	[39, "24/(13)/41"],
-	[40, "23/(13)/40"],
-	[41, "23/(13)/39"],
-	[42, "22/(12)/38"],
-	[43, "21/(12)/37"],
-	[44, "21/(12)/36"],
-	[45, "21/(12)/35"],
-	[46, "20/(11)/35"],
-	[47, "20/(11)/34"],
-	[48, "19/(11)/33"],
-	[49, "19/(11)/32"],
-	[50, "18/(10)/31"],
-	[52, "18/(10)/30"],
-	[54, "17/(10)/29"],
-	[56, "17/(9)/28"],
-	[57, "16/(9)/28"],
-	[58, "16/(9)/27"],
-	[60, "16/(9)/26"],
-	[61, "15/(9)/26"],
-	[62, "15/(9)/25"],
-	[63, "15/(8)/25"],
-	[65, "14/(8)/24"],
-	[67, "14/(8)/23"],
-	[70, "13/(8)/22"],
-	[72, "13/(7)/22"],
-	[74, "13/(7)/21"],
-	[75, "12/(7)/21"],
-	[77, "12/(7)/20"],
-	[81, "12/(7)/19"],
-	[83, "11/(7)/19"],
-	[84, "11/(6)/19"],
-	[85, "11/(6)/18"],
-	[90, "11/(6)/17"],
-	[91, "10/(6)/17"],
-	[95, "10/(6)/16"],
-	[100, "9/(5)/15"],
-	[108, "9/(5)/14"],
-	[112, "9/4/(5)/14"],
-	[113, "8/(5)/14"],
-	[115, "8/(5)/13"],
-	[121, "8/(5/4)/13"],
-	[124, "8/(5/4)/12"],
-	[125, "8/(4)/11"],
-	[129, "7/(4)/12"],
-	[134, "7/(4)/11"],
-	[143, "7/3/(4)/11"],
-	[146, "7/3/(4)/10"],
-	[150, "6/(4/3)/10"],
-	[161, "6/(4/3)/9"],
-	[167, "6/(3)/8"]
-]);
-
-const STRAFE_BOW_TABLE = new BreakpointTable([
-	[15, "41/(21)/74"],
-	[16, "39/(20)/70"],
-	[17, "36/(18)/65"],
-	[18, "34/(17)/61"],
-	[19, "32/(16)/58"],
-	[20, "31/(16)/55"],
-	[21, "29/(15)/53"],
-	[22, "28/(14)/50"],
-	[23, "27/(14)/48"],
-	[24, "26/(13)/46"],
-	[25, "24/(12)/43"],
-	[26, "24/(12)/42"],
-	[27, "23/(12)/40"],
-	[28, "22/(11)/39"],
-	[29, "21/(11)/38"],
-	[30, "21/(11)/37"],
-	[31, "20/(10)/35"],
-	[32, "19/(10)/34"],
-	[33, "19/(10)/33"],
-	[34, "18/(9)/32"],
-	[35, "18/(9)/31"],
-	[36, "17/(9)/30"],
-	[37, "17/(9)/29"],
-	[38, "16/(8)/29"],
-	[39, "16/(8)/28"],
-	[40, "16/(8)/27"],
-	[41, "15/(8)/27"],
-	[42, "15/(8)/26"],
-	[43, "14/(7)/25"],
-	[45, "14/(7)/24"],
-	[47, "13/(7)/23"],
-	[49, "13/(7)/22"],
-	[50, "12/(6)/21"],
-	[53, "12/(6)/20"],
-	[55, "11/(6)/20"],
-	[56, "11/(6)/19"],
-	[59, "11/(6)/18"],
-	[61, "10/(5)/18"],
-	[62, "10/(5)/17"],
-	[65, "10/(5)/16"],
-	[67, "9/(5)/16"],
-	[69, "9/(5)/15"],
-	[74, "9/(5)/14"],
-	[75, "8/(4)/14"],
-	[79, "8/(4)/13"],
-	[85, "8/(4)/12"],
-	[86, "7/(4)/12"],
-	[92, "7/(4)/11"],
-	[100, "6/(3)/10"],
-	[111, "6/(3)/9"],
-	[121, "5/(3)/9"],
-	[123, "5/(3)/8"],
-	[138, "5/(3)/7"],
-	[150, "4/(2)/7"],
-	[158, "4/(2)/6"]
-]);
