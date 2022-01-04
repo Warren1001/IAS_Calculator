@@ -3,8 +3,19 @@ window.addEventListener("load", load, false);
 const EIAS_MAX = 175; // for a brief period of D2R, this limit did not exist. rip bugged ias frames :(
 const EIAS_MIN = 15;
 
+/**
+ * bugs:
+ * 
+ * 
+ * missing features:
+ * frenzy needs showby weapon ias implementation
+ * dual wielding needs secondary weapon ias implementation for non-ias showby
+ * wereforms needs showby weapon ias implementation
+ */
+
 function load() {
 	
+	const showByContainer = document.getElementById("showByContainer");
 	const showByIAS = document.getElementById("showByIAS");
 	const showByPrimaryWeaponIASContainer = document.getElementById("showByPrimaryWeaponIASContainer");
 	const showByPrimaryWeaponIAS = document.getElementById("showByPrimaryWeaponIAS");
@@ -26,6 +37,9 @@ function load() {
 	const primaryWeaponIAS = document.getElementById("primaryWeaponIAS");
 	const secondaryWeaponContainer = document.getElementById("secondaryWeaponContainer");
 	const secondaryWeaponSelect = document.getElementById("secondaryWeaponSelect");
+	const secondaryWeaponIASContainer = document.getElementById("secondaryWeaponIASContainer");
+	const secondaryWeaponIAS = document.getElementById("secondaryWeaponIAS");
+	const wsmBugged = document.getElementById("wsmBugged");
 	const isOneHandedContainer = document.getElementById("isOneHandedContainer");
 	const isOneHanded = document.getElementById("isOneHanded");
 	const gearIASContainer = document.getElementById("gearIASContainer");
@@ -61,9 +75,8 @@ function load() {
 	let skill = STANDARD;
 	let secondaryWeapon = WEAPONS.get("None");
 	let isDualWielding = false;
-	let wsmBugged = false;
 	let showBy = SHOW_BY_IAS;
-	let maxAccelerationIncrease = MAX_IAS_ACCELERATION_CHARACTER; // TODO
+	let maxAccelerationIncrease = MAX_IAS_ACCELERATION_CHARACTER;
 	
 	showByIAS.addEventListener("change", showByChanged, false);
 	showByPrimaryWeaponIAS.addEventListener("change", showByChanged, false);
@@ -77,6 +90,8 @@ function load() {
 	primaryWeaponSelect.addEventListener("change", primaryWeaponChanged, false);
 	primaryWeaponIAS.addEventListener("change", primaryWeaponIASChanged, false);
 	secondaryWeaponSelect.addEventListener("change", secondaryWeaponChanged, false);
+	secondaryWeaponIAS.addEventListener("change", secondaryWeaponIASChanged, false);
+	wsmBugged.addEventListener("change", wsmBuggedChanged, false);
 	isOneHanded.addEventListener("change", isOneHandedChanged, false);
 	gearIAS.addEventListener("change", gearIASChanged, false);
 	skillSelect.addEventListener("change", skillChanged, false);
@@ -305,11 +320,15 @@ function load() {
 		skill = skillSelect.value;
 
 		if (skill == WHIRLWIND) {
+			hideElement(showByContainer);
 			hideElement(fanaticismContainer);
+			hideElement(burstOfSpeedContainer);
 			hideElement(frenzyContainer);
 			hideElement(holyFreezeContainer);
 		} else {
+			unhideElement(showByContainer);
 			unhideElement(fanaticismContainer);
+			if (character == ASSASSIN) unhideElement(burstOfSpeedContainer);
 			if (character == BARBARIAN) unhideElement(frenzyContainer);
 			unhideElement(holyFreezeContainer);
 		}
@@ -345,31 +364,55 @@ function load() {
 		displayFrames();
 	}
 
-	function setPrimaryWeapons() {
+	function secondaryWeaponIASChanged() {
+		displayFrames();
+	}
 
-		if (character == ASSASSIN) {
-			for (const weapon of WEAPONS.values()) {
+	function wsmBuggedChanged() {
+		if (isDualWielding) displayFrames();
+	}
+
+	function setPrimaryWeapons() {
+		let previousValue = primaryWeaponSelect.value;
+		let reselect = false;
+		clear(primaryWeaponSelect);
+		for (const weapon of WEAPONS.values()) {
+			if (canBeEquipped(weapon)) {
 				primaryWeaponSelect.add(createOption(weapon.name));
-			}
-		} else {
-			for (const weapon of WEAPONS.values()) { // todo class only weapons
-				if (weapon.type != CLAW) primaryWeaponSelect.add(createOption(weapon.name));
+				if (previousValue == weapon.name) reselect = true;
 			}
 		}
-
+		if (reselect) {
+			primaryWeaponSelect.value = previousValue;
+		} else {
+			primaryWeaponChanged();
+		}
 	}
 
 	function setSecondaryWeapons() {
-		let previousValue = secondaryWeaponSelect.value; // TODO
+		let previousValue = secondaryWeaponSelect.value;
+		let reselect = false;
 		clear(secondaryWeaponSelect);
+		secondaryWeaponSelect.add(createOption("None"));
 		if (character == BARBARIAN) {
 			for (const weapon of WEAPONS.values()) {
-				if ((weapon.type.isOneHand && weapon.type != CLAW) || weapon.type == TWO_HANDED_SWORD) secondaryWeaponSelect.add(createOption(weapon.name));
+				if ((weapon.type.isOneHand && weapon.type != CLAW) || weapon.type == TWO_HANDED_SWORD) {
+					secondaryWeaponSelect.add(createOption(weapon.name));
+					if (previousValue == weapon.name) reselect = true;
+				}
 			}
 		} else if (character == ASSASSIN) {
 			for (const weapon of WEAPONS.values()) {
-				if (weapon.type == CLAW) secondaryWeaponSelect.add(createOption(weapon.name));
+				if (weapon.type == CLAW) {
+					secondaryWeaponSelect.add(createOption(weapon.name));
+					if (previousValue == weapon.name) reselect = true;
+				}
 			}
+		}
+		if (reselect) {
+			secondaryWeaponSelect.value = previousValue;
+		} else {
+			secondaryWeaponChanged();
 		}
 	}
 
@@ -385,7 +428,7 @@ function load() {
 			currentSkills.push(THROW);
 		}
 
-		switch (parseInt(character)) { // i could add these in with a loop, but might make changes in the future
+		switch (parseInt(character)) {
 			case AMAZON:
 				if (form == HUMAN) {
 					if (type == BOW || type == CROSSBOW) {
@@ -414,6 +457,9 @@ function load() {
 					currentSkills.push(DRAGON_TAIL);
 					if (type == CLAW && isDualWielding) {
 						currentSkills.push(DRAGON_CLAW);
+					}
+					if (type == CLAW) {
+						currentSkills.push(WHIRLWIND);
 					}
 				}
 				break;
@@ -494,8 +540,8 @@ function load() {
 		} else if (skill == FRENZY) {
 			displayFrenzyTable();
 		} else if (skill == WHIRLWIND) {
-			displayWhirlwindTable(primaryWeapon, true);
-			if (isDualWielding) displayWhirlwindTable(secondaryWeapon, false);
+			displayWhirlwindTable(true);
+			if (isDualWielding) displayWhirlwindTable(false);
 		} else if (skill == STRAFE) {
 			displayStrafeTable();
 		} else if (skill == FEND || skill == ZEAL || skill == DRAGON_TALON) {
@@ -528,9 +574,11 @@ function load() {
 		console.log(" -- start displayWereformTables -- ");
 
 		let weapon = primaryWeapon;
-		let WSM = weapon.WSM;
-		let animationSpeed = calculateAnimationSpeed(weapon.type);
+		let weaponType = weapon.type;
+		let WSM = weapon.WSM; // TODO possibly experiment
+		let animationSpeed = calculateAnimationSpeed(weaponType);
 		let wIAS = getWeaponIAS(true);
+		let wEIAS = convertIAStoEIAS(wIAS);
 		let EIAS = calculateEIAS(WSM, wIAS);
 
 		console.log("animationSpeed: " + animationSpeed);
@@ -538,9 +586,10 @@ function load() {
 		console.log("wIAS: " + wIAS);
 		console.log("EIAS: " + EIAS);
 
-		let framesPerDirection0 = calculateFramesPerDirection(false, weapon);
+		let framesPerDirection0 = calculateFramesPerDirection(weaponType);
 		let framesPerDirection1 = 0;
 		let framesPerDirection2 = 0;
+		let framesPerDirection3 = 13;
 		if (form == WEREWOLF) {
 			if (skill == FERAL_RAGE || skill == FURY) framesPerDirection1 = 7;
 			else if (skill == RABIES) framesPerDirection1 = 10;
@@ -562,21 +611,21 @@ function load() {
 		let temp = 0;
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
 			let frameLengthDivisor = Math.floor(accelerationModifier * limitEIAS(EIAS + acceleration) / 100);
-			let FPA = Math.ceil(256 * (framesPerDirection1 - startingFrame) / frameLengthDivisor) - offset;
+			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor) - offset;
 			if (skill == FURY) {
-				let FPA2 = Math.ceil(256 * 13 / frameLengthDivisor) - 1;
+				let FPA2 = Math.ceil(256 * framesPerDirection3 / frameLengthDivisor) - 1;
 				if (temp != FPA + FPA2) {
 					temp = FPA + FPA2;
-					accelerationTable.set(acceleration, "(" + FPA + ")/" + FPA2);
+					accelerationTable.set(acceleration + wEIAS, "(" + FPA + ")/" + FPA2);
 					console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2);
 				}
 			} else {
 				if (skill == FERAL_RAGE) {
-					FPA += Math.ceil((256 * 13 - FPA * frameLengthDivisor) / (2 * frameLengthDivisor)) - 1;
+					FPA += Math.ceil((256 * framesPerDirection3 - FPA * frameLengthDivisor) / (2 * frameLengthDivisor)) - 1;
 				}
 				if (temp != FPA) {
 					temp = FPA;
-					accelerationTable.set(acceleration, FPA);
+					accelerationTable.set(acceleration + wEIAS, FPA);
 					console.log("acceleration=" + acceleration + ",FPA=" + FPA);
 				}
 			}
@@ -632,8 +681,8 @@ function load() {
 
 		console.log(" -- start displayFrenzyTables -- ");
 
-		let framesPerDirection1 = 9;
-		let framesPerDirection2 = 17;
+		let framesPerDirection1 = 9; // not sure why this is 9, its not a standard framesPerDirection and doesnt seem to be an action frame. startingFrame for frenzy would always be 0, so thats not a factor.
+		let framesPerDirection2 = getSequence();
 		let animationSpeed = 256;
 		console.log("framesPerDirection1: " + framesPerDirection1);
 		console.log("framesPerDirection2: " + framesPerDirection2);
@@ -641,8 +690,8 @@ function load() {
 
 		// frenzy seems to have its own way of calculating WSM
 		let averageWSM = parseInt((primaryWeapon.WSM + secondaryWeapon.WSM) / 2); // TODO might be wrong
-		let primaryWSM = wsmBugged ? primaryWeapon.WSM - secondaryWeapon.WSM + averageWSM : primaryWeapon.WSM + secondaryWeapon.WSM - averageWSM;
-		let secondaryWSM = wsmBugged ? averageWSM : 2 * secondaryWeapon.WSM - averageWSM;
+		let primaryWSM = wsmBugged.checked ? primaryWeapon.WSM - secondaryWeapon.WSM + averageWSM : primaryWeapon.WSM + secondaryWeapon.WSM - averageWSM;
+		let secondaryWSM = wsmBugged.checked ? averageWSM : 2 * secondaryWeapon.WSM - averageWSM;
 		console.log("primaryWSM: " + primaryWSM);
 		console.log("secondaryWSM: " + secondaryWSM);
 
@@ -651,7 +700,7 @@ function load() {
 		console.log("primaryEIAS: " + primaryEIAS);
 		console.log("secondaryEIAS: " + secondaryEIAS);
 
-		let accelerationNeeded = new Map();
+		let accelerationTable = new Map();
 
 		let temp = 0;
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
@@ -663,7 +712,7 @@ function load() {
 			let FPA2 = Math.ceil((256 * framesPerDirection2 - FPA * frameLengthDivisor1) / frameLengthDivisor2);
 			if (temp != FPA + FPA2) {
 				temp = FPA + FPA2;
-				accelerationNeeded.set(acceleration, FPA + "/" + FPA2);
+				accelerationTable.set(acceleration, FPA + "/" + FPA2);
 				console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2);
 			}
 		}
@@ -687,10 +736,11 @@ function load() {
 		let framesPerDirection2 = calculateFramesPerDirection(weaponType);
 		let animationSpeed = calculateAnimationSpeed(weaponType);
 		let startingFrame = getStartingFrame(weaponType);
-		let WSM = weapon.WSM;
+		let WSM = getWSM(true);
 		let EIAS = calculateEIAS(WSM, 0);
 		let rollbackFactor = skill == FEND ? 40 : 0;
-		console.log("framesPerDirection: " + framesPerDirection);
+		console.log("framesPerDirection1: " + framesPerDirection1);
+		console.log("framesPerDirection2: " + framesPerDirection2);
 		console.log("animationSpeed: " + animationSpeed);
 		console.log("startingFrame: " + startingFrame);
 		console.log("WSM: " + WSM);
@@ -796,13 +846,6 @@ function load() {
 
 	}
 
-	function displayAlternateAnimationsTables() {
-
-		
-		let framesPerDirection = calculateFramesPerDirection(false, )
-
-	}
-
 	function calculateEIAS(WSM, wIAS) {
 		let SIAS = calculateSIAS();
 		console.log("SIAS: " + SIAS);
@@ -824,10 +867,15 @@ function load() {
 		if (!isDualWielding) return primaryWeapon.WSM;
 		let primaryWSM = primaryWeapon.WSM;
 		let secondaryWSM = secondaryWeapon.WSM;
-		let averageWSM = parseInt((primaryWSM + secondaryWSM) / 2);
-		return (wsmBugged || !isPrimary) ?
+		let averageWSM = parseInt((primaryWSM + secondaryWSM) / 2); // TODO might be wrong
+		if (wsmBugged.checked) {
+			return isPrimary ? averageWSM - secondaryWSM + primaryWSM : averageWSM;
+		} else {
+			return isPrimary ? averageWSM : averageWSM - primaryWSM + secondaryWSM;
+		}
+		/*return (wsmBugged.checked && !isPrimary) ?
 			averageWSM - (isPrimary ? secondaryWSM : primaryWSM) + (isPrimary ? primaryWSM : secondaryWSM)
-			: averageWSM;
+			: averageWSM;*/
 	}
 
 	function displayWhirlwindTable(isPrimary) {
@@ -848,7 +896,7 @@ function load() {
 		let accelerationTable = new Map();
 
 		let temp = 0;
-		for (let acceleration = 0; acceleration <= 120; acceleration++) {
+		for (let acceleration = 0; acceleration <= MAX_IAS_WEAPON; acceleration++) {
 			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
 			let FPA = Math.ceil(256 * framesPerDirection / frameLengthDivisor) - 1;
 			FPA = calculateWhirlwindFPA(FPA);
@@ -881,7 +929,9 @@ function load() {
 			
 		} else if (showBy == SHOW_BY_IAS) {
 			for (const [accelerationNeeded, FPA] of table) {
-				let IAS = Math.max(0, convertEIAStoIAS(accelerationNeeded));
+				let IAS = convertEIAStoIAS(accelerationNeeded);
+				if (form != HUMAN) IAS -= getWeaponIAS(true);
+				if (IAS < 0) IAS = 0;
 				newTable.set(IAS, FPA);
 			}
 		} else {
@@ -898,7 +948,7 @@ function load() {
 
 	function calculateFramesPerDirection(weaponType) {
 
-		if (character == BARBARIAN && type == TWO_HANDED_SWORD && (isOneHanded.checked || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
+		if (character == BARBARIAN && weaponType == TWO_HANDED_SWORD && (isOneHanded.checked || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
 
 		let framesPerDirection = weaponType.getFramesPerDirection(character);
 
@@ -959,20 +1009,20 @@ function load() {
 		return Math.max(EIAS_MIN, Math.min(EIAS_MAX, EIAS));
 	}
 
-	function getSequence(type) {
+	function getSequence(weaponType) {
 		if (skill == DOUBLE_THROW) return 12;
 		if (skill == DOUBLE_SWING || skill == FRENZY) return 17;
-		if (skill == FISTS_OF_FIRE || skill == CLAWS_OF_THUNDER || skill == BLADES_OF_ICE || skill == DRAGON_CLAW) return (type == UNARMED || type == CLAW) ? 12 : 16;
-		if (skill == JAB) return type == ONE_HANDED_THRUSTING ? 18 : 21;
-		if (type == ONE_HANDED_THRUSTING) return 21;
-		if (type == TWO_HANDED_THRUSTING) return 24;
+		if (skill == FISTS_OF_FIRE || skill == CLAWS_OF_THUNDER || skill == BLADES_OF_ICE || skill == DRAGON_CLAW) return (weaponType == UNARMED || weaponType == CLAW) ? 12 : 16;
+		if (skill == JAB) return weaponType == ONE_HANDED_THRUSTING ? 18 : 21;
+		if (weaponType == ONE_HANDED_THRUSTING) return 21;
+		if (weaponType == TWO_HANDED_THRUSTING) return 24;
 		return 0;
 	}
 
 	function getStartingFrame(weaponType) {
-		if ((character == AMAZON || character == SORCERESS) && (skill == STANDARD || skill == STRAFE || skill == FEND)) {
+		if ((character == AMAZON || character == SORCERESS) && (skill == STANDARD || skill == STRAFE || skill == FEND || skill == ZEAL)) {
 			if (weaponType == UNARMED) return 1;
-			if (weaponType == ONE_HANDED_THRUSTING || weaponType == TWO_HANDED_SWORD || weaponType == ONE_HANDED_THRUSTING
+			if (weaponType == ONE_HANDED_SWINGING || weaponType == TWO_HANDED_SWORD || weaponType == ONE_HANDED_THRUSTING
 					|| weaponType == TWO_HANDED_THRUSTING || weaponType == TWO_HANDED) return 2;
 		}
 		return 0;
@@ -980,7 +1030,7 @@ function load() {
 
 	function calculateActionFrame(weaponType) {
 		if (skill == DRAGON_TALON) return 4;
-		if (character == BARBARIAN && weaponType == TWO_HANDED_SWORD && (isOneHanded || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
+		if (character == BARBARIAN && weaponType == TWO_HANDED_SWORD && (isOneHanded.checked || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
 		return weaponType.getActionFrame(character);
 	}
 
@@ -1002,6 +1052,26 @@ function load() {
 			if (FPA <= calculatedFPA) return adjustedFPA;
 		}
 		return 16;
+	}
+
+	function canBeEquipped(weapon) {
+		let name = weapon.name;
+		let type = weapon.type;
+		if (character == MERC_A1 && type != BOW) return false;
+		if (character == MERC_A2 && type != ONE_HANDED_THRUSTING && type != TWO_HANDED_THRUSTING) return false;
+		if (character == MERC_A5 && type != ONE_HANDED_SWINGING && type != TWO_HANDED_SWORD) return false; // todo, only swords
+		if (character != ASSASSIN && type == CLAW) return false;
+		if (character != AMAZON && (
+			name == "Stag Bow" || name == "Reflex Bow" || name == "Ashwood Bow" || name == "Ceremonial Bow" || name == "Matriarchal Bow" || name == "Grand Matron Bow" ||
+			name == "Maiden Javelin" || name == "Ceremonial Javelin" || name == "Matriarchal Javelin" ||
+			name == "Maiden Spear" || name == "Maiden Pike" || name == "Ceremonial Spear" || name == "Ceremonial Pike" || name == "Matriarchal Spear" || name == "Matriarchal Pike"
+			)) return false;
+		if (character != SORCERESS && (
+			name == "Eagle Orb" || name == "Sacred Globe" || name == "Smoked Sphere" || name == "Clasped Orb" || name == "Jared's Stone" ||
+			name == "Glowing Orb" || name == "Crystalline Globe" || name == "Cloudy Sphere" || name == "Sparkling Ball" || name == "Swirling Crystal" ||
+			name == "Heavenly Stone" || name == "Eldritch Orb" || name == "Demon Heart" || name == "Vortex Orb" || name == "Dimensional Shard"
+			)) return false;
+		return true;
 	}
 
 }
