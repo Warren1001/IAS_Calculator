@@ -13,7 +13,7 @@ const EIAS_MIN = 15;
  * wereforms needs showby weapon ias implementation
  * a5 mercs need to be limited to only swords, has access to all one handed weapons currently
  * a2 mercs need to be limited properly, throwing weapons are thrusting weapons, polearms are not thrusting weapons
- * 
+ * zon has access to wrong skills with certain weapons
  */
 
 function load() {
@@ -1214,10 +1214,11 @@ class AttackSpeedSkill {
 
 class Weapon {
 
-	constructor(name, WSM, type) {
+	constructor(name, WSM, type, itemClass) {
 		this.name = name;
 		this.WSM = WSM;
 		this.type = type;
+		this.itemClass = itemClass;
 	}
 
 }
@@ -1290,16 +1291,26 @@ const BOW = new WeaponType(false, false, new Map([[AMAZON, [14, 6]], [ASSASSIN, 
 const CROSSBOW = new WeaponType(false, false, new Map([[AMAZON, [20, 9]], [ASSASSIN, [21, 10]], [BARBARIAN, [20, 10]], [DRUID, [20, 10]], [NECROMANCER, [20, 11]], [PALADIN, [20, 10]], [SORCERESS, [20, 11]]]));
 const THROWING = new WeaponType(true, true, new Map([[AMAZON, 16], [ASSASSIN, 16], [BARBARIAN, 16], [DRUID, 18], [NECROMANCER, 20], [PALADIN, 16], [SORCERESS, 20]]));
 
+const NONE_IC = "None"; // ic = item class
+const AXE = "Axe";
+const POLEARM = "Polearm";
+const JAVELIN = "Javelin";
+const SWORD = "Sword";
+const CROSSBOW_IC = "Crossbow";
+const BOW_IC = "Bow";
+const STAFF = "Staff";
+const ORB = "Orb";
+
 const WEAPONS = new Map();
-WEAPONS.set("None", new Weapon("None", 0, UNARMED))
-	.set("Ancient Axe", new Weapon("Ancient Axe", 10, TWO_HANDED))
-	.set("Ancient Sword", new Weapon("Ancient Sword", 0, ONE_HANDED_SWINGING))
-	.set("Arbalest", new Weapon("Arbalest", -10, CROSSBOW))
-	.set("Archon Staff", new Weapon("Archon Staff", 10, TWO_HANDED))
-	.set("Ashwood Bow", new Weapon("Ashwood Bow", 0, BOW))
-	.set("Ataghan", new Weapon("Ataghan", -20, ONE_HANDED_SWINGING))
-	.set("Axe", new Weapon("Axe", 10, ONE_HANDED_SWINGING))
-	.set("Balanced Axe", new Weapon("Balanced Axe", -10, ONE_HANDED_SWINGING))
+WEAPONS.set("None", new Weapon("None", 0, UNARMED, NONE_IC))
+	.set("Ancient Axe", new Weapon("Ancient Axe", 10, TWO_HANDED, AXE))
+	.set("Ancient Sword", new Weapon("Ancient Sword", 0, ONE_HANDED_SWINGING, SWORD))
+	.set("Arbalest", new Weapon("Arbalest", -10, CROSSBOW, CROSSBOW_IC))
+	.set("Archon Staff", new Weapon("Archon Staff", 10, TWO_HANDED, STAFF))
+	.set("Ashwood Bow", new Weapon("Ashwood Bow", 0, BOW, BOW_IC))
+	.set("Ataghan", new Weapon("Ataghan", -20, ONE_HANDED_SWINGING, SWORD))
+	.set("Axe", new Weapon("Axe", 10, ONE_HANDED_SWINGING, AXE))
+	.set("Balanced Axe", new Weapon("Balanced Axe", -10, ONE_HANDED_SWINGING, AXE))
 	.set("Balanced Knife", new Weapon("Balanced Knife", -20, ONE_HANDED_THRUSTING))
 	.set("Ballista", new Weapon("Ballista", 10, CROSSBOW))
 	.set("Balrog Blade", new Weapon("Balrog Blade", 0, TWO_HANDED_SWORD))
