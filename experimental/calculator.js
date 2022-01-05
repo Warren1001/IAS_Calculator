@@ -440,7 +440,7 @@ function load() {
 
 		clear(skillSelect);
 
-		if (form == HUMAN && (type == ONE_HANDED_THRUSTING || type == THROWING)) {
+		if (form == HUMAN && isCharacterSelected() && (type == ONE_HANDED_THRUSTING || type == THROWING)) {
 			currentSkills.push(THROW);
 		}
 
