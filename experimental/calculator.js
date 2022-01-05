@@ -1077,7 +1077,7 @@ function load() {
 		if (character == MERC_A1 && itemClass != BOW_IC) return false;
 		if (character == MERC_A2 && itemClass != POLEARM_IC && itemClass != SPEAR_IC && itemClass != JAVELIN) return false;
 		if (character == MERC_A5 && itemClass != SWORD) return false;
-		if (character != ASSASSIN && itemClass == CLAW) return false;
+		if (character != ASSASSIN && itemClass == CLAW_IC) return false;
 		if (character != AMAZON && (
 			name == "Stag Bow" || name == "Reflex Bow" || name == "Ashwood Bow" || name == "Ceremonial Bow" || name == "Matriarchal Bow" || name == "Grand Matron Bow" ||
 			name == "Maiden Javelin" || name == "Ceremonial Javelin" || name == "Matriarchal Javelin" ||
