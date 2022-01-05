@@ -5,10 +5,10 @@ window.addEventListener("load", load, false);
  * 
  * 
  * missing features:
- * frenzy needs showby weapon ias implementation
- * dual wielding needs secondary weapon ias implementation for non-ias showby
- * wereforms needs showby weapon ias implementation
- * contemplate the use of a WSM showby
+ * frenzy needs table variable weapon ias implementation
+ * dual wielding needs secondary weapon ias implementation for non-ias table variable
+ * wereforms needs table variable weapon ias implementation
+ * contemplate the use of a WSM table variable
  */
 
 function load() {
@@ -61,18 +61,6 @@ function load() {
 	const CHECKBOX_DECREPIFY = setupInputElement(document.getElementById("decrepify"), displayFrames);
 
 	const OPTION_WEREWOLF = SELECT_WEREFORM.options[2];
-
-	function setupInputElement(element, eventListener) {
-		element.addEventListener("change", eventListener, false);
-		if (element.type == "number") {
-			element.onkeydown = function (e) { // only allows the input of numbers, no negative signs
-				if (!((e.keyCode > 95 && e.keyCode < 106) || (e.keyCode > 47 && e.keyCode < 58) || e.keyCode == 8)) {
-					return false;
-				}
-			}
-		}
-		return element;
-	}
 
 	const SKILL_FANATICISM = new AttackSpeedSkill(NUMBER_FANATICISM, 10, 30, 40, TABLE_VARIABLE_FANATICISM);
 	const SKILL_BURST_OF_SPEED = new AttackSpeedSkill(NUMBER_BURST_OF_SPEED, 15, 45, 60, TABLE_VARIABLE_BURST_OF_SPEED, () => character == ASSASSIN);
@@ -534,14 +522,28 @@ function load() {
 
 	}
 
-	function displayTable(breakpoints) {
+	function displayTable(breakpoints, variableLabel, tableName) {
+		let tableDiv = document.createElement("div");
+		tableDiv.className = "tableHeader";
 		let table = document.createElement("table");
-		table.className = "table";
-		CONTAINER_TABLE.appendChild(table);
+
+		if (tableName !== undefined) {
+			let headerDiv = document.createElement("div");
+			headerDiv.className = "headerDiv";
+			let headerText = document.createElement("h4");
+			headerText.innerHTML = tableName;
+			headerDiv.appendChild(headerText);
+			tableDiv.appendChild(headerDiv);
+		}
+
+		addTableHeader(table, variableLabel);
 
 		for (const [tableVariableIndex, FPA] of breakpoints) {
 			addTableRow(table, tableVariableIndex, FPA);
 		}
+
+		tableDiv.appendChild(table);
+		CONTAINER_TABLE.appendChild(tableDiv);
 	}
 
 	function displayWereformTables() {
@@ -646,7 +648,15 @@ function load() {
 			}
 		}
 
-		displayBreakpoints(accelerationTable);
+		let tableName = undefined;
+		if (isPrimary) {
+			if (isAlternate) tableName = "Primary Weapon Second Animation";
+			else tableName = "Primary Weapon";
+		} else {
+			tableName = "Secondary Weapon";
+		}
+
+		displayBreakpoints(accelerationTable, tableName);
 
 		console.log(" -- end displayStandardTable for isPrimary=" + isPrimary + ",isAlternate=" + isAlternate + " -- ");
 
@@ -891,12 +901,15 @@ function load() {
 
 	}
 
-	function displayBreakpoints(table) {
+	function displayBreakpoints(table, tableName) {
 
 		let newTable = new Map();
 
-		if (skill == WHIRLWIND) displayTable(table);
+		let variableLabel = undefined;
+
+		if (skill == WHIRLWIND) displayTable(table, "WIAS");
 		else if (isTableVariableSkill()) {
+			variableLabel = "Level";
 			let skill = getTableVariableSkill();
 			for (const [accelerationNeeded, FPA] of table) {
 				let level = skill.getLevelFromEIAS(accelerationNeeded);
@@ -905,6 +918,7 @@ function load() {
 			}
 			
 		} else if (tableVariable == TABLE_VARIABLE_IAS) {
+			variableLabel = "IAS";
 			for (const [accelerationNeeded, FPA] of table) {
 				let IAS = convertEIAStoIAS(accelerationNeeded);
 				if (form != HUMAN) IAS -= getWeaponIAS(true);
@@ -915,7 +929,7 @@ function load() {
 			console.log("conversion not yet implemented");
 		}
 
-		displayTable(newTable);
+		displayTable(newTable, variableLabel, tableName);
 	}
 
 	function isCharacterSelected() {
@@ -1051,6 +1065,18 @@ function load() {
 
 }
 
+function setupInputElement(element, eventListener) {
+	element.addEventListener("change", eventListener, false);
+	if (element.type == "number") {
+		element.onkeydown = function (e) { // only allows the input of numbers, no negative signs
+			if (!((e.keyCode > 95 && e.keyCode < 106) || (e.keyCode > 47 && e.keyCode < 58) || e.keyCode == 8)) {
+				return false;
+			}
+		}
+	}
+	return element;
+}
+
 function hideElement(element) {
 	element.style.display = "none";
 }
@@ -1085,15 +1111,29 @@ function addTableRow(table, IAS, frame) {
 	let tableRow = document.createElement("tr");
 
 	let tdIAS = document.createElement("td");
-	tdIAS.className = "tableEntry";
 	tdIAS.innerHTML = IAS;
 
 	let tdFrame = document.createElement("td");
-	tdFrame.className = "tableEntry";
 	tdFrame.innerHTML = frame;
 
 	tableRow.appendChild(tdIAS);
 	tableRow.appendChild(tdFrame);
+
+	table.appendChild(tableRow);
+}
+
+function addTableHeader(table, variableLabel) {
+
+	let tableRow = document.createElement("tr");
+
+	let thVariableLabel = document.createElement("th");
+	thVariableLabel.innerHTML = variableLabel;
+
+	let tdFPA = document.createElement("th");
+	tdFPA.innerHTML = "FPA";
+
+	tableRow.appendChild(thVariableLabel);
+	tableRow.appendChild(tdFPA);
 
 	table.appendChild(tableRow);
 }
