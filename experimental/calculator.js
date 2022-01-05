@@ -11,6 +11,9 @@ const EIAS_MIN = 15;
  * frenzy needs showby weapon ias implementation
  * dual wielding needs secondary weapon ias implementation for non-ias showby
  * wereforms needs showby weapon ias implementation
+ * a5 mercs need to be limited to only swords, has access to all one handed weapons currently
+ * a2 mercs need to be limited properly, throwing weapons are thrusting weapons, polearms are not thrusting weapons
+ * 
  */
 
 function load() {
@@ -189,44 +192,6 @@ function load() {
 
 			unhideElement(formSelectContainer);
 
-			if (character == BARBARIAN || character == DRUID) unhideElement(optionWerewolf);
-			else {
-				hideElement(optionWerewolf);
-				if (formSelect.value == WEREWOLF) {
-					formSelect.value = HUMAN;
-					formChanged();
-				}
-			}
-
-			if (character == ASSASSIN) {
-				unhideElement(burstOfSpeedContainer);
-				unhideElement(showByBurstOfSpeedContainer);
-			} else {
-				hideElement(burstOfSpeedContainer);
-				hideElement(showByBurstOfSpeedContainer);
-				if (showBy == SHOW_BY_BURST_OF_SPEED) {
-					showByIAS.checked = true;
-					showByChanged();
-				}
-			}
-
-			if (character == BARBARIAN) {
-				unhideElement(frenzyContainer);
-				unhideElement(showByFrenzyContainer);
-			} else {
-				hideElement(frenzyContainer);
-				hideElement(showByFrenzyContainer);
-				if (showBy == SHOW_BY_FRENZY) {
-					showByIAS.checked = true;
-					showByChanged();
-				}
-			}
-
-			if (character != BARBARIAN && character != ASSASSIN) {
-				hideElement(secondaryWeaponContainer);
-				isDualWielding = false;
-			}
-
 		} else {
 
 			if (showBy == SHOW_BY_IAS) {
@@ -234,8 +199,57 @@ function load() {
 			}
 
 			hideElement(formSelectContainer);
-			formSelect.value = HUMAN;
-			formChanged();
+			if (form != HUMAN) {
+				formSelect.value = HUMAN;
+				formChanged();
+			}
+		}
+
+		if (character == BARBARIAN || character == DRUID) unhideElement(optionWerewolf);
+		else {
+			hideElement(optionWerewolf);
+			if (formSelect.value == WEREWOLF) {
+				formSelect.value = HUMAN;
+				formChanged();
+			}
+		}
+
+		if (character == ASSASSIN) {
+			unhideElement(burstOfSpeedContainer);
+			unhideElement(showByBurstOfSpeedContainer);
+		} else {
+			hideElement(burstOfSpeedContainer);
+			hideElement(showByBurstOfSpeedContainer);
+			if (showBy == SHOW_BY_BURST_OF_SPEED) {
+				showByIAS.checked = true;
+				showByChanged();
+			}
+		}
+
+		if (character == BARBARIAN) {
+			unhideElement(frenzyContainer);
+			unhideElement(showByFrenzyContainer);
+		} else {
+			hideElement(frenzyContainer);
+			hideElement(showByFrenzyContainer);
+			if (showBy == SHOW_BY_FRENZY) {
+				showByIAS.checked = true;
+				showByChanged();
+			}
+		}
+
+		if (character != BARBARIAN && character != ASSASSIN) {
+			hideElement(secondaryWeaponContainer);
+			isDualWielding = false;
+		}
+
+		let primaryWeaponType = primaryWeapon.type;
+		if ((character == ASSASSIN && primaryWeaponType == CLAW) || (character == BARBARIAN && (primaryWeaponType == ONE_HANDED_SWINGING || primaryWeaponType == ONE_HANDED_THRUSTING || primaryWeaponType == TWO_HANDED_SWORD))) {
+			unhideElement(secondaryWeaponContainer);
+			setSecondaryWeapons();
+		} else {
+			hideElement(secondaryWeaponContainer);
+			isDualWielding = false;
 		}
 
 		setPrimaryWeapons();
@@ -397,8 +411,10 @@ function load() {
 		if (character == BARBARIAN) {
 			for (const weapon of WEAPONS.values()) {
 				if ((weapon.type.isOneHand && weapon.type != CLAW) || weapon.type == TWO_HANDED_SWORD) {
-					secondaryWeaponSelect.add(createOption(weapon.name));
-					if (previousValue == weapon.name) reselect = true;
+					if (canBeEquipped(weapon)) {
+						secondaryWeaponSelect.add(createOption(weapon.name));
+						if (previousValue == weapon.name) reselect = true;
+					}
 				}
 			}
 		} else if (character == ASSASSIN) {
