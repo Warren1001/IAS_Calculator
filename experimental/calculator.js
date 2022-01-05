@@ -102,8 +102,8 @@ function load() {
 	displayFrames();
 
 	function onTableVariableChange(updateTable) {
-		let newTableVariable = document.querySelector('input[name="tableVariable"]:checked').value;
-		if (tableVariable == newShowBy) return;
+		let newTableVariable = document.querySelector('input[name="tableVariable"]:checked');
+		if (tableVariable == newTableVariable) return;
 		tableVariable = newTableVariable;
 		switch (tableVariable) {
 			case TABLE_VARIABLE_IAS:
@@ -120,18 +120,18 @@ function load() {
 				break;
 			case TABLE_VARIABLE_FANATICISM:
 				hideElement(CONTAINER_FANATICISM);
-				maxAccelerationIncrease = FANATICISM.max;
+				maxAccelerationIncrease = SKILL_FANATICISM.max;
 				break;
 			case TABLE_VARIABLE_BURST_OF_SPEED:
 				hideElement(CONTAINER_BURST_OF_SPEED);
-				maxAccelerationIncrease = BURST_OF_SPEED.max;
+				maxAccelerationIncrease = SKILL_BURST_OF_SPEED.max;
 				break;
 			case TABLE_VARIABLE_WEREWOLF:
 				hideElement(CONTAINER_WEREWOLF);
-				maxAccelerationIncrease = WEREWOLF_AS.max;
+				maxAccelerationIncrease = SKILL_WEREWOLF.max;
 			case TABLE_VARIABLE_FRENZY:
 				hideElement(CONTAINER_FRENZY);
-				maxAccelerationIncrease = FRENZY_AS.max;
+				maxAccelerationIncrease = SKILL_FRENZY.max;
 				break;
 		}
 		if (tableVariable != TABLE_VARIABLE_IAS) {
