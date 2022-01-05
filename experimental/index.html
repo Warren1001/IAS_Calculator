@@ -8,35 +8,32 @@
   <title>D2 IAS Calculator</title>
 </head>
 <body>
-  <h1>Work In Progress - v1.3</h1>
-  <p>Still need to make some optimizations.</p>
-  <p>Still need to dummy proof invalid option combinations. -- should actually be done now</p>
-  <p>Sequence/multi-hit skills should be correct, but the context is different.</p>
+  <h1>Work In Progress - v0.4</h1>
   <div id="calculator">
-    <div id="showByContainer">
-      <input type="radio" id="showByIAS" name="showBy" value="IAS" checked>
-      <label for="showByIAS">IAS</label>
-      <div id="showByPrimaryWeaponIASContainer" style="display: none">
-        <input type="radio" id="showByPrimaryWeaponIAS" name="showBy" value="Primary Weapon IAS">
-        <label for="showByPrimaryWeaponIAS">Primary Weapon IAS</label>
+    <div id="tableVariableContainer">
+      <label for="tableVariableIAS">IAS</label>
+      <input type="radio" id="tableVariableIAS" name="tableVariable" value="IAS" checked>
+      <div id="tableVariablePrimaryWeaponIASContainer" style="display: none">
+        <input type="radio" id="tableVariablePrimaryWeaponIAS" name="tableVariable" value="Primary Weapon IAS">
+        <label for="tableVariablePrimaryWeaponIAS">Primary Weapon IAS</label>
       </div>
-      <div id="showBySecondaryWeaponIASContainer" style="display: none">
-        <input type="radio" id="showBySecondaryWeaponIAS" name="showBy" value="Secondary Weapon IAS">
-        <label for="showBySecondaryWeaponIAS">Secondary Weapon IAS</label>
+      <div id="tableVariableSecondaryWeaponIASContainer" style="display: none">
+        <input type="radio" id="tableVariableSecondaryWeaponIAS" name="tableVariable" value="Secondary Weapon IAS">
+        <label for="tableVariableSecondaryWeaponIAS">Secondary Weapon IAS</label>
       </div>
-      <input type="radio" id="showByFanaticism" name="showBy" value="Fanaticism">
-      <label for="showByFanaticism">Fanaticism</label>
-      <div id="showByBurstOfSpeedContainer" style="display: none">
-        <input type="radio" id="showByBurstOfSpeed" name="showBy" value="Burst of Speed">
-        <label for="showByBurstOfSpeed">Burst of Speed</label>
+      <input type="radio" id="tableVariableFanaticism" name="tableVariable" value="Fanaticism">
+      <label for="tableVariableFanaticism">Fanaticism</label>
+      <div id="tableVariableBurstOfSpeedContainer" style="display: none">
+        <input type="radio" id="tableVariableBurstOfSpeed" name="tableVariable" value="Burst of Speed">
+        <label for="tableVariableBurstOfSpeed">Burst of Speed</label>
       </div>
-      <div id="showByWerewolfContainer" style="display: none">
-        <input type="radio" id="showByWerewolf" name="showBy" value="Werewolf">
-        <label for="showByWerewolf">Werewolf</label>
+      <div id="tableVariableWerewolfContainer" style="display: none">
+        <input type="radio" id="tableVariableWerewolf" name="tableVariable" value="Werewolf">
+        <label for="tableVariableWerewolf">Werewolf</label>
       </div>
-      <div id="showByFrenzyContainer" style="display: none">
-        <input type="radio" id="showByFrenzy" name="showBy" value="Frenzy">
-        <label for="showByFrenzy">Frenzy</label>
+      <div id="tableVariableFrenzyContainer" style="display: none">
+        <input type="radio" id="tableVariableFrenzy" name="tableVariable" value="Frenzy">
+        <label for="tableVariableFrenzy">Frenzy</label>
       </div>
       <br>
     </div>
@@ -53,9 +50,9 @@
       <option value=8>Mercenary - A2</option>
       <option value=9>Mercenary - A5</option>
     </select>
-    <div id="formSelectContainer" style="display: initial">
-      <label for="formSelect">Form:</label>
-      <select id="formSelect">
+    <div id="wereformContainer" style="display: initial">
+      <label for="wereformSelect">Form:</label>
+      <select id="wereformSelect">
         <option value="None" selected>None</option>
         <option value="Werebear">Werebear</option>
         <option style="display: none" value="Werewolf">Werewolf</option>
@@ -77,17 +74,19 @@
       <label for="secondaryWeaponSelect">Secondary Weapon:</label>
       <select id="secondaryWeaponSelect"></select>
       <br>
-      <input type="checkbox" id="wsmBugged">WSM Bugged
-      <br>
+      <div id="wsmBuggedContainer" style="display: none">
+        <input type="checkbox" id="wsmBugged">WSM Bugged
+        <br>
+      </div>
     </div>
     <div id="secondaryWeaponIASContainer" style="display: none">
       <label for="secondaryWeaponIAS">Weapon IAS:</label>
       <input type="number" id="secondaryWeaponIAS" value="0" min="0" max="120">
       <br>
     </div>
-    <div id="gearIASContainer" style="display: none">
-      <label for="gearIAS">IAS:</label>
-      <input type="number" id="gearIAS" value="0" min="0">
+    <div id="IASContainer" style="display: none">
+      <label for="IAS">IAS:</label>
+      <input type="number" id="IAS" value="0" min="0">
       <br>
     </div>
     <label for="skillSelect">Skill:</label>
