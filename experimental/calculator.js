@@ -1073,10 +1073,11 @@ function load() {
 	function canBeEquipped(weapon) {
 		let name = weapon.name;
 		let type = weapon.type;
-		if (character == MERC_A1 && type != BOW) return false;
-		if (character == MERC_A2 && type != ONE_HANDED_THRUSTING && type != TWO_HANDED_THRUSTING) return false;
-		if (character == MERC_A5 && type != ONE_HANDED_SWINGING && type != TWO_HANDED_SWORD) return false; // todo, only swords
-		if (character != ASSASSIN && type == CLAW) return false;
+		let itemClass = weapon.itemClass;
+		if (character == MERC_A1 && itemClass != BOW_IC) return false;
+		if (character == MERC_A2 && itemClass != POLEARM_IC && itemClass != SPEAR_IC && itemClass != JAVELIN) return false;
+		if (character == MERC_A5 && itemClass != SWORD) return false;
+		if (character != ASSASSIN && itemClass == CLAW) return false;
 		if (character != AMAZON && (
 			name == "Stag Bow" || name == "Reflex Bow" || name == "Ashwood Bow" || name == "Ceremonial Bow" || name == "Matriarchal Bow" || name == "Grand Matron Bow" ||
 			name == "Maiden Javelin" || name == "Ceremonial Javelin" || name == "Matriarchal Javelin" ||
@@ -1294,7 +1295,7 @@ const THROWING = new WeaponType(true, true, new Map([[AMAZON, 16], [ASSASSIN, 16
 const NONE_IC = "None"; // ic = item class
 const AXE = "Axe";
 const DAGGER_IC = "Dagger";
-const POLEARM = "Polearm";
+const POLEARM_IC = "Polearm";
 const JAVELIN = "Javelin";
 const SPEAR_IC = "Spear";
 const SWORD = "Sword";
