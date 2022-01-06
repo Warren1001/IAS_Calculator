@@ -1,18 +1,54 @@
 
-#calculator, #tableContainer {
+:root {
+  color-scheme: dark light;
+}
+
+#calculator {
+  float: left;
+  min-width: 325px;
+}
+
+#tableContainer {
   float: left;
 }
 
-.table {
-  border: 1px solid;
-  float:  left;
+table {
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px solid;
+  text-align: center;
+  border-color: rgb(75, 75, 75);
+  min-width: 132px;
+  padding-top: 0px;
 }
 
-.tableEntry {
-  border:  1px solid;
-  min-width: 30px;
+h4 {
+  padding-bottom: 0;
+  margin: 0;
+  word-break: normal;
+  white-space: normal;
+  width: 132px;
 }
 
-input[type='number']{
+.headerDiv {
+  display: flex;
+  align-items: flex-end;
+  height: 37px;
+}
+
+.tableHeader {
+  float: left;
+  text-align: center;
+}
+
+th, td {
+  text-align: center;
+  border: 2px solid;
+  border-color: rgb(55, 55, 55);
+  min-width: 50px;
+  padding: 0px 2px;
+}
+
+input[type='number'] {
     width: 40px;
-} 
+}
