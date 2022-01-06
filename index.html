@@ -8,12 +8,35 @@
   <title>D2 IAS Calculator</title>
 </head>
 <body>
-  <h1>Work In Progress</h1>
-  <p>Frenzy, Fury, and Feral Rage not implemented yet.</p>
-  <p>Still need to make some optimizations.</p>
-  <p>Still need to dummy proof invalid option combinations.</p>
-  <p>Sequence/multi-hit skills should be correct, but the context is different.</p>
+  <h1>Work In Progress - v0.6</h1>
   <div id="calculator">
+    <div id="tableVariableContainer">
+      <input type="radio" id="tableVariableIAS" name="tableVariable" value="IAS" checked>
+      <label for="tableVariableIAS">IAS</label>
+      <div id="tableVariablePrimaryWeaponIASContainer" style="display: none">
+        <input type="radio" id="tableVariablePrimaryWeaponIAS" name="tableVariable" value="Primary Weapon IAS">
+        <label for="tableVariablePrimaryWeaponIAS">Primary Weapon IAS</label>
+      </div>
+      <div id="tableVariableSecondaryWeaponIASContainer" style="display: none">
+        <input type="radio" id="tableVariableSecondaryWeaponIAS" name="tableVariable" value="Secondary Weapon IAS">
+        <label for="tableVariableSecondaryWeaponIAS">Secondary Weapon IAS</label>
+      </div>
+      <input type="radio" id="tableVariableFanaticism" name="tableVariable" value="Fanaticism">
+      <label for="tableVariableFanaticism">Fanaticism</label>
+      <div id="tableVariableBurstOfSpeedContainer" style="display: none">
+        <input type="radio" id="tableVariableBurstOfSpeed" name="tableVariable" value="Burst of Speed">
+        <label for="tableVariableBurstOfSpeed">Burst of Speed</label>
+      </div>
+      <div id="tableVariableWerewolfContainer" style="display: none">
+        <input type="radio" id="tableVariableWerewolf" name="tableVariable" value="Werewolf">
+        <label for="tableVariableWerewolf">Werewolf</label>
+      </div>
+      <div id="tableVariableFrenzyContainer" style="display: none">
+        <input type="radio" id="tableVariableFrenzy" name="tableVariable" value="Frenzy">
+        <label for="tableVariableFrenzy">Frenzy</label>
+      </div>
+      <br>
+    </div>
     <label for="characterSelect">Character:</label>
     <select id="characterSelect">
       <option value=0>Amazon</option>
@@ -27,9 +50,9 @@
       <option value=8>Mercenary - A2</option>
       <option value=9>Mercenary - A5</option>
     </select>
-    <div id="formSelectContainer">
-      <label for="formSelect">Form:</label>
-      <select id="formSelect">
+    <div id="wereformContainer" style="display: initial">
+      <label for="wereformSelect">Form:</label>
+      <select id="wereformSelect">
         <option value="None" selected>None</option>
         <option value="Werebear">Werebear</option>
         <option style="display: none" value="Werewolf">Werewolf</option>
@@ -38,18 +61,33 @@
     <br>
     <label for="primaryWeaponSelect">Primary Weapon:</label>
     <select id="primaryWeaponSelect"></select>
+    <br>
     <div id="isOneHandedContainer" style="display: none">
       <input type="checkbox" id="isOneHanded">Is One-Handed
+      <br>
     </div>
-    <br>
     <div id="primaryWeaponIASContainer" style="display: none">
       <label for="primaryWeaponIAS">Weapon IAS:</label>
-      <input type="number" id="primaryWeaponIAS" value="0" min="0">
+      <input type="number" id="primaryWeaponIAS" value="0" min="0" max="120">
       <br>
     </div>
     <div id="secondaryWeaponContainer" style="display: none">
       <label for="secondaryWeaponSelect">Secondary Weapon:</label>
       <select id="secondaryWeaponSelect"></select>
+      <br>
+      <div id="wsmBuggedContainer" style="display: none">
+        <input type="checkbox" id="wsmBugged">WSM Bugged
+        <br>
+      </div>
+    </div>
+    <div id="secondaryWeaponIASContainer" style="display: none">
+      <label for="secondaryWeaponIAS">Weapon IAS:</label>
+      <input type="number" id="secondaryWeaponIAS" value="0" min="0" max="120">
+      <br>
+    </div>
+    <div id="IASContainer" style="display: none">
+      <label for="IAS">IAS:</label>
+      <input type="number" id="IAS" value="0" min="0">
       <br>
     </div>
     <label for="skillSelect">Skill:</label>
@@ -57,27 +95,27 @@
     <br>
     <div id="fanaticismContainer">
       <label for="fanaticismLevel">Fanaticism:</label>
-      <input type="number" id="fanaticismLevel" value="0" min="0">
+      <input type="number" id="fanaticismLevel" value="0" min="0" max="60">
       <br>
     </div>
     <div id="burstOfSpeedContainer" style="display: none">
       <label for="burstOfSpeedLevel">Burst of Speed:</label>
-      <input type="number" id="burstOfSpeedLevel" value="0" min="0">
+      <input type="number" id="burstOfSpeedLevel" value="0" min="0" max="60">
       <br>
     </div>
     <div id="werewolfContainer" style="display: none">
       <label for="werewolfLevel">Werewolf:</label>
-      <input type="number" id="werewolfLevel" value="0" min="0">
+      <input type="number" id="werewolfLevel" value="0" min="0" max="60">
       <br>
     </div>
     <div id="frenzyContainer" style="display: none">
       <label for="frenzyLevel">Frenzy:</label>
-      <input type="number" id="frenzyLevel" value="0" min="0">
+      <input type="number" id="frenzyLevel" value="0" min="0" max="60">
       <br>
     </div>
     <div id="holyFreezeContainer">
       <label for="holyFreezeLevel">Holy Freeze:</label>
-      <input type="number" id="holyFreezeLevel" value="0" min="0">
+      <input type="number" id="holyFreezeLevel" value="0" min="0" max="60">
       <input type="checkbox" id="decrepify">Decrepify</td>
     </div>
   </div>
