@@ -1,299 +1,443 @@
-window.addEventListener("load", loadPage, false);
+window.addEventListener("load", load, false);
 
-const EIAS_MAX = 175; // for a brief period of D2R, this limit did not exist. rip bugged ias frames :(
-const EIAS_MIN = 15;
+/**
+ * bugs:
+ * 
+ * 
+ * missing features:
+ * frenzy needs table variable weapon ias implementation
+ * dual wielding needs secondary weapon ias implementation for non-ias table variable
+ * wereforms needs table variable weapon ias implementation
+ * contemplate the use of a WSM table variable
+ */
 
-function loadPage() {
+function load() {
+	
+	const CONTAINER_TABLE_VARIABLE = document.getElementById("tableVariableContainer");
+	const CONTAINER_TABLE_VARIABLE_PRIMARY_WEAPON_IAS = document.getElementById("tableVariablePrimaryWeaponIASContainer");
+	const CONTAINER_TABLE_VARIABLE_SECONDARY_WEAPON_IAS = document.getElementById("tableVariableSecondaryWeaponIASContainer");
+	const CONTAINER_TABLE_VARIABLE_BURST_OF_SPEED = document.getElementById("tableVariableBurstOfSpeedContainer");
+	const CONTAINER_TABLE_VARIABLE_WEREWOLF = document.getElementById("tableVariableWerewolfContainer");
+	const CONTAINER_TABLE_VARIABLE_FRENZY = document.getElementById("tableVariableFrenzyContainer");
+	const CONTAINER_WEREFORM = document.getElementById("wereformContainer");
+	const CONTAINER_IS_ONE_HANDED = document.getElementById("isOneHandedContainer");
+	const CONTAINER_PRIMARY_WEAPON_IAS = document.getElementById("primaryWeaponIASContainer");
+	const CONTAINER_SECONDARY_WEAPON = document.getElementById("secondaryWeaponContainer");
+	const CONTAINER_WSM_BUGGED = document.getElementById("wsmBuggedContainer");
+	const CONTAINER_SECONDARY_WEAPON_IAS = document.getElementById("secondaryWeaponIASContainer");
+	const CONTAINER_IAS = document.getElementById("IASContainer");
+	const CONTAINER_FANATICISM = document.getElementById("fanaticismContainer");
+	const CONTAINER_BURST_OF_SPEED = document.getElementById("burstOfSpeedContainer");
+	const CONTAINER_WEREWOLF = document.getElementById("werewolfContainer");
+	const CONTAINER_FRENZY = document.getElementById("frenzyContainer");
+	const CONTAINER_HOLY_FREEZE = document.getElementById("holyFreezeContainer");
+	const CONTAINER_TABLE = document.getElementById("tableContainer");
 
-	const characterSelect = document.getElementById("characterSelect");
-	const formSelectContainer = document.getElementById("formSelectContainer");
-	const formSelect = document.getElementById("formSelect");
-	const optionWerewolf = formSelect.options[2];
-	const primaryWeaponSelect = document.getElementById("primaryWeaponSelect");
-	const primaryWeaponIASContainer = document.getElementById("primaryWeaponIASContainer");
-	const primaryWeaponIAS = document.getElementById("primaryWeaponIAS");
-	const secondaryWeaponContainer = document.getElementById("secondaryWeaponContainer");
-	const secondaryWeaponSelect = document.getElementById("secondaryWeaponSelect");
-	const isOneHandedContainer = document.getElementById("isOneHandedContainer");
-	const isOneHanded = document.getElementById("isOneHanded");
-	const skillSelect = document.getElementById("skillSelect");
-	const tableContainer = document.getElementById("tableContainer");
-	const fanaticismContainer = document.getElementById("fanaticismContainer");
-	const fanaticismLevelInput = document.getElementById("fanaticismLevel");
-	const burstOfSpeedContainer = document.getElementById("burstOfSpeedContainer");
-	const burstOfSpeedLevelInput = document.getElementById("burstOfSpeedLevel");
-	const werewolfContainer = document.getElementById("werewolfContainer");
-	const werewolfLevelInput = document.getElementById("werewolfLevel");
-	const frenzyContainer = document.getElementById("frenzyContainer");
-	const frenzyLevelInput = document.getElementById("frenzyLevel");
-	const holyFreezeContainer = document.getElementById("holyFreezeContainer");
-	const holyFreezeLevelInput = document.getElementById("holyFreezeLevel");
-	const decrepify = document.getElementById("decrepify");
+	const TABLE_VARIABLE_IAS = setupInputElement(document.getElementById("tableVariableIAS"), e => onTableVariableChange(true));
+	const TABLE_VARIABLE_PRIMARY_WEAPON_IAS = setupInputElement(document.getElementById("tableVariablePrimaryWeaponIAS"), e => onTableVariableChange(true));
+	const TABLE_VARIABLE_SECONDARY_WEAPON_IAS = setupInputElement(document.getElementById("tableVariableSecondaryWeaponIAS"), e => onTableVariableChange(true));
+	const TABLE_VARIABLE_FANATICISM = setupInputElement(document.getElementById("tableVariableFanaticism"), e => onTableVariableChange(true));
+	const TABLE_VARIABLE_BURST_OF_SPEED = setupInputElement(document.getElementById("tableVariableBurstOfSpeed"), e => onTableVariableChange(true));
+	const TABLE_VARIABLE_WEREWOLF = setupInputElement(document.getElementById("tableVariableWerewolf"), e => onTableVariableChange(true));
+	const TABLE_VARIABLE_FRENZY = setupInputElement(document.getElementById("tableVariableFrenzy"), e => onTableVariableChange(true));
 
-	var firstRun = true;
-	var character = PALADIN;
-	var form = HUMAN;
-	var primaryWeapon = WEAPONS.get("None");
-	var skill = 0;
-	var skillData = SKILLS[skill];
-	var secondaryWeapon = WEAPONS.get("None");
-	var isDualWielding = false;
-	var wsmBugged = false;
+	const SELECT_CHARACTER = setupInputElement(document.getElementById("characterSelect"), onCharacterChange);
+	const SELECT_WEREFORM = setupInputElement(document.getElementById("wereformSelect"), e => onWereformChange(true));
+	const SELECT_PRIMARY_WEAPON = setupInputElement(document.getElementById("primaryWeaponSelect"), e => onPrimaryWeaponChange(true));
+	const SELECT_SECONDARY_WEAPON = setupInputElement(document.getElementById("secondaryWeaponSelect"), e => onSecondaryWeaponChange(true));
+	const SELECT_SKILL = setupInputElement(document.getElementById("skillSelect"), e => onSkillChange(true));
 
-	characterSelect.addEventListener("change", characterChanged, false);
-	formSelect.addEventListener("change", formChanged, false);
-	primaryWeaponSelect.addEventListener("change", primaryWeaponChanged, false);
-	primaryWeaponIAS.addEventListener("change", primaryWeaponIASChanged, false);
-	secondaryWeaponSelect.addEventListener("change", secondaryWeaponChanged, false);
-	isOneHanded.addEventListener("change", isOneHandedChanged, false);
-	skillSelect.addEventListener("change", skillChanged, false);
-	fanaticismLevelInput.addEventListener("change", fanaticismChanged, false);
-	burstOfSpeedLevelInput.addEventListener("change", burstOfSpeedChanged, false);
-	werewolfLevelInput.addEventListener("change", werewolfChanged, false);
-	frenzyLevelInput.addEventListener("change", frenzyChanged, false);
-	holyFreezeLevelInput.addEventListener("change", holyFreezeChanged, false);
-	decrepify.addEventListener("change", decrepifyChanged, false);
-	noNegativeValues(primaryWeaponIAS);
-	noNegativeValues(fanaticismLevelInput);
-	noNegativeValues(burstOfSpeedLevelInput);
-	noNegativeValues(werewolfLevelInput);
-	noNegativeValues(frenzyLevelInput);
-	noNegativeValues(holyFreezeLevelInput);
+	const NUMBER_PRIMARY_WEAPON_IAS = setupInputElement(document.getElementById("primaryWeaponIAS"), displayFrames);
+	const NUMBER_SECONDARY_WEAPON_IAS = setupInputElement(document.getElementById("secondaryWeaponIAS"), displayFrames);
+	const NUMBER_IAS = setupInputElement(document.getElementById("IAS"), displayFrames);
+	const NUMBER_FANATICISM = setupInputElement(document.getElementById("fanaticismLevel"), displayFrames);
+	const NUMBER_BURST_OF_SPEED = setupInputElement(document.getElementById("burstOfSpeedLevel"), displayFrames);
+	const NUMBER_WEREWOLF = setupInputElement(document.getElementById("werewolfLevel"), displayFrames);
+	const NUMBER_FRENZY = setupInputElement(document.getElementById("frenzyLevel"), displayFrames);
+	const NUMBER_HOLY_FREEZE = setupInputElement(document.getElementById("holyFreezeLevel"), displayFrames);
 
-	formChanged();
-	characterChanged();
+	const CHECKBOX_WSM_BUGGED = setupInputElement(document.getElementById("wsmBugged"), displayFrames);
+	const CHECKBOX_IS_ONE_HANDED = setupInputElement(document.getElementById("isOneHanded"), displayFrames);
+	const CHECKBOX_DECREPIFY = setupInputElement(document.getElementById("decrepify"), displayFrames);
 
-	function characterChanged() {
-		character = parseInt(characterSelect.value);
-		console.log("New character selected: " + character);
+	const OPTION_WEREWOLF = SELECT_WEREFORM.options[2];
+
+	const SKILL_FANATICISM = new AttackSpeedSkill(NUMBER_FANATICISM, 10, 30, 40, TABLE_VARIABLE_FANATICISM);
+	const SKILL_BURST_OF_SPEED = new AttackSpeedSkill(NUMBER_BURST_OF_SPEED, 15, 45, 60, TABLE_VARIABLE_BURST_OF_SPEED, () => character == ASSASSIN);
+	const SKILL_WEREWOLF = new AttackSpeedSkill(NUMBER_WEREWOLF, 10, 70, 80, TABLE_VARIABLE_WEREWOLF, () => form == WEREWOLF);
+	const SKILL_FRENZY = new AttackSpeedSkill(NUMBER_FRENZY, 0, 50, 50, TABLE_VARIABLE_FRENZY, () => character == BARBARIAN);
+	const SKILL_HOLY_FREEZE = new AttackSpeedSkill(NUMBER_HOLY_FREEZE, 25, 35, 60);
+	
+	const MAX_EIAS = 175; // for a brief period of D2R, this limit did not exist. rip bugged ias frames :(
+	const MIN_EIAS = 15;	
+	const MAX_IAS_WEAPON = 120;
+	const MAX_IAS_ACCELERATION_WEAPON = 60;
+	const MAX_IAS_ACCELERATION_CHARACTER = 88;
+	const MAX_IAS_ACCELERATION_CHARACTER_TWO_HANDED = 83;
+	const MAX_IAS_ACCELERATION_MERCENARY = 78;
+
+	let character = PALADIN;
+	let form = HUMAN;
+	let primaryWeapon = WEAPONS.get("None");
+	let skill = STANDARD;
+	let secondaryWeapon = WEAPONS.get("None");
+	let isDualWielding = false;
+	let tableVariable = TABLE_VARIABLE_IAS;
+	let maxAccelerationIncrease = MAX_IAS_ACCELERATION_CHARACTER;
+
+	setPrimaryWeapons();
+	setSkills();
+	displayFrames();
+
+	function onTableVariableChange(updateTable) {
+		let newTableVariable = document.querySelector('input[name="tableVariable"]:checked');
+		if (tableVariable == newTableVariable) return;
+		tableVariable = newTableVariable;
+		switch (tableVariable) {
+			case TABLE_VARIABLE_IAS:
+				hideElement(CONTAINER_IAS);
+				if (isCharacterSelected()) {
+					maxAccelerationIncrease = primaryWeapon.type.isOneHand ? MAX_IAS_ACCELERATION_CHARACTER : MAX_IAS_ACCELERATION_CHARACTER_TWO_HANDED;
+				} else {
+					maxAccelerationIncrease = MAX_IAS_ACCELERATION_MERCENARY;
+				}
+				break;
+			case TABLE_VARIABLE_PRIMARY_WEAPON_IAS:
+			case TABLE_VARIABLE_SECONDARY_WEAPON_IAS:
+				maxAccelerationIncrease = MAX_IAS_ACCELERATION_WEAPON;
+				break;
+			case TABLE_VARIABLE_FANATICISM:
+				hideElement(CONTAINER_FANATICISM);
+				maxAccelerationIncrease = SKILL_FANATICISM.max;
+				break;
+			case TABLE_VARIABLE_BURST_OF_SPEED:
+				hideElement(CONTAINER_BURST_OF_SPEED);
+				maxAccelerationIncrease = SKILL_BURST_OF_SPEED.max;
+				break;
+			case TABLE_VARIABLE_WEREWOLF:
+				hideElement(CONTAINER_WEREWOLF);
+				maxAccelerationIncrease = SKILL_WEREWOLF.max;
+			case TABLE_VARIABLE_FRENZY:
+				hideElement(CONTAINER_FRENZY);
+				maxAccelerationIncrease = SKILL_FRENZY.max;
+				break;
+		}
+		if (tableVariable != TABLE_VARIABLE_IAS) {
+			unhideElement(CONTAINER_IAS);
+		}
+		if (tableVariable != TABLE_VARIABLE_FANATICISM) {
+			unhideElement(CONTAINER_FANATICISM);
+		}
+		if (tableVariable != TABLE_VARIABLE_BURST_OF_SPEED && character == ASSASSIN) {
+			unhideElement(CONTAINER_BURST_OF_SPEED);
+		}
+		if (tableVariable != TABLE_VARIABLE_WEREWOLF && form == WEREWOLF) {
+			unhideElement(CONTAINER_WEREWOLF);
+		}
+		if (tableVariable != TABLE_VARIABLE_FRENZY && character == BARBARIAN) {
+			unhideElement(CONTAINER_FRENZY);
+		}
+		if (updateTable) displayFrames();
+	}
+
+	function isTableVariableSkill() {
+		return tableVariable == TABLE_VARIABLE_FANATICISM || tableVariable == TABLE_VARIABLE_BURST_OF_SPEED || tableVariable == TABLE_VARIABLE_WEREWOLF || tableVariable == TABLE_VARIABLE_FRENZY;
+	}
+
+	function getTableVariableSkill() {
+		switch(tableVariable) {
+			case TABLE_VARIABLE_FANATICISM:
+				return SKILL_FANATICISM;
+			case TABLE_VARIABLE_BURST_OF_SPEED:
+				return SKILL_BURST_OF_SPEED;
+			case TABLE_VARIABLE_WEREWOLF:
+				return SKILL_WEREWOLF;
+			case TABLE_VARIABLE_FRENZY:
+				return SKILL_FRENZY;
+		}
+		return null;
+	}
+
+	function onCharacterChange() {
+		character = parseInt(SELECT_CHARACTER.value);
 
 		if (isCharacterSelected()) {
 
-			unhideElement(formSelectContainer);
-
-			if (character == BARBARIAN || character == DRUID) unhideElement(optionWerewolf);
-			else {
-				hideElement(optionWerewolf);
-				if (formSelect.value == WEREWOLF) {
-					formSelect.value = HUMAN;
-					formChanged();
-				}
+			if (tableVariable == TABLE_VARIABLE_IAS) {
+				maxAccelerationIncrease = MAX_IAS_ACCELERATION_CHARACTER;
 			}
 
-			if (character == ASSASSIN) {
-				unhideElement(burstOfSpeedContainer);
-			} else {
-				hideElement(burstOfSpeedContainer);
-			}
-
-			if (character == BARBARIAN) {
-				unhideElement(frenzyContainer);
-			} else {
-				hideElement(frenzyContainer);
-			}
-
-			if (character != BARBARIAN && character != ASSASSIN) {
-				hideElement(secondaryWeaponContainer);
-				isDualWielding = false;
-			}
-
+			unhideElement(CONTAINER_WEREFORM);
 
 		} else {
-			hideElement(formSelectContainer);
-			formSelect.value = HUMAN;
-			formChanged();
+
+			if (tableVariable == TABLE_VARIABLE_IAS) {
+				maxAccelerationIncrease = MAX_IAS_ACCELERATION_MERCENARY;
+			}
+
+			hideElement(CONTAINER_WEREFORM);
+			if (form != HUMAN) {
+				SELECT_WEREFORM.value = HUMAN;
+				onWereformChange(false);
+			}
 		}
 
-		setWeapons();
+		if (character == BARBARIAN || character == DRUID) unhideElement(OPTION_WEREWOLF);
+		else {
+			hideElement(OPTION_WEREWOLF);
+			if (SELECT_WEREFORM.value == WEREWOLF) {
+				SELECT_WEREFORM.value = HUMAN;
+				onWereformChange(false);
+			}
+		}
+
+		if (character == ASSASSIN) {
+			unhideElement(CONTAINER_BURST_OF_SPEED);
+			unhideElement(CONTAINER_TABLE_VARIABLE_BURST_OF_SPEED);
+		} else {
+			hideElement(CONTAINER_BURST_OF_SPEED);
+			hideElement(CONTAINER_TABLE_VARIABLE_BURST_OF_SPEED);
+			if (tableVariable == TABLE_VARIABLE_BURST_OF_SPEED) {
+				TABLE_VARIABLE_IAS.checked = true;
+				onTableVariableChange(false);
+			}
+		}
+
+		if (character == BARBARIAN) {
+			unhideElement(CONTAINER_FRENZY);
+			unhideElement(CONTAINER_TABLE_VARIABLE_FRENZY);
+		} else {
+			hideElement(CONTAINER_FRENZY);
+			hideElement(CONTAINER_TABLE_VARIABLE_FRENZY);
+			if (tableVariable == TABLE_VARIABLE_FRENZY) {
+				TABLE_VARIABLE_IAS.checked = true;
+				onTableVariableChange(false);
+			}
+		}
+
+		if (character != BARBARIAN && character != ASSASSIN) {
+			//hideElement(CONTAINER_WSM_BUGGED);
+			hideElement(CONTAINER_SECONDARY_WEAPON);
+			isDualWielding = false;
+		}
+
+		let primaryWeaponType = primaryWeapon.type;
+		if ((character == ASSASSIN && primaryWeaponType == CLAW) || (character == BARBARIAN && (primaryWeaponType == ONE_HANDED_SWINGING || primaryWeaponType == ONE_HANDED_THRUSTING || primaryWeaponType == TWO_HANDED_SWORD))) {
+			unhideElement(CONTAINER_SECONDARY_WEAPON);
+			setSecondaryWeapons();
+		} else {
+			//hideElement(CONTAINER_WSM_BUGGED);
+			hideElement(CONTAINER_SECONDARY_WEAPON);
+			isDualWielding = false;
+		}
+
+		setPrimaryWeapons();
 		setSkills();
 		displayFrames();
-		if (firstRun) firstRun = false;
 	}
 
-	function formChanged() {
-		form = formSelect.value;
-		console.log("New form selected: " + form);
+	function onWereformChange(updateTable) {
+		form = SELECT_WEREFORM.value;
 		if (form == HUMAN) {
-			hideElement(primaryWeaponIASContainer);
+			hideElement(CONTAINER_PRIMARY_WEAPON_IAS);
 		} else {
-			unhideElement(primaryWeaponIASContainer);
+			unhideElement(CONTAINER_PRIMARY_WEAPON_IAS);
 		}
 		if (form == WEREWOLF) {
-			unhideElement(werewolfContainer);
+			unhideElement(CONTAINER_TABLE_VARIABLE_WEREWOLF);
+			unhideElement(CONTAINER_WEREWOLF);
 		} else {
-			hideElement(werewolfContainer);
-		}
-		setSkills();
-		if (!firstRun) displayFrames();
-	}
-
-	function primaryWeaponChanged() {
-		primaryWeapon = WEAPONS.get(primaryWeaponSelect.value);
-		let weaponType = primaryWeapon.weaponType;
-		console.log("New primaryWeapon selected: " + primaryWeapon.name + " - " + primaryWeapon.WSM);
-
-		if (character == BARBARIAN && weaponType == TWO_HANDED_SWORD && !isDualWielding) {
-			unhideElement(isOneHandedContainer);
-		} else {
-			hideElement(isOneHandedContainer);
-		}
-
-		if ((character == ASSASSIN && weaponType == CLAW) || (character == BARBARIAN && (weaponType == ONE_HANDED_SWINGING || weaponType == ONE_HANDED_THRUSTING || weaponType == TWO_HANDED_SWORD))) {
-			unhideElement(secondaryWeaponContainer);
-		} else {
-			hideElement(secondaryWeaponContainer);
-			isDualWielding = false;
-		}
-
-		if (!firstRun) displayFrames();
-	}
-
-	function secondaryWeaponChanged() {
-		secondaryWeapon = WEAPONS.get(secondaryWeaponSelect.value);
-		console.log("New secondaryWeapon selected: " + secondaryWeapon.name + " - " + secondaryWeapon.WSM);
-
-		if (secondaryWeapon.name != "None") {
-			isDualWielding = true;
-			hideElement(isOneHandedContainer);
-		} else {
-			isDualWielding = false;
-			if (character == BARBARIAN && secondaryWeapon.weaponType == TWO_HANDED_SWORD) {
-				unhideElement(isOneHandedContainer);
-			} else {
-				hideElement(isOneHandedContainer);
+			hideElement(CONTAINER_WEREWOLF);
+			hideElement(CONTAINER_TABLE_VARIABLE_WEREWOLF);
+			if (tableVariable == TABLE_VARIABLE_WEREWOLF) {
+				TABLE_VARIABLE_IAS.checked = true;
+				onTableVariableChange(false);
 			}
 		}
 
-		if (!firstRun) displayFrames();
+		setSkills();
+
+		if (updateTable) displayFrames();
 	}
 
-	function isOneHandedChanged() {
-		let isOneHandedBool = isOneHanded.checked;
-		console.log("isOneHandedBool: " + isOneHandedBool);
-		if (!firstRun) displayFrames();
+	function onPrimaryWeaponChange(updateTable) {
+		primaryWeapon = WEAPONS.get(SELECT_PRIMARY_WEAPON.value);
+		let type = primaryWeapon.type;
+
+		if (character == BARBARIAN && type == TWO_HANDED_SWORD && !isDualWielding) {
+			unhideElement(CONTAINER_IS_ONE_HANDED);
+		} else {
+			hideElement(CONTAINER_IS_ONE_HANDED);
+		}
+
+		if ((character == ASSASSIN && type == CLAW) || (character == BARBARIAN && (type == ONE_HANDED_SWINGING || type == ONE_HANDED_THRUSTING || type == TWO_HANDED_SWORD))) {
+			unhideElement(CONTAINER_SECONDARY_WEAPON);
+			setSecondaryWeapons();
+		} else {
+			hideElement(CONTAINER_SECONDARY_WEAPON);
+			hideElement(CONTAINER_WSM_BUGGED);
+			CHECKBOX_WSM_BUGGED.checked = false;
+			isDualWielding = false;
+		}
+
+		setSkills();
+
+		if (updateTable) displayFrames();
 	}
 
-	function skillChanged() {
-		skill = parseInt(skillSelect.value);
-		skillData = SKILLS[skill];
-		console.log("New skill selected: " + skill + " - " + skillData[0]);
+	function onSecondaryWeaponChange(updateTable) {
+		secondaryWeapon = WEAPONS.get(SELECT_SECONDARY_WEAPON.value);
+
+		if (secondaryWeapon.type != UNARMED) {
+			isDualWielding = true;
+			hideElement(CONTAINER_IS_ONE_HANDED);
+			unhideElement(CONTAINER_WSM_BUGGED);
+		} else {
+			isDualWielding = false;
+			hideElement(CONTAINER_WSM_BUGGED);
+			CHECKBOX_WSM_BUGGED.checked = false;
+			if (character == BARBARIAN && primaryWeapon.type == TWO_HANDED_SWORD) {
+				unhideElement(CONTAINER_IS_ONE_HANDED);
+			} else {
+				hideElement(CONTAINER_IS_ONE_HANDED);
+			}
+		}
+
+		setSkills();
+
+		if (updateTable) displayFrames();
+	}
+
+	function onSkillChange(updateTable) {
+		skill = SELECT_SKILL.value;
 
 		if (skill == WHIRLWIND) {
-			hideElement(fanaticismContainer);
-			hideElement(frenzyContainer);
-			hideElement(holyFreezeContainer);
+			hideElement(CONTAINER_TABLE_VARIABLE);
+			hideElement(CONTAINER_FANATICISM);
+			hideElement(CONTAINER_BURST_OF_SPEED);
+			hideElement(CONTAINER_FRENZY);
+			hideElement(CONTAINER_HOLY_FREEZE);
 		} else {
-			unhideElement(fanaticismContainer);
-			if (character == BARBARIAN) unhideElement(frenzyContainer);
-			unhideElement(holyFreezeContainer);
+			unhideElement(CONTAINER_TABLE_VARIABLE);
+			unhideElement(CONTAINER_FANATICISM);
+			if (character == ASSASSIN) unhideElement(CONTAINER_BURST_OF_SPEED);
+			if (character == BARBARIAN) unhideElement(CONTAINER_FRENZY);
+			unhideElement(CONTAINER_HOLY_FREEZE);
 		}
 
-		if (!firstRun) displayFrames();
+		if (updateTable) displayFrames();
 	}
 
-	function primaryWeaponIASChanged() {
-		var primaryWeaponIASValue = primaryWeaponIAS.value;
-		console.log("Primary weapon IAS: " + primaryWeaponIASValue);
-		if (!firstRun) displayFrames();
-	}
-
-	function fanaticismChanged() {
-		var fanaticismLevel = fanaticismLevelInput.value;
-		console.log("Fanaticism level: " + fanaticismLevel);
-		if (!firstRun) displayFrames();
-	}
-
-	function burstOfSpeedChanged() {
-		var burstOfSpeedLevel = burstOfSpeedLevelInput.value;
-		console.log("Burst of Speed level: " + burstOfSpeedLevel);
-		if (!firstRun) displayFrames();
-	}
-
-	function werewolfChanged() {
-		var werewolfLevel = werewolfLevelInput.value;
-		console.log("Werewolf level: " + werewolfLevel);
-		if (!firstRun) displayFrames();
-	}
-
-	function frenzyChanged() {
-		var frenzyLevel = frenzyLevelInput.value;
-		console.log("Frenzy level: " + frenzyLevel);
-		if (!firstRun) displayFrames();
-	}
-
-	function holyFreezeChanged() {
-		var holyFreezeLevel = holyFreezeLevelInput.value;
-		console.log("Holy Freeze level: " + holyFreezeLevel);
-		if (!firstRun) displayFrames();
-	}
-
-	function decrepifyChanged() {
-		let decrepifySelected = decrepify.checked;
-		console.log("Decrepify checked: " + decrepifySelected);
-		if (!firstRun) displayFrames();
-	}
-
-	function setWeapons() {
-
-		if (primaryWeaponSelect.options.length != 291) {
-			for (const weaponName of WEAPONS.keys()) {
-				primaryWeaponSelect.add(createOption(weaponName, weaponName));
+	function setPrimaryWeapons() {
+		let previousValue = SELECT_PRIMARY_WEAPON.value;
+		let reselect = false;
+		clear(SELECT_PRIMARY_WEAPON);
+		for (const weapon of WEAPONS.values()) {
+			if (canBeEquipped(weapon)) {
+				SELECT_PRIMARY_WEAPON.add(createOption(weapon.name));
+				if (previousValue == weapon.name) reselect = true;
 			}
-			primaryWeaponChanged();
 		}
+		if (reselect) {
+			SELECT_PRIMARY_WEAPON.value = previousValue;
+		} else {
+			onPrimaryWeaponChange(false);
+		}
+	}
 
-		if (secondaryWeaponSelect.options.length != 291) {
-			for (const weaponName of WEAPONS.keys()) {
-				secondaryWeaponSelect.add(createOption(weaponName, weaponName));
+	function setSecondaryWeapons() {
+		let previousValue = SELECT_SECONDARY_WEAPON.value;
+		let reselect = false;
+		clear(SELECT_SECONDARY_WEAPON);
+		if (character == BARBARIAN) {
+			for (const weapon of WEAPONS.values()) {
+				if ((weapon.type.isOneHand && weapon.type != CLAW) || weapon.type == TWO_HANDED_SWORD) {
+					if (canBeEquipped(weapon)) {
+						SELECT_SECONDARY_WEAPON.add(createOption(weapon.name));
+						if (previousValue == weapon.name) reselect = true;
+					}
+				}
 			}
-			secondaryWeaponChanged();
+		} else if (character == ASSASSIN) {
+			SELECT_SECONDARY_WEAPON.add(createOption("None"));
+			for (const weapon of WEAPONS.values()) {
+				if (weapon.type == CLAW) {
+					SELECT_SECONDARY_WEAPON.add(createOption(weapon.name));
+					if (previousValue == weapon.name) reselect = true;
+				}
+			}
 		}
-
+		if (reselect) {
+			SELECT_SECONDARY_WEAPON.value = previousValue;
+		} else {
+			onSecondaryWeaponChange(false);
+		}
 	}
 
 	function setSkills() {
 
+		let type = primaryWeapon.type;
+		let itemClass = primaryWeapon.itemClass;
+
 		let currentSkills = [STANDARD];
 
-		clearSkills();
+		clear(SELECT_SKILL);
 
-		if (form == HUMAN) {
+		if (form == HUMAN && isCharacterSelected() && (itemClass == CLASS_THROWING || itemClass == CLASS_JAVELIN)) {
 			currentSkills.push(THROW);
 		}
 
-		switch (parseInt(character)) { // i could add these in with a loop, but might make changes in the future
+		switch (parseInt(character)) {
 			case AMAZON:
 				if (form == HUMAN) {
-					currentSkills.push(STRAFE);
-					currentSkills.push(JAB);
-					currentSkills.push(IMPALE);
-					currentSkills.push(FEND);
+					if (type == BOW || type == CROSSBOW) {
+						currentSkills.push(STRAFE);
+					} else if (itemClass == CLASS_SPEAR || itemClass == CLASS_JAVELIN) {
+						currentSkills.push(JAB);
+						currentSkills.push(IMPALE);
+						currentSkills.push(FEND);
+					}
 				}
 				break;
 			case ASSASSIN:
 				if (form == HUMAN) {
 					currentSkills.push(LAYING_TRAPS);
 					currentSkills.push(DRAGON_TALON);
-					currentSkills.push(PHOENIX_STRIKE);
-					currentSkills.push(TIGER_STRIKE);
-					currentSkills.push(COBRA_STRIKE);
-					currentSkills.push(FISTS_OF_FIRE);
-					currentSkills.push(CLAWS_OF_THUNDER);
-					currentSkills.push(BLADES_OF_ICE);
-					currentSkills.push(DRAGON_CLAW);
+					if (type.isMelee) {
+						currentSkills.push(TIGER_STRIKE);
+						currentSkills.push(COBRA_STRIKE);
+						currentSkills.push(PHOENIX_STRIKE);
+					}
+					if (type == CLAW || type == UNARMED) {
+						currentSkills.push(FISTS_OF_FIRE);
+						currentSkills.push(CLAWS_OF_THUNDER);
+						currentSkills.push(BLADES_OF_ICE);
+					}
 					currentSkills.push(DRAGON_TAIL);
+					if (type == CLAW && isDualWielding) {
+						currentSkills.push(DRAGON_CLAW);
+					}
+					if (type == CLAW) {
+						currentSkills.push(WHIRLWIND);
+					}
 				}
 				break;
 			case BARBARIAN:
 				if (form == HUMAN) {
-					currentSkills.push(FRENZY);
-					currentSkills.push(WHIRLWIND);
-					currentSkills.push(DOUBLE_SWING);
-					currentSkills.push(DOUBLE_THROW);
-					currentSkills.push(CONCENTRATE);
-					currentSkills.push(BERSERK);
-					currentSkills.push(BASH);
-					currentSkills.push(STUN);
+					if (type.isMelee) {
+						if (isDualWielding) {
+							currentSkills.push(FRENZY);
+							currentSkills.push(DOUBLE_SWING);
+						}
+						currentSkills.push(WHIRLWIND);
+						currentSkills.push(CONCENTRATE);
+						currentSkills.push(BERSERK);
+						currentSkills.push(BASH);
+						currentSkills.push(STUN);
+					}
+					if ((type == ONE_HANDED_THRUSTING || type == THROWING) && isDualWielding && (secondaryWeapon.type == ONE_HANDED_THRUSTING || secondaryWeapon.type == TWO_HANDED_THRUSTING)) {
+						currentSkills.push(DOUBLE_THROW);
+					}
 				} else if (form == WEREWOLF) {
 					currentSkills.push(FERAL_RAGE);
 				}
@@ -308,8 +452,8 @@ function loadPage() {
 				}
 				break;
 			case PALADIN:
-				if (form == HUMAN) {
-					currentSkills.push(SMITE);
+				if (form == HUMAN && type.isMelee) {
+					if (type.isOneHand) currentSkills.push(SMITE);
 					currentSkills.push(ZEAL);
 					currentSkills.push(SACRIFICE);
 					currentSkills.push(VENGEANCE);
@@ -327,437 +471,481 @@ function loadPage() {
 		}
 
 		if (form == HUMAN && character != PALADIN && isCharacterSelected() &&
-			!(primaryWeapon.weaponType == UNARMED || primaryWeapon.weaponType == BOW || primaryWeapon.weaponType == CROSSBOW || primaryWeapon.weaponType == CLAW)) {
+			!(primaryWeapon.type == UNARMED || primaryWeapon.type == BOW || primaryWeapon.type == CROSSBOW || primaryWeapon.type == CLAW) && primaryWeapon.maxSockets >= 4) {
 			currentSkills.push(ZEAL);
 		}
 
-		currentSkills.forEach(skillId => {
-			skillSelect.add(createOption(skillId, SKILLS[skillId][0]));
-		});
+		currentSkills.forEach(skill => SELECT_SKILL.add(createOption(skill)));
 
 		if (!currentSkills.includes(skill)) {
-			skillChanged();
+			onSkillChange(false);
 		} else {
-			skillSelect.value = skill;
+			SELECT_SKILL.value = skill;
 		}
 
 
 	}
 
-	function getPrimaryWeaponIAS() {
-		return (form == HUMAN ? 0 : parseInt(primaryWeaponIAS.value));
+	function getWeaponIAS(isPrimary) {
+		return isPrimary ? parseInt(NUMBER_PRIMARY_WEAPON_IAS.value) : parseInt(NUMBER_SECONDARY_WEAPON_IAS.value);
 	}
 
 	function displayFrames() {
-		
-		removeAllChildNodes(tableContainer);
 
-		if (skill == STANDARD) { // temp solution
+		console.log("----------------- start new table(s) ------------------");
 
-			let framesPerDirection = calculateFramesPerDirection(false, primaryWeapon);
-			displayTable(framesPerDirection, true);
+		removeAllChildNodes(CONTAINER_TABLE);
 
-			if (primaryWeapon.weaponType.hasAlternateAnimation(character)) {
-				let alternateFramesPerDirection = calculateFramesPerDirection(true, primaryWeapon);
-				displayTable(alternateFramesPerDirection, true);
-				if (isDualWielding && primaryWeapon != secondaryWeapon) {
-					alternateFramesPerDirection = 12; // seems this is hardcoded for off hand swings of any class
-					displayTable(alternateFramesPerDirection, false);
-				}
-			} else if (isDualWielding) {
-				framesPerDirection = 12; // seems this is hardcoded for off hand swings of any class, would like to test this
-				displayTable(framesPerDirection, false);
+		if (form != HUMAN) {
+			displayWereformTables();
+		} else if (skill == FRENZY) {
+			displayFrenzyTable();
+		} else if (skill == WHIRLWIND) {
+			displayWhirlwindTable(true);
+			if (isDualWielding) displayWhirlwindTable(false);
+		} else if (skill == STRAFE) {
+			displayStrafeTable();
+		} else if (skill == FEND || skill == ZEAL || skill == DRAGON_TALON) {
+			displaySimpleRollbackTable();
+		}
+		else {
+
+			displayStandardTable(true, false);
+			if (skill == STANDARD) {
+				if (primaryWeapon.type.hasAlternateAnimation(character)) displayStandardTable(true, true);
+				if (isDualWielding) displayStandardTable(false, false);
 			}
 
-		} else if (skill == FEND) {
-
-			framesPerDirection = ACTION_FRAMES[primaryWeapon.weaponType.type][character];
-			displayTable(framesPerDirection, true);
-
-		} else {
-
-			let framesPerDirection = calculateFramesPerDirection(false, primaryWeapon);
-			displayTable(framesPerDirection, true);
-
 		}
+
+		console.log("------------------ end new table(s) -------------------");
 
 	}
 
-	function displayTable(framesPerDirection, isPrimary) {
+	function displayTable(breakpoints, variableLabel, tableName) {
+		let tableDiv = document.createElement("div");
+		tableDiv.className = "tableHeader";
+		let table = document.createElement("table");
 
-		if (skill == FEND || skill == STRAFE || skill == WHIRLWIND) {
-			displayAccelerationNeededFromHardcode();
-			return;
-		}
-		if (skill == DRAGON_TALON || skill == ZEAL) {
-			displayReducedSequenceTable();
-			return;
-		}
-		if (skill == FRENZY) {
-			//displayFrenzyTable();
-			return;
+		if (tableName !== undefined) {
+			let headerDiv = document.createElement("div");
+			headerDiv.className = "headerDiv";
+			let headerText = document.createElement("h4");
+			headerText.innerHTML = tableName;
+			headerDiv.appendChild(headerText);
+			tableDiv.appendChild(headerDiv);
 		}
 
-		let weapon = isPrimary ? primaryWeapon : secondaryWeapon;
-		let isSequenceSkill = skill == FRENZY || skill == JAB;
-		let startingFrame = calculateStartingFrame(weapon);
-		let animationSpeed = calculateAnimationSpeed(weapon.weaponType);
+		addTableHeader(table, variableLabel);
 
-		console.log("--- start ---");
-		let WSM = 0;
-		if (isDualWielding) {
-			if (isPrimary) {
-				if (wsmBugged) {
-					WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2 - secondaryWeapon.WSM + primaryWeapon.WSM;
-				} else {
-					WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2;
+		for (const [tableVariableIndex, FPA] of breakpoints) {
+			addTableRow(table, tableVariableIndex, FPA);
+		}
+
+		tableDiv.appendChild(table);
+		CONTAINER_TABLE.appendChild(tableDiv);
+	}
+
+	function displayWereformTables() {
+
+		console.log(" -- start displayWereformTables -- ");
+
+		let weapon = primaryWeapon;
+		let weaponType = weapon.type;
+		let WSM = weapon.WSM; // TODO possibly experiment
+		let animationSpeed = calculateAnimationSpeed(weaponType);
+		let wIAS = getWeaponIAS(true);
+		let wEIAS = convertIAStoEIAS(wIAS);
+		let EIAS = calculateEIAS(WSM, wIAS);
+
+		console.log("animationSpeed: " + animationSpeed);
+		console.log("WSM: " + WSM);
+		console.log("wIAS: " + wIAS);
+		console.log("EIAS: " + EIAS);
+
+		let framesPerDirection0 = calculateFramesPerDirection(weaponType);
+		let framesPerDirection1 = 0;
+		let framesPerDirection2 = 0;
+		let framesPerDirection3 = 13;
+		if (form == WEREWOLF) {
+			if (skill == FERAL_RAGE || skill == FURY) framesPerDirection1 = 7;
+			else if (skill == RABIES) framesPerDirection1 = 10;
+			else framesPerDirection1 = 13;
+			framesPerDirection2 = 9;
+		} else {
+			if (skill == HUNGER) framesPerDirection1 = 10;
+			else framesPerDirection1 = 12;
+			framesPerDirection2 = 10;
+		}
+
+		let accelerationModifier = Math.floor(256 * framesPerDirection2 /
+			Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
+		console.log("accelerationModifier: " + accelerationModifier);
+
+		let offset = skill == FERAL_RAGE || skill == FURY ? 0 : 1;
+		let accelerationTable = new Map();
+
+		let temp = 0;
+		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+			let frameLengthDivisor = Math.floor(accelerationModifier * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor) - offset;
+			if (skill == FURY) {
+				let FPA2 = Math.ceil(256 * framesPerDirection3 / frameLengthDivisor) - 1;
+				if (temp != FPA + FPA2) {
+					temp = FPA + FPA2;
+					accelerationTable.set(acceleration + wEIAS, "(" + FPA + ")/" + FPA2);
+					console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2);
 				}
 			} else {
-				if (wsmBugged) {
-					WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2;
-				} else {
-					WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2 - primaryWeapon.WSM + secondaryWeapon.WSM;
+				if (skill == FERAL_RAGE) {
+					FPA += Math.ceil((256 * framesPerDirection3 - FPA * frameLengthDivisor) / (2 * frameLengthDivisor)) - 1;
+				}
+				if (temp != FPA) {
+					temp = FPA;
+					accelerationTable.set(acceleration + wEIAS, FPA);
+					console.log("acceleration=" + acceleration + ",FPA=" + FPA);
 				}
 			}
-		} else {
-			WSM = (isPrimary ? primaryWeapon : secondaryWeapon).WSM;
 		}
-		//let EIAS = calculateEIAS(WSM);
-		let accelerationNeeded = calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, isSequenceSkill, WSM);
-		displayAccelerationNeeded(accelerationNeeded);
 
-		console.log("--- end ---");
+		displayBreakpoints(accelerationTable);
+
+		console.log(" -- end displayWereformTables -- ");
 	}
 
-	function displayAccelerationNeeded(breakpoints) {
-		let table = document.createElement("table");
-		table.className = "table";
-		tableContainer.appendChild(table);
+	function displayStandardTable(isPrimary, isAlternate) {
 
-		breakpoints = convertAccelerationNeededTableToIAS(breakpoints);
+		console.log(" -- start displayStandardTable for isPrimary=" + isPrimary + ",isAlternate=" + isAlternate + " -- ");
 
-		for (const [accelerationIndex, FPA] of breakpoints) {
-			addTableRow(table, accelerationIndex, FPA);
-		}
-	}
+		let weapon = isPrimary ? primaryWeapon : secondaryWeapon;
+		let weaponType = weapon.type;
+		// offhands are hardcoded to 12 framesPerDirection ? TODO does this switch with wsm bugging?
+		let framesPerDirection = isPrimary ? (isAlternate ? weaponType.getAlternateFramesPerDirection(character) : calculateFramesPerDirection(weaponType)) : 12;
+		let animationSpeed = calculateAnimationSpeed(weaponType);
+		let startingFrame = getStartingFrame(weaponType);
+		let WSM = getWSM(isPrimary);
+		let EIAS = calculateEIAS(WSM, 0);
+		let offset = skill == IMPALE || skill == JAB || skill == FISTS_OF_FIRE || skill == CLAWS_OF_THUNDER
+			|| skill == BLADES_OF_ICE || skill == DRAGON_CLAW || skill == DOUBLE_SWING
+			|| skill == DOUBLE_THROW ? 0 : 1;
 
-	function calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, isSequenceSkill, WSM) {
-
+		console.log("framesPerDirection: " + framesPerDirection);
 		console.log("animationSpeed: " + animationSpeed);
 		console.log("startingFrame: " + startingFrame);
 		console.log("WSM: " + WSM);
-		let BASE_EIAS = calculateEIAS(WSM, 0);
-		let EIAS = BASE_EIAS;
-
-		let accelerationModifier = animationSpeed;
-		if (form != HUMAN) {
-			let framesPerDirection0 = framesPerDirection;
-			let framesPerDirection1 = (form == WEREWOLF ? 13 : 12);
-			let framesPerDirection2 = (form == WEREWOLF ? 9 : 10);
-			if (skill == HUNGER || skill == RABIES) framesPerDirection1 = 10;
-			let wIAS = getPrimaryWeaponIAS();
-			console.log("wIAS: " + wIAS);
-			EIAS = calculateEIAS(WSM, wIAS);
-			framesPerDirection = framesPerDirection1;
-			accelerationModifier = Math.floor(256 * framesPerDirection2 / Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
-		}
-		console.log("framesPerDirection: " + framesPerDirection);
-		console.log("BASE_EIAS: " + BASE_EIAS);
 		console.log("EIAS: " + EIAS);
-		console.log("accelerationModifier: " + accelerationModifier);
-		let offset = (isSequenceSkill ? 0 : 1);
-		let maxAccelerationIndex = 120; // TODO 120 for gear ias, diff for other sources
-		// credit to BinaryAzeotrope for helping come up with these formulas
-		let slowestFrame = Math.ceil(256 * (framesPerDirection - startingFrame) / Math.floor(accelerationModifier * EIAS									  	   / 100)) - offset;
-		let fastestFrame = Math.ceil(256 * (framesPerDirection - startingFrame) / Math.floor(accelerationModifier * limitToEIASBounds(EIAS + maxAccelerationIndex) / 100)) - offset;
 
-		console.log("slowestFrame=" + slowestFrame + ",fastestFrame=" + fastestFrame);
+		let accelerationTable = new Map();
 
-		let accelerationNeeded = new Map();
-
-		for (FPA = slowestFrame; FPA >= fastestFrame; FPA--) {
-
-			let acceleration = limitToEIASBounds(Math.ceil(Math.ceil(256 * (framesPerDirection - startingFrame) / (FPA + offset)) * 100 / accelerationModifier));
-			console.log("acceleration=" + acceleration + ",FPA=" + FPA);
-
-			accelerationNeeded.set(acceleration - BASE_EIAS, FPA);
-			//let gearIAS = Math.max(0, Math.ceil(120 * (acceleration - SIAS + WSM) / (120 - (acceleration - SIAS + WSM))));
-
-			//let actualFPA = FPA; // TODO
-			//if (isSequenceSkill) {
-			//	actualFPA++;
-			//}
-
+		let temp = 0;
+		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * (framesPerDirection - startingFrame) / frameLengthDivisor) - offset;
+			if (temp != FPA) {
+				temp = FPA;
+				accelerationTable.set(acceleration, FPA);
+				console.log("acceleration=" + acceleration + ",FPA=" + FPA);
+			}
 		}
 
-		return accelerationNeeded;
+		let tableName = undefined;
+		if (isPrimary) {
+			if (isAlternate) tableName = "Primary Weapon Second Animation";
+			else tableName = "Primary Weapon";
+		} else {
+			tableName = "Secondary Weapon";
+		}
+
+		displayBreakpoints(accelerationTable, tableName);
+
+		console.log(" -- end displayStandardTable for isPrimary=" + isPrimary + ",isAlternate=" + isAlternate + " -- ");
+
 	}
 
-	function calculateEIAS(WSM, IAS) {
+	function displayFrenzyTable() {
+
+		console.log(" -- start displayFrenzyTables -- ");
+
+		let framesPerDirection1 = 9; // not sure why this is 9, its not a standard framesPerDirection and doesnt seem to be an action frame. startingFrame for frenzy would always be 0, so thats not a factor.
+		let framesPerDirection2 = getSequence();
+		let animationSpeed = 256;
+		console.log("framesPerDirection1: " + framesPerDirection1);
+		console.log("framesPerDirection2: " + framesPerDirection2);
+		console.log("animationSpeed: " + animationSpeed);
+
+		// frenzy seems to have its own way of calculating WSM
+		let averageWSM = parseInt((primaryWeapon.WSM + secondaryWeapon.WSM) / 2); // TODO might be wrong
+		let primaryWSM = CHECKBOX_WSM_BUGGED.checked ? primaryWeapon.WSM - secondaryWeapon.WSM + averageWSM : primaryWeapon.WSM + secondaryWeapon.WSM - averageWSM;
+		let secondaryWSM = CHECKBOX_WSM_BUGGED.checked ? averageWSM : 2 * secondaryWeapon.WSM - averageWSM;
+		console.log("primaryWSM: " + primaryWSM);
+		console.log("secondaryWSM: " + secondaryWSM);
+
+		let primaryEIAS = calculateEIAS(primaryWSM, getWeaponIAS(true));
+		let secondaryEIAS = calculateEIAS(secondaryWSM, getWeaponIAS(false));
+		console.log("primaryEIAS: " + primaryEIAS);
+		console.log("secondaryEIAS: " + secondaryEIAS);
+
+		let accelerationTable = new Map();
+
+		let temp = 0;
+		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+			let acceleration1 = tableVariable == TABLE_VARIABLE_SECONDARY_WEAPON_IAS ? 0 : acceleration;
+			let acceleration2 = tableVariable == TABLE_VARIABLE_PRIMARY_WEAPON_IAS ? 0 : acceleration;
+			let frameLengthDivisor1 = Math.floor(animationSpeed * limitEIAS(primaryEIAS + acceleration1) / 100);
+			let frameLengthDivisor2 = Math.floor(animationSpeed * limitEIAS(secondaryEIAS + acceleration2) / 100);
+			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor1) - 1;
+			let FPA2 = Math.ceil((256 * framesPerDirection2 - FPA * frameLengthDivisor1) / frameLengthDivisor2);
+			if (temp != FPA + FPA2) {
+				temp = FPA + FPA2;
+				accelerationTable.set(acceleration, FPA + "/" + FPA2);
+				console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2);
+			}
+		}
+
+		displayBreakpoints(accelerationTable);
+
+		console.log(" -- end displayFrenzyTables -- ");
+
+	}
+
+	/**
+	 * Fend, Dragon Talon, and Zeal
+	 */
+	function displaySimpleRollbackTable() {
+
+		console.log(" -- start displaySimpleRollbackTable -- ");
+
+		let weapon = primaryWeapon;
+		let weaponType = weapon.type;
+		let framesPerDirection1 = calculateActionFrame(weaponType);
+		let framesPerDirection2 = calculateFramesPerDirection(weaponType);
+		let animationSpeed = calculateAnimationSpeed(weaponType);
+		let startingFrame = getStartingFrame(weaponType);
+		let WSM = getWSM(true);
+		let EIAS = calculateEIAS(WSM, 0);
+		let rollbackFactor = skill == FEND ? 40 : 0;
+		console.log("framesPerDirection1: " + framesPerDirection1);
+		console.log("framesPerDirection2: " + framesPerDirection2);
+		console.log("animationSpeed: " + animationSpeed);
+		console.log("startingFrame: " + startingFrame);
+		console.log("WSM: " + WSM);
+		console.log("EIAS: " + EIAS);
+		console.log("rollbackFactor: " + rollbackFactor);
+
+		let accelerationTable = new Map();
+
+		let temp = 0;
+		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * (framesPerDirection1 - startingFrame) / frameLengthDivisor);
+			let rollback = Math.floor(Math.floor((256 * startingFrame + frameLengthDivisor * FPA) / 256) * rollbackFactor / 100);
+			let FPA2 = Math.ceil(256 * (framesPerDirection1 - rollback) / frameLengthDivisor);
+			rollback = Math.floor(Math.floor((256 * rollback + frameLengthDivisor * FPA2) / 256) * rollbackFactor / 100);
+			let FPA3 = Math.ceil(256 * (framesPerDirection2 - rollback) / frameLengthDivisor) - 1;
+			if (temp != FPA + FPA2 + FPA3) {
+				temp = FPA + FPA2 + FPA3;
+				accelerationTable.set(acceleration, FPA + "+(" + FPA2 + ")+" + FPA3);
+				console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3);
+			}
+		}
+
+		displayBreakpoints(accelerationTable);
+
+		console.log(" -- end displaySimpleRollbackTable -- ");
+
+	}
+
+	function displayStrafeTable() {
+
+		console.log(" -- start displayStrafeTable -- ");
+
+		let weapon = primaryWeapon;
+		let weaponType = weapon.type;
+		let framesPerDirection1 = calculateActionFrame(weaponType);
+		let framesPerDirection2 = calculateFramesPerDirection(weaponType);
+		let animationSpeed = calculateAnimationSpeed(weaponType);
+		let startingFrame = getStartingFrame(weaponType);
+		let WSM = weapon.WSM;
+		let EIAS = calculateEIAS(WSM, 0);
+		let rollbackFactor = 50;
+		console.log("framesPerDirection1: " + framesPerDirection1);
+		console.log("framesPerDirection2: " + framesPerDirection2);
+		console.log("animationSpeed: " + animationSpeed);
+		console.log("startingFrame: " + startingFrame);
+		console.log("WSM: " + WSM);
+		console.log("EIAS: " + EIAS);
+		console.log("rollbackFactor: " + rollbackFactor);
+
+		let accelerationEvenTable = new Map();
+		let accelerationOddTable = new Map();
+
+		let tempEven = new Array(4);
+		let tempOdd = new Array(5);
+		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * (framesPerDirection1 - startingFrame) / frameLengthDivisor);
+			let rollback = Math.floor(Math.floor((256 * startingFrame + frameLengthDivisor * FPA) / 256) * rollbackFactor / 100);
+			let FPA2 = Math.ceil(256 * (framesPerDirection1 - rollback) / frameLengthDivisor);
+			let rollback2 = Math.floor(Math.floor((256 * rollback + frameLengthDivisor * FPA2) / 256) * rollbackFactor / 100);
+			let FPA3 = Math.ceil(256 * (framesPerDirection1 - rollback2) / frameLengthDivisor);
+			let rollback3 = Math.floor(Math.floor((256 * rollback2 + frameLengthDivisor * FPA3) / 256) * rollbackFactor / 100);
+			let FPA4 = Math.ceil(256 * (framesPerDirection1 - rollback3) / frameLengthDivisor);
+			let rollback4 = Math.floor(Math.floor((256 * rollback3 + frameLengthDivisor * FPA4) / 256) * rollbackFactor / 100);
+			let evenFPA =  Math.ceil(256 * (framesPerDirection2 - rollback3) / frameLengthDivisor) - 1;
+			let oddFPA =  Math.ceil(256 * (framesPerDirection2 - rollback4) / frameLengthDivisor) - 1;
+			if (tempEven[0] != FPA || tempEven[1] != FPA2 || tempEven[2] != FPA3 || tempEven[3] != evenFPA) {
+				tempEven[0] = FPA;
+				tempEven[1] = FPA2;
+				tempEven[2] = FPA3;
+				tempEven[3] = evenFPA;
+				if (FPA2 == FPA4) {
+					if (FPA2 == FPA3) {
+						accelerationEvenTable.set(acceleration, FPA + "+(" + FPA2 + ")+" + evenFPA);
+					} else {
+						accelerationEvenTable.set(acceleration, FPA + "+(" + FPA2 + "+" + FPA3 + ")+" + evenFPA);
+					}
+				} else {
+					accelerationEvenTable.set(acceleration, FPA + "+" + FPA2 + "+(" + FPA3 + ")+" + evenFPA);
+				}
+				console.log("(even) acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3 + ",FPA4=" + FPA4 + ",evenFPA=" + evenFPA);
+			}
+			if (tempOdd[0] != FPA || tempOdd[1] != FPA2 || tempOdd[2] != FPA3 || tempOdd[3] != FPA4 || tempOdd[4] != oddFPA) {
+				tempOdd[0] = FPA;
+				tempOdd[1] = FPA2;
+				tempOdd[2] = FPA3;
+				tempOdd[3] = FPA4;
+				tempOdd[4] = oddFPA;
+				if (FPA2 == FPA3) {
+					accelerationOddTable.set(acceleration, FPA + "+(" + FPA2 + ")+" + oddFPA);
+				} else if (FPA2 == FPA4) {
+					accelerationOddTable.set(acceleration, FPA + "+" + FPA2 + "+(" + FPA3 + "+" + FPA4 + ")+" + oddFPA);
+				} else {
+					accelerationOddTable.set(acceleration, FPA + "+" + FPA2 + "+(" + FPA3 + ")+" + oddFPA);
+				}
+				console.log("(odd) acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3 + ",FPA4=" + FPA4 + ",oddFPA=" + oddFPA);
+			}
+		}
+
+		displayBreakpoints(accelerationEvenTable);
+		if (weaponType == CROSSBOW) displayBreakpoints(accelerationOddTable);
+
+		console.log(" -- end displayStrafeTable -- ");
+
+	}
+
+	function calculateEIAS(WSM, wIAS) {
 		let SIAS = calculateSIAS();
+		console.log("SIAS: " + SIAS);
+		let IAS = wIAS;
+		if (tableVariable != TABLE_VARIABLE_IAS) IAS += parseInt(NUMBER_IAS.value);
 		let IAS_EIAS = convertIAStoEIAS(IAS);
-		return limitToEIASBounds(100 + SIAS - WSM + IAS_EIAS);
+		return limitEIAS(100 + SIAS - WSM + IAS_EIAS);
 	}
 
 	function convertIAStoEIAS(IAS) {
-		let EIAS = Math.floor(120 * IAS / (120 + IAS));
-		return EIAS;
+		return Math.floor(120 * IAS / (120 + IAS));
 	}
 
-	function displayAccelerationNeededFromHardcode() {
+	function convertEIAStoIAS(EIAS) {
+		return Math.ceil(120 * EIAS / (120 - EIAS));
+	}
 
-		let WSM = primaryWeapon.WSM;
-		let EIAS = calculateEIAS(WSM, 0);
-		let breakpointTable;
+	function getWSM(isPrimary) {
+		if (!isDualWielding) return primaryWeapon.WSM;
+		let primaryWSM = primaryWeapon.WSM;
+		let secondaryWSM = secondaryWeapon.WSM;
+		let averageWSM = parseInt((primaryWSM + secondaryWSM) / 2); // TODO might be wrong
+		if (CHECKBOX_WSM_BUGGED.checked) {
+			return isPrimary ? averageWSM - secondaryWSM + primaryWSM : averageWSM;
+		} else {
+			return isPrimary ? averageWSM : averageWSM - primaryWSM + secondaryWSM;
+		}
+		/*return (CHECKBOX_WSM_BUGGED.checked && !isPrimary) ?
+			averageWSM - (isPrimary ? secondaryWSM : primaryWSM) + (isPrimary ? primaryWSM : secondaryWSM)
+			: averageWSM;*/
+	}
 
-		if (skill == FEND) {
-			if (primaryWeapon.weaponType == SPEAR) {
-				breakpointTable = FEND_SPEAR_TABLE;
-			} else if (primaryWeapon.weaponType == ONE_HANDED_THRUSTING) {
-				breakpointTable = FEND_ONE_HANDED_THRUSTING_TABLE;
-			}
-		} else if (skill == STRAFE) {
-			if (primaryWeapon.weaponType == BOW) {
-				breakpointTable = STRAFE_BOW_TABLE;
-			} else if (primaryWeapon.weaponType == CROSSBOW) {
-				breakpointTable = STRAFE_EVEN_CROSSBOW_TABLE;
-			}
-		} else if (skill == WHIRLWIND) { // TODO
-			SIAS = 0;
+	function displayWhirlwindTable(isPrimary) {
 
-			if (isDualWielding) {
-				if (wsmBugged) {
-					WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2 - secondaryWeapon.WSM + primaryWeapon.WSM;
-				} else {
-					WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2;
-				}
-			}
+		console.log(" -- start displayWhirlwindTable for isPrimary=" + isPrimary + " -- ");
 
-			EIAS = Math.max(15, SIAS - WSM);
+		let weapon = isPrimary? primaryWeapon : secondaryWeapon;
+		let framesPerDirection = calculateFramesPerDirection(weapon.type);
+		let animationSpeed = calculateAnimationSpeed(weapon.type);
+		let WSM = getWSM(isPrimary);
+		let EIAS = 100 - WSM;
 
-			if (character == ASSASSIN && primaryWeapon.weaponType == CLAW) {
-				breakpointTable = WHIRLWIND_CLAW_TABLE;
-			} else if (character == BARBARIAN) {
-				if (primaryWeapon.weaponType == UNARMED || primaryWeapon.weaponType == ONE_HANDED_SWINGING ||
-					primaryWeapon.weaponType == ONE_HANDED_THRUSTING || primaryWeapon.weaponType == TWO_HANDED_SWORD) {
-					breakpointTable = WHIRLWIND_ONE_HANDED_TABLE;
-				} else {
-					breakpointTable = WHIRLWIND_TWO_HANDED_TABLE;
-				}
+		console.log("framesPerDirection: " + framesPerDirection);
+		console.log("animationSpeed: " + animationSpeed);
+		console.log("WSM: " + WSM);
+		console.log("EIAS: " + EIAS);
+
+		let accelerationTable = new Map();
+
+		let temp = 0;
+		for (let acceleration = 0; acceleration <= MAX_IAS_WEAPON; acceleration++) {
+			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
+			let FPA = Math.ceil(256 * framesPerDirection / frameLengthDivisor) - 1;
+			FPA = calculateWhirlwindFPA(FPA);
+			if (temp != FPA) {
+				temp = FPA;
+				accelerationTable.set(acceleration, FPA);
+				console.log("acceleration=" + acceleration + ",FPA=" + FPA);
+				if (FPA == 4) break;
 			}
 		}
 
-		let table = breakpointTable.getTableAfter(EIAS);
-		let accelerationNeeded = table.getAdjustedTable(EIAS); // TODO for whirlwind
-		//if (skill == WHIRLWIND) table = table.getAdjustedTable(EIAS);
-		//let tableIAS = (skill == WHIRLWIND ? table.getAdjustedTable(WSM) : table.convertToIASTable(EIAS));
-		//let breakpoints = new Map();
-		//console.log("calculateBreakpointTableFromHardcode (WSM=" + WSM + "):");
-		//for (let index in tableIAS) {
-		//	let breakpoint = tableIAS[index];
-		//	console.log(breakpoint[0] + ", " + breakpoint[1]);
-		//	breakpoints.set(breakpoint[0], breakpoint[1]);
-		//}
-		displayAccelerationNeeded(accelerationNeeded); // breakpoints
+		displayBreakpoints(accelerationTable);
 
-		if (skill == STRAFE && primaryWeapon.weaponType == CROSSBOW) {
+		console.log(" -- end displayWhirlwindTable for isPrimary=" + isPrimary + " -- ");
 
-			breakpointTable = STRAFE_ODD_CROSSBOW_TABLE;
-			table = breakpointTable.getTableAfter(EIAS);
-			accelerationNeeded = table.getAdjustedTable(EIAS);
-			//tableIAS = table.convertToIASTable(EIAS);
-			//breakpoints = new Map();
-			//console.log("calculateBreakpointTableFromHardcode (WSM=" + WSM + "):");
-			//for (let index in tableIAS) {
-			//	let breakpoint = tableIAS[index];
-			//	console.log(breakpoint[0] + ", " + breakpoint[1]);
-			//	breakpoints.set(breakpoint[0], breakpoint[1]);
-			//}
+	}
 
-			displayAccelerationNeeded(accelerationNeeded); // breakpoints
+	function displayBreakpoints(table, tableName) {
 
-		} else if (skill == WHIRLWIND && isDualWielding && primaryWeapon != secondaryWeapon) { // TODO
+		let newTable = new Map();
 
-			if (wsmBugged) {
-				WSM = (secondaryWeapon.WSM + primaryWeapon.WSM) / 2;
-			} else {
-				WSM = (primaryWeapon.WSM + secondaryWeapon.WSM) / 2 - primaryWeapon.WSM + secondaryWeapon.WSM;
+		let variableLabel = undefined;
+
+		if (skill == WHIRLWIND) displayTable(table, "WIAS");
+		else if (isTableVariableSkill()) {
+			variableLabel = "Level";
+			let skill = getTableVariableSkill();
+			for (const [accelerationNeeded, FPA] of table) {
+				let level = skill.getLevelFromEIAS(accelerationNeeded);
+				newTable.set(level, FPA);
+				console.log("acceleration=" + accelerationNeeded + ",FPA=" + FPA + ",level=" + level);
 			}
-			EIAS = Math.max(15, SIAS - WSM);
-
-			table = breakpointTable.getTableAfter(EIAS);
-			accelerationNeeded = table.getAdjustedTable(EIAS); // TODO
-			//breakpoints = new Map();
-			//console.log("calculateBreakpointTableFromHardcode (WSM=" + WSM + "):");
-			//for (let index in tableIAS) {
-			//	let breakpoint = tableIAS[index];
-			//	console.log(breakpoint[0] + ", " + breakpoint[1]);
-			//	breakpoints.set(breakpoint[0], breakpoint[1]);
-			//}
-
-			displayAccelerationNeeded(accelerationNeeded); // breakpoints
-
-		}
-
-	}
-
-	function displayReducedSequenceTable() {
-		//console.log("--- start reduced sequence ---");
-
-		let framesPerDirection = (skill == DRAGON_TALON ? 4 : ACTION_FRAMES[primaryWeapon.weaponType.type][character]);
-		let animationSpeed = calculateAnimationSpeed(primaryWeapon.weaponType);
-		let startingFrame = 0; // starting frames only apply to sorcs and zons using normal attack, strafe, or fend
-		let WSM = primaryWeapon.WSM;
-		//let EIAS = calculateEIAS(WSM);
-
-		if (character == BARBARIAN && primaryWeapon.weaponType == TWO_HANDED_SWORD && isOneHanded) framesPerDirection = 7;
-		//console.log("framesPerDirection=" + framesPerDirection + ",startingFrame=" + startingFrame);
-
-		let sequenceAccelerationNeeded = calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, true, WSM);
-
-		framesPerDirection = (skill == DRAGON_TALON ? 13 : primaryWeapon.weaponType.getFramesPerDirection(character));
-		if (character == BARBARIAN && primaryWeapon.weaponType == TWO_HANDED_SWORD && isOneHanded) framesPerDirection = 16;
-
-		let finishingAccelerationNeeded = calculateAccelerationNeeded(framesPerDirection, startingFrame, animationSpeed, false, WSM);
-
-		//console.log("-- starting final --");
-		let breakpoints = mergeSequenceTables(sequenceAccelerationNeeded, finishingAccelerationNeeded);
-		displayAccelerationNeeded(breakpoints);
-		
-	}
-
-	function convertAccelerationNeededTableToIAS(table) {
-
-		let IASTable = new Map();
-
-		let alreadyExistingIAS = getPrimaryWeaponIAS();
-
-		for (const [accelerationNeeded, FPA] of table) {
-			let IAS = Math.max(0, Math.ceil(120 * accelerationNeeded / (120 - accelerationNeeded)) - alreadyExistingIAS);
-			IASTable.set(IAS, FPA);
-		}
-
-		return IASTable;
-	}
-
-	function mergeSequenceTables(...tables) {
-		let uniqueKeys = new Set();
-		tables.forEach(table => {
-			for (const value of table.values()) {
-				uniqueKeys.add(value);
+			
+		} else if (tableVariable == TABLE_VARIABLE_IAS) {
+			variableLabel = "IAS";
+			for (const [accelerationNeeded, FPA] of table) {
+				let IAS = convertEIAStoIAS(accelerationNeeded);
+				if (form != HUMAN) IAS -= getWeaponIAS(true);
+				if (IAS < 0) IAS = 0;
+				newTable.set(IAS, FPA);
 			}
-		});
-
-		let mergedTable = new Map();
-		let sequences = tables.length;
-		let iterations = uniqueKeys.size - 1;
-		let lastSequenceLength = new Array(sequences);
-		let sequenceString = "";
-
-		//console.log("sequences=" + sequences + ",iterations=" + iterations);
-
-		for (let o = 0; o < sequences; o++) {
-			let first = [...tables[o]][0];
-			lastSequenceLength[o] = first[1];
-			tables[o].delete(first[0]);
-			sequenceString += first[1];
-			if (o != sequences - 1) {
-				sequenceString += "/";
-			}
-		}
-		mergedTable.set(0, sequenceString);
-
-		for (let i = 0; i < iterations; i++) {
-			//console.log("-- start iteration " + i + " --")
-			let nextTableIndex = 0;
-			let smallestIAS = 999;
-			let connectedFrame = 0;
-			for (let o = 0; o < sequences; o++) {
-				if (tables[o].length == 0) continue;
-				let [firstKey] = tables[o].keys();
-				let [firstValue] = tables[o].values();
-				if (firstKey < smallestIAS) {
-					//console.log("firstKey=" + firstKey + " was smaller than smallestIAS=" + smallestIAS);
-					smallestIAS = firstKey;
-					connectedFrame = firstValue;
-					nextTableIndex = o;
-				}
-			}
-			if (smallestIAS == 999) continue;
-			//console.log("smallestIAS=" + smallestIAS + ",connectedFrame=" + connectedFrame);
-			tables[nextTableIndex].delete(smallestIAS);
-			lastSequenceLength[nextTableIndex] = connectedFrame;
-
-
-			sequenceString = "";
-			for (let o = 0; o < sequences; o++) {
-				let frame = lastSequenceLength[o];
-				sequenceString += frame;
-				if (o != sequences - 1) {
-					sequenceString += "/";
-				}
-			}
-			mergedTable.set(smallestIAS, sequenceString);
-
+		} else {
+			console.log("conversion not yet implemented");
 		}
 
-		return mergedTable;
-	}
-
-	function addTableRow(table, IAS, frame) {
-		let tableRow = document.createElement("tr");
-		let tdIAS = document.createElement("td");
-		tdIAS.className = "tableEntry";
-		tdIAS.innerHTML = IAS;
-		let tdFrame = document.createElement("td");
-		tdFrame.className = "tableEntry";
-		tdFrame.innerHTML = frame;
-		tableRow.appendChild(tdIAS);
-		tableRow.appendChild(tdFrame);
-		table.appendChild(tableRow);
-	}
-
-	function createOption(value, text) {
-		let option = document.createElement("option");
-		option.setAttribute("value", value);
-		option.text = text;
-		return option;
-	}
-
-	function clearWeapons() {
-		let options = primaryWeaponSelect.options;
-		let i, L = options.length - 1;
-		for (i = L; i >= 0; i--) {
-			primaryWeaponSelect.remove(i);
-		}
-	}
-
-	function clearSkills() {
-		let options = skillSelect.options;
-		let i, L = options.length - 1;
-		for (i = L; i >= 0; i--) {
-			skillSelect.remove(i);
-		}
-	}
-
-	function isMercenarySelected() {
-		return character == MERC_A1 || character == MERC_A2 || character == MERC_A5; // readability
+		displayTable(newTable, variableLabel, tableName);
 	}
 
 	function isCharacterSelected() {
-		return !isMercenarySelected();
+		return character == AMAZON || character == ASSASSIN || character == BARBARIAN
+			|| character == DRUID || character == NECROMANCER || character == PALADIN || character == SORCERESS; // readability
 	}
 
-	function calculateFramesPerDirection(alternate, weapon) {
+	function calculateFramesPerDirection(weaponType) {
 
-		let weaponType = weapon.weaponType;
-		if (character == BARBARIAN && weaponType == TWO_HANDED_SWORD && (isOneHanded.checked || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
+		if (character == BARBARIAN && weaponType == TWO_HANDED_SWORD && (CHECKBOX_IS_ONE_HANDED.checked || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
 
-		let framesPerDirection = (alternate ? weaponType.getAlternateFramesPerDirection(character) : weaponType.getFramesPerDirection(character));
+		let framesPerDirection = weaponType.getFramesPerDirection(character);
 
-		if (skill == THROW) { // throw
+		if (skill == THROW) {
 			framesPerDirection = THROWING.getFramesPerDirection(character);
-		} else if (skill == DRAGON_TAIL) {
+		} else if (skill == DRAGON_TAIL || skill == DRAGON_TALON) {
 			framesPerDirection = 13;
 		} else if (skill == SMITE) {
 			framesPerDirection = 12;
@@ -771,10 +959,8 @@ function loadPage() {
 			} else if (character == MERC_A2) {
 				framesPerDirection = 14;
 			} else {
-				framesPerDirection = SEQUENCES[skillData[3]][weaponType.type];
+				framesPerDirection = getSequence(weaponType);
 			}
-		} else if (skill == WHIRLWIND) {
-
 		}
 
 		return framesPerDirection;
@@ -791,20 +977,12 @@ function loadPage() {
 		return animationSpeed;
 	}
 
-	function calculateStartingFrame(weapon) {
-		let startingFrame = 0;
-		if ((character == AMAZON || character == SORCERESS) && (skill == STANDARD || skill == STRAFE || skill == FEND)) {
-			startingFrame = weapon.weaponType.startingFrame;
-		}
-		//console.log("calculateStartingFrame: " + startingFrame);
-		return startingFrame;
-	}
-
 	function calculateSIAS() {
 
-		let SIAS = calculateFanaticismSIAS() + calculateBurstOfSpeedSIAS() + calculateWerewolfSIAS() + calculateFrenzySIAS() + calculateHolyFreezeSIAS();
+		let SIAS = SKILL_FANATICISM.calculate(tableVariable) + SKILL_BURST_OF_SPEED.calculate(tableVariable)
+			+ SKILL_WEREWOLF.calculate(tableVariable) + SKILL_FRENZY.calculate(tableVariable) - SKILL_HOLY_FREEZE.calculate(tableVariable);
 
-		if (decrepify.checked) SIAS -= 50;
+		if (CHECKBOX_DECREPIFY.checked) SIAS -= 50;
 
 		if (skill == DOUBLE_SWING) {
 			SIAS += 20;
@@ -819,56 +997,84 @@ function loadPage() {
 		return SIAS;
 	}
 
-	function calculateFanaticismSIAS() {
-		var fanaticismLevel = fanaticismLevelInput.value;
-		if (fanaticismLevel == 0) return 0;
-		fanaticismLevel = parseInt(fanaticismLevel);
-		var fanaticismSIAS = Math.min(10 + Math.floor(30 * Math.floor((110 * fanaticismLevel) / (fanaticismLevel + 6)) / 100), 40);
-		console.log("fanaticismSIAS: " + fanaticismSIAS);
-		return fanaticismSIAS;
+	function limitEIAS(EIAS) {
+		return Math.max(MIN_EIAS, Math.min(MAX_EIAS, EIAS));
 	}
 
-	function calculateBurstOfSpeedSIAS() {
-		var burstOfSpeedLevel = burstOfSpeedLevelInput.value;
-		if (character != ASSASSIN || burstOfSpeedLevel == 0) return 0;
-		burstOfSpeedLevel = parseInt(burstOfSpeedLevel);
-		var burstOfSpeedSIAS = Math.min(15 + Math.floor(45 * Math.floor((110 * burstOfSpeedLevel) / (burstOfSpeedLevel + 6)) / 100), 60);
-		console.log("burstOfSpeedSIAS: " + burstOfSpeedSIAS);
-		return burstOfSpeedSIAS;
+	function getSequence(weaponType) {
+		if (skill == DOUBLE_THROW) return 12;
+		if (skill == DOUBLE_SWING || skill == FRENZY) return 17;
+		if (skill == FISTS_OF_FIRE || skill == CLAWS_OF_THUNDER || skill == BLADES_OF_ICE || skill == DRAGON_CLAW) return (weaponType == UNARMED || weaponType == CLAW) ? 12 : 16;
+		if (skill == JAB) return weaponType == ONE_HANDED_THRUSTING ? 18 : 21;
+		if (weaponType == ONE_HANDED_THRUSTING) return 21;
+		if (weaponType == TWO_HANDED_THRUSTING) return 24;
+		return 0;
 	}
 
-	function calculateWerewolfSIAS() {
-		var werewolfLevel = werewolfLevelInput.value;
-		if (form != WEREWOLF || werewolfLevel == 0) return 0;
-		werewolfLevel = parseInt(werewolfLevel);
-		var werewolfSIAS = Math.min(10 + Math.floor(70 * Math.floor((110 * werewolfLevel) / (werewolfLevel + 6)) / 100), 80);
-		console.log("werewolfSIAS: " + werewolfSIAS);
-		return werewolfSIAS;
+	function getStartingFrame(weaponType) {
+		if ((character == AMAZON || character == SORCERESS) && (skill == STANDARD || skill == STRAFE || skill == FEND || skill == ZEAL)) {
+			if (weaponType == UNARMED) return 1;
+			if (weaponType == ONE_HANDED_SWINGING || weaponType == TWO_HANDED_SWORD || weaponType == ONE_HANDED_THRUSTING
+					|| weaponType == TWO_HANDED_THRUSTING || weaponType == TWO_HANDED) return 2;
+		}
+		return 0;
 	}
 
-	function calculateFrenzySIAS() {
-		var frenzyLevel = frenzyLevelInput.value;
-		if (character != BARBARIAN || frenzyLevel == 0) return 0;
-		frenzyLevel = parseInt(frenzyLevel);
-		var frenzySIAS = Math.min(Math.floor(50 * Math.floor((110 * frenzyLevel) / (frenzyLevel + 6)) / 100), 50);
-		console.log("frenzySIAS: " + frenzySIAS);
-		return frenzySIAS;
+	function calculateActionFrame(weaponType) {
+		if (skill == DRAGON_TALON) return 4;
+		if (character == BARBARIAN && weaponType == TWO_HANDED_SWORD && (CHECKBOX_IS_ONE_HANDED.checked || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
+		return weaponType.getActionFrame(character);
 	}
 
+	/**
+	 * [calculatedFPA, adjustedFPA]
+	 */
+	const adjustedWhirlwindFPAs = new Map([
+		[11, 4], // 0-11
+		[14, 6], // 12-14
+		[17, 8], // 15-17
+		[19, 10], // 18-19
+		[22, 12], // 20-22
+		[25, 14] // 23-25
+	//  [99, 16] // 26+
+	]);
 
-	function calculateHolyFreezeSIAS() {
-		let holyFreezeLevel = holyFreezeLevelInput.value;
-		if (holyFreezeLevel == 0) return 0;
-		holyFreezeLevel = parseInt(holyFreezeLevel);
-		let holyFreezeSIAS = -Math.min(25 + Math.floor(35 * Math.floor((110 * holyFreezeLevel) / (holyFreezeLevel + 6)) / 100), 60);
-		console.log("holyFreezeSIAS: " + holyFreezeSIAS);
-		return holyFreezeSIAS;
+	function calculateWhirlwindFPA(FPA) {
+		for (const [calculatedFPA, adjustedFPA] of adjustedWhirlwindFPAs) {
+			if (FPA <= calculatedFPA) return adjustedFPA;
+		}
+		return 16;
 	}
 
-	function limitToEIASBounds(EIAS) {
-		return Math.max(EIAS_MIN, Math.min(EIAS_MAX, EIAS));
+	function canBeEquipped(weapon) {
+		let name = weapon.name;
+		let weaponType = weapon.type;
+		let itemClass = weapon.itemClass;
+		if (character == MERC_A1 && weaponType != BOW) return false;
+		if (character == MERC_A2 && itemClass != CLASS_POLEARM && itemClass != CLASS_SPEAR && itemClass != CLASS_JAVELIN) return false;
+		if (character == MERC_A5 && itemClass != CLASS_SWORD) return false;
+		if (character != ASSASSIN && weaponType == CLAW) return false;
+		if (character != AMAZON && (
+			name == "Stag Bow" || name == "Reflex Bow" || name == "Ashwood Bow" || name == "Ceremonial Bow" || name == "Matriarchal Bow" || name == "Grand Matron Bow" ||
+			name == "Maiden Javelin" || name == "Ceremonial Javelin" || name == "Matriarchal Javelin" ||
+			name == "Maiden Spear" || name == "Maiden Pike" || name == "Ceremonial Spear" || name == "Ceremonial Pike" || name == "Matriarchal Spear" || name == "Matriarchal Pike"
+			)) return false;
+		if (character != SORCERESS && itemClass == CLASS_ORB) return false;
+		return true;
 	}
 
+}
+
+function setupInputElement(element, eventListener) {
+	element.addEventListener("change", eventListener, false);
+	if (element.type == "number") {
+		element.onkeydown = function (e) { // only allows the input of numbers, no negative signs
+			if (!((e.keyCode > 95 && e.keyCode < 106) || (e.keyCode > 47 && e.keyCode < 58) || e.keyCode == 8)) {
+				return false;
+			}
+		}
+	}
+	return element;
 }
 
 function hideElement(element) {
@@ -880,463 +1086,134 @@ function unhideElement(element) {
 }
 
 function removeAllChildNodes(parent) {
-    while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
-    }
-}
-
-function noNegativeValues(input) {
-	input.onkeydown = function(e) { // only allows the input of numbers, no negative signs
-		if(!((e.keyCode > 95 && e.keyCode < 106) || (e.keyCode > 47 && e.keyCode < 58) || e.keyCode == 8)) {
-        	return false;
-    	}
+	while (parent.firstChild) {
+		parent.removeChild(parent.firstChild);
 	}
 }
 
-class BreakpointTable {
+function clear(select) {
+	let options = select.options;
+	let i, L = options.length - 1;
+	for (i = L; i >= 0; i--) {
+		select.remove(i);
+	}
+}
 
-	constructor(breakpoints) {
-		this.breakpoints = breakpoints;
+function createOption(value) {
+	let option = document.createElement("option");
+	option.setAttribute("value", value);
+	option.text = value;
+	return option;
+}
+
+function addTableRow(table, IAS, frame) {
+
+	let tableRow = document.createElement("tr");
+
+	let tdIAS = document.createElement("td");
+	tdIAS.innerHTML = IAS;
+
+	let tdFrame = document.createElement("td");
+	tdFrame.innerHTML = frame;
+
+	tableRow.appendChild(tdIAS);
+	tableRow.appendChild(tdFrame);
+
+	table.appendChild(tableRow);
+}
+
+function addTableHeader(table, variableLabel) {
+
+	let tableRow = document.createElement("tr");
+
+	let thVariableLabel = document.createElement("th");
+	thVariableLabel.innerHTML = variableLabel;
+
+	let tdFPA = document.createElement("th");
+	tdFPA.innerHTML = "FPA";
+
+	tableRow.appendChild(thVariableLabel);
+	tableRow.appendChild(tdFPA);
+
+	table.appendChild(tableRow);
+}
+
+class WeaponType {
+
+	constructor(isMelee, isOneHand, frameData) {
+		this.isMelee = isMelee;
+		this.isOneHand = isOneHand;
+		this.frameData = frameData;
 	}
 
-	addBreakpoint(EIAS, FPA) {
-		this.breakpoints.push([EIAS, FPA]);
+	getFramesPerDirection(character) {
+		let value = this.frameData.get(character);
+		return Array.isArray(value) ? value[0] : value;
 	}
 
-	getFPA(EIAS) {
-		for (let i = 0; i < this.breakpoints.length; i++) {
-			let breakpoint = this.breakpoints[i];
-			if (EIAS < breakpoint[0]) {
-				return (i == 0 ? this.breakpoint[1] : this.breakpoints[i - 1][1]);
-			}
-		}
-		console.log("error, somehow exited getFPA loop");
+	hasAlternateAnimation(character) {
+		let characterFrameData = this.frameData.get(character);
+		return Array.isArray(characterFrameData) && characterFrameData.length == 3;
 	}
 
-	getTableAfter(EIAS) {
-		//console.log("getTableAfter: EIAS=" + EIAS);
-		let filterEIAS = -1;
-		for (let i = 0; i < this.breakpoints.length; i++) {
-			let breakpoint = this.breakpoints[i];
-			if (EIAS < breakpoint[0]) {
-				filterEIAS = (i == 0 ? breakpoint[0] : this.breakpoints[i - 1][0]);
-				break;
-			}
-		}
-		if (filterEIAS == -1) {
-			return new BreakpointTable([[0, this.breakpoints[this.breakpoints.length - 1][1]]]);
-		}
-		let filteredBreakpoints = this.breakpoints.filter(a => a[0] >= filterEIAS);
-		//console.log("getTableAfter (EIAS=" + EIAS + "):");
-		//for (let b1 in filteredBreakpoints) {
-		//	let b = filteredBreakpoints[b1];
-		//	console.log(b[0] + ", " + b[1]);
-		//}
-		return new BreakpointTable(filteredBreakpoints);
+	getAlternateFramesPerDirection(character) {
+		return this.frameData.get(character)[1];
 	}
 
-	getAdjustedTable(EIAS) {
-		let adjustedBreakpoints = new Map();
-		//console.log("getAdjustedTable (length=" + this.breakpoints.length + "):");
-		for (let i = 0; i < this.breakpoints.length; i++) {
-			let breakpoint = this.breakpoints[i];
-			let neededAcceleration = breakpoint[0] - EIAS;
-			let frames = breakpoint[1];
-
-			if (neededAcceleration < 0) {
-				if (i == 0) neededAcceleration = 0; // first breakpoint might be slightly negative
-			}
-
-			//console.log("neededAcceleration=" + neededAcceleration + ",frames=" + frames);
-			adjustedBreakpoints.set(neededAcceleration, frames);
-		}
-		return adjustedBreakpoints;
+	getActionFrame(character) {
+		let characterFrameData = this.frameData.get(character);
+		return characterFrameData[characterFrameData.length - 1];
 	}
-
-	/*convertToIASTable(EIAS) {
-		if (EIAS < 0) {
-			console.log("-- error -- EIAS was < 0: " + EIAS);
-		}
-		let breakpointsIAS = new Array(this.breakpoints.length);
-		console.log("convertToIASTable (length=" + this.breakpoints.length + "):");
-		for (let i = 0; i < this.breakpoints.length; i++) {
-			let breakpoint = this.breakpoints[i];
-			let targetEIAS = breakpoint[0];
-			let frames = breakpoint[1];
-			let IAS = Math.ceil(120 * (targetEIAS - EIAS) / (120 - (targetEIAS - EIAS)));
-
-			if (IAS < 0) {
-				if (i == 0) IAS = 0; // first breakpoint might be slightly negative
-				else break; // the upper breakpoints at really low EIAS values roll over into negative gear ias, skip those as theyre not possible to obtain
-			}
-
-			console.log("targetEIAS=" + targetEIAS + ",frames=" + frames + ",IAS=" + IAS);
-			breakpointsIAS.push([IAS, frames]);
-		}
-		return breakpointsIAS;
-	}*/
 
 }
 
-const WHIRLWIND_CLAW_TABLE = new BreakpointTable([
-	[90, 8],
-	[91, 6],
-	[113, 4]
-]);
+class AttackSpeedSkill {
 
-const WHIRLWIND_ONE_HANDED_TABLE = new BreakpointTable([
-	[15, 16],
-	[62, 14],
-	[70, 12],
-	[81, 10],
-	[90, 8],
-	[108, 6],
-	[134, 4]
-]);
+	constructor(input, min, factor, max, tableVariable, predicate) {
+		this.input = input;
+		this.min = min;
+		this.factor = factor;
+		this.max = max;
+		this.tableVariable = tableVariable;
+		this.predicate = predicate;
+		this.reverse = new Map();
+		for (let level = 60; level >= 0; level--) {
+			this.reverse.set(this.getEIASFromLevel(level), level);
+		}
+	}
 
-const WHIRLWIND_TWO_HANDED_TABLE = new BreakpointTable([
-	[80, 14],
-	[83, 12],
-	[96, 10],
-	[106, 8],
-	[127, 6],
-	[159, 4]
-]);
+	calculate(tableVariable) {
+		if (this.tableVariable == tableVariable || (this.predicate != null && !this.predicate())) return 0;
+		let level = parseInt(this.input.value);
+		return level == 0 ? 0 : Math.min(this.min + Math.floor(this.factor * Math.floor((110 * level) / (level + 6)) / 100), this.max);
+	}
 
-const FEND_SPEAR_TABLE = new BreakpointTable([
-	[15, "61/(48)/94"],
-	[16, "58/(45)/89"],
-	[17, "54/(42)/83"],
-	[18, "51/(39)/77"],
-	[19, "48/(38)/74"],
-	[20, "46/(36)/70"],
-	[21, "44/(34)/67"],
-	[22, "42/(32)/63"],
-	[23, "40/(31)/61"],
-	[24, "38/(30)/58"],
-	[25, "36/(28)/55"],
-	[26, "35/(28)/54"],
-	[27, "34/(26)/51"],
-	[28, "33/(26)/50"],
-	[29, "32/(25)/48"],
-	[30, "31/(24)/47"],
-	[31, "30/(23)/45"],
-	[32, "29/(23)/44"],
-	[33, "28/(22)/42"],
-	[34, "27/(21)/41"],
-	[35, "26/(21)/40"],
-	[36, "26/(20)/38"],
-	[37, "25/(20)/38"],
-	[38, "24/(19)/36"],
-	[40, "23/(18)/35"],
-	[41, "23/(18)/34"],
-	[42, "22/(17)/33"],
-	[43, "21/(17)/32"],
-	[44, "21/(16)/31"],
-	[46, "20/(16)/30"],
-	[47, "20/(15)/29"],
-	[48, "19/(15)/29"],
-	[49, "19/(15)/28"],
-	[50, "18/(14)/27"],
-	[52, "18/(14)/26"],
-	[54, "17/(13)/25"],
-	[57, "16/(13)/24"],
-	[59, "16/(12)/23"],
-	[61, "15/(12)/22"],
-	[64, "15/(11)/21"],
-	[65, "14/(11)/21"],
-	[67, "14/(11)/20"],
-	[70, "13/(11)/20"],
-	[71, "13/(10)/19"],
-	[74, "13/(10)/18"],
-	[75, "12/(10)/18"],
-	[79, "12/(9)/17"],
-	[83, "11/(9)/16"],
-	[88, "11/(8)/15"],
-	[91, "10/(8)/15"],
-	[94, "10/(8)/14"],
-	[100, "9/(7)/13"],
-	[108, "9/(7)/12"],
-	[113, "8/(7)/12"],
-	[117, "8/(6)/11"],
-	[128, "8/(6)/10"],
-	[129, "7/(6)/10"],
-	[141, "7/(5)/9"],
-	[150, "6/(5)/9"],
-	[156, "6/(5)/8"],
-	[175, "6/(4)/7"]
-]);
+	getEIASFromLevel(level) {
+		return level == 0 ? 0 : Math.min(this.min + Math.floor(this.factor * Math.floor((110 * level) / (level + 6)) / 100), this.max);
+	}
 
-const FEND_ONE_HANDED_THRUSTING_TABLE = new BreakpointTable([
-	[15, "48/(41)/80"],
-	[16, "45/(39)/76"],
-	[17, "42/(36)/71"],
-	[18, "39/(34)/66"],
-	[19, "38/(32)/63"],
-	[20, "36/(31)/60"],
-	[21, "34/(29)/57"],
-	[22, "32/(28)/54"],
-	[23, "31/(27)/52"],
-	[24, "30/(26)/50"],
-	[25, "28/(24)/47"],
-	[26, "28/(24)/46"],
-	[27, "26/(23)/44"],
-	[28, "26/(22)/43"],
-	[29, "25/(21)/41"],
-	[30, "24/(21)/40"],
-	[31, "23/(20)/38"],
-	[32, "23/(19)/37"],
-	[33, "22/(19)/36"],
-	[34, "21/(18)/35"],
-	[35, "21/(18)/34"],
-	[36, "20/(17)/33"],
-	[37, "20/(17)/32"],
-	[38, "19/(16)/31"],
-	[40, "18/(16)/30"],
-	[41, "18/(15)/29"],
-	[42, "17/(15)/28"],
-	[43, "17/(14)/27"],
-	[44, "16/(14)/27"],
-	[45, "16/(14)/26"],
-	[47, "15/(13)/25"],
-	[49, "15/(13)/24"],
-	[50, "14/(12)/23"],
-	[53, "14/(12)/22"],
-	[54, "13/(12)/22"],
-	[55, "13/(11)/21"],
-	[58, "13/(11)/20"],
-	[59, "12/(11)/20"],
-	[61, "12/(10)/19"],
-	[64, "11/(10)/18"],
-	[67, "11/(9)/17"],
-	[71, "10/(9)/16"],
-	[75, "10/(8)/15"],
-	[79, "9/(8)/15"],
-	[81, "9/(8)/14"],
-	[86, "9/(7)/13"],
-	[88, "8/(7)/13"],
-	[93, "8/(7)/12"],
-	[100, "7/(6)/11"],
-	[110, "7/(6)/10"],
-	[115, "7/(5)/10"],
-	[117, "6/(6)/9"],
-	[121, "6/(5)/9"],
-	[134, "6/(4)/8"],
-	[141, "5/(5)/7"],
-	[150, "5/(4)/7"],
-	[161, "5/(4)/6"],
-	[172, "5/(3)/6"]
-]);
+	getLevelFromEIAS(EIAS) {
+		let lastLevel = 60;
+		for (const [levelEIAS, level] of this.reverse) {
+			if (EIAS > levelEIAS) return lastLevel;
+			lastLevel = level;
+		}
+		return 0;
+	}
 
-const STRAFE_ODD_CROSSBOW_TABLE = new BreakpointTable([
-	[15, "61/(34)/107"],
-	[16, "58/(32)/102"],
-	[17, "54/(30)/95"],
-	[18, "51/(28)/89"],
-	[19, "48/(27)/85"],
-	[20, "46/(26)/80"],
-	[21, "44/(25)/77"],
-	[22, "42/(23)/73"],
-	[23, "40/(23)/70"],
-	[24, "38/(21)/67"],
-	[25, "36/(20)/63"],
-	[26, "35/(20)/62"],
-	[27, "34/(19)/59"],
-	[28, "33/(19)/57"],
-	[29, "32/(18)/55"],
-	[30, "31/(17)/53"],
-	[31, "30/(17)/51"],
-	[32, "29/(16)/50"],
-	[33, "28/(16)/48"],
-	[34, "27/(15)/47"],
-	[35, "26/(15)/46"],
-	[36, "26/(14)/44"],
-	[37, "25/(14)/43"],
-	[38, "24/(14)/42"],
-	[39, "24/(13)/41"],
-	[40, "23/(13)/40"],
-	[41, "23/(13)/39"],
-	[42, "22/(12)/38"],
-	[43, "21/(12)/37"],
-	[44, "21/(12)/36"],
-	[45, "21/(12)/35"],
-	[46, "20/(11)/35"],
-	[47, "20/(11)/34"],
-	[48, "19/(11)/33"],
-	[49, "19/(11)/32"],
-	[50, "18/(10)/31"],
-	[52, "18/(10)/30"],
-	[54, "17/(10)/29"],
-	[56, "17/(9)/28"],
-	[57, "16/(9)/28"],
-	[58, "16/(9)/27"],
-	[60, "16/(9)/26"],
-	[61, "15/(9)/26"],
-	[62, "15/(9)/25"],
-	[63, "15/(8)/25"],
-	[65, "14/(8)/24"],
-	[67, "14/(8)/23"],
-	[70, "13/(8)/22"],
-	[72, "13/(7)/22"],
-	[74, "13/(7)/21"],
-	[75, "12/(7)/21"],
-	[77, "12/(7)/20"],
-	[81, "12/(7)/19"],
-	[83, "11/(7)/19"],
-	[84, "11/(6)/19"],
-	[85, "11/(6)/18"],
-	[90, "11/(6)/17"],
-	[91, "10/(6)/17"],
-	[95, "10/(6)/16"],
-	[100, "9/(5)/15"],
-	[108, "9/(5)/14"],
-	[112, "9/4/(5)/14"],
-	[113, "8/(5)/14"],
-	[115, "8/(5)/13"],
-	[121, "8/5/(4/5)/12"],
-	[125, "8/(4)/11"],
-	[129, "7/(4)/12"],
-	[134, "7/(4)/11"],
-	[143, "7/3/(4)/11"],
-	[146, "7/3/(4)/10"],
-	[150, "6/4/(3/4)/9"],
-	[167, "6/(3)/8"]
-]);
+}
 
-const STRAFE_EVEN_CROSSBOW_TABLE = new BreakpointTable([
-	[15, "61/(34)/107"],
-	[16, "58/(32)/102"],
-	[17, "54/(30)/95"],
-	[18, "51/(28)/89"],
-	[19, "48/(27)/85"],
-	[20, "46/(26)/80"],
-	[21, "44/(25)/77"],
-	[22, "42/(23)/73"],
-	[23, "40/(23)/70"],
-	[24, "38/(21)/67"],
-	[25, "36/(20)/63"],
-	[26, "35/(20)/62"],
-	[27, "34/(19)/59"],
-	[28, "33/(19)/57"],
-	[29, "32/(18)/55"],
-	[30, "31/(17)/53"],
-	[31, "30/(17)/51"],
-	[32, "29/(16)/50"],
-	[33, "28/(16)/48"],
-	[34, "27/(15)/47"],
-	[35, "26/(15)/46"],
-	[36, "26/(14)/44"],
-	[37, "25/(14)/43"],
-	[38, "24/(14)/42"],
-	[39, "24/(13)/41"],
-	[40, "23/(13)/40"],
-	[41, "23/(13)/39"],
-	[42, "22/(12)/38"],
-	[43, "21/(12)/37"],
-	[44, "21/(12)/36"],
-	[45, "21/(12)/35"],
-	[46, "20/(11)/35"],
-	[47, "20/(11)/34"],
-	[48, "19/(11)/33"],
-	[49, "19/(11)/32"],
-	[50, "18/(10)/31"],
-	[52, "18/(10)/30"],
-	[54, "17/(10)/29"],
-	[56, "17/(9)/28"],
-	[57, "16/(9)/28"],
-	[58, "16/(9)/27"],
-	[60, "16/(9)/26"],
-	[61, "15/(9)/26"],
-	[62, "15/(9)/25"],
-	[63, "15/(8)/25"],
-	[65, "14/(8)/24"],
-	[67, "14/(8)/23"],
-	[70, "13/(8)/22"],
-	[72, "13/(7)/22"],
-	[74, "13/(7)/21"],
-	[75, "12/(7)/21"],
-	[77, "12/(7)/20"],
-	[81, "12/(7)/19"],
-	[83, "11/(7)/19"],
-	[84, "11/(6)/19"],
-	[85, "11/(6)/18"],
-	[90, "11/(6)/17"],
-	[91, "10/(6)/17"],
-	[95, "10/(6)/16"],
-	[100, "9/(5)/15"],
-	[108, "9/(5)/14"],
-	[112, "9/4/(5)/14"],
-	[113, "8/(5)/14"],
-	[115, "8/(5)/13"],
-	[121, "8/(5/4)/13"],
-	[124, "8/(5/4)/12"],
-	[125, "8/(4)/11"],
-	[129, "7/(4)/12"],
-	[134, "7/(4)/11"],
-	[143, "7/3/(4)/11"],
-	[146, "7/3/(4)/10"],
-	[150, "6/(4/3)/10"],
-	[161, "6/(4/3)/9"],
-	[167, "6/(3)/8"]
-]);
+class Weapon {
 
-const STRAFE_BOW_TABLE = new BreakpointTable([
-	[15, "41/(21)/74"],
-	[16, "39/(20)/70"],
-	[17, "36/(18)/65"],
-	[18, "34/(17)/61"],
-	[19, "32/(16)/58"],
-	[20, "31/(16)/55"],
-	[21, "29/(15)/53"],
-	[22, "28/(14)/50"],
-	[23, "27/(14)/48"],
-	[24, "26/(13)/46"],
-	[25, "24/(12)/43"],
-	[26, "24/(12)/42"],
-	[27, "23/(12)/40"],
-	[28, "22/(11)/39"],
-	[29, "21/(11)/38"],
-	[30, "21/(11)/37"],
-	[31, "20/(10)/35"],
-	[32, "19/(10)/34"],
-	[33, "19/(10)/33"],
-	[34, "18/(9)/32"],
-	[35, "18/(9)/31"],
-	[36, "17/(9)/30"],
-	[37, "17/(9)/29"],
-	[38, "16/(8)/29"],
-	[39, "16/(8)/28"],
-	[40, "16/(8)/27"],
-	[41, "15/(8)/27"],
-	[42, "15/(8)/26"],
-	[43, "14/(7)/25"],
-	[45, "14/(7)/24"],
-	[47, "13/(7)/23"],
-	[49, "13/(7)/22"],
-	[50, "12/(6)/21"],
-	[53, "12/(6)/20"],
-	[55, "11/(6)/20"],
-	[56, "11/(6)/19"],
-	[59, "11/(6)/18"],
-	[61, "10/(5)/18"],
-	[62, "10/(5)/17"],
-	[65, "10/(5)/16"],
-	[67, "9/(5)/16"],
-	[69, "9/(5)/15"],
-	[74, "9/(5)/14"],
-	[75, "8/(4)/14"],
-	[79, "8/(4)/13"],
-	[85, "8/(4)/12"],
-	[86, "7/(4)/12"],
-	[92, "7/(4)/11"],
-	[100, "6/(3)/10"],
-	[111, "6/(3)/9"],
-	[121, "5/(3)/9"],
-	[123, "5/(3)/8"],
-	[138, "5/(3)/7"],
-	[150, "4/(2)/7"],
-	[158, "4/(2)/6"]
-]);
+	constructor(name, WSM, type, itemClass, maxSockets) {
+		this.name = name;
+		this.WSM = WSM;
+		this.type = type;
+		this.itemClass = itemClass;
+		this.maxSockets = maxSockets;
+	}
+
+}
 
 const AMAZON = 0;
 const ASSASSIN = 1;
@@ -1353,428 +1230,356 @@ const HUMAN = "None";
 const WEREWOLF = "Werewolf";
 const WEREBEAR = "Werebear";
 
-const STANDARD = 0;
-const THROW = 1;
-const IMPALE = 2;
-const JAB = 3;
-const STRAFE = 4;
-const FEND = 5;
-const TIGER_STRIKE = 6;
-const COBRA_STRIKE = 7;
-const PHOENIX_STRIKE = 8;
-const FISTS_OF_FIRE = 9;
-const CLAWS_OF_THUNDER = 10;
-const BLADES_OF_ICE = 11;
-const DRAGON_CLAW = 12;
-const DRAGON_TAIL = 13;
-const DRAGON_TALON = 14;
-const LAYING_TRAPS = 15;
-const DOUBLE_SWING = 16;
-const FRENZY = 17;
-const DOUBLE_THROW = 18;
-const WHIRLWIND = 19;
-const CONCENTRATE = 20;
-const BERSERK = 21;
-const BASH = 22;
-const STUN = 23;
-const ZEAL = 24;
-const SMITE = 25;
-const FERAL_RAGE = 26;
-const HUNGER = 27;
-const RABIES = 28;
-const FURY = 29;
-const SACRIFICE = 30;
-const VENGEANCE = 31;
-const CONVERSION = 32;
+const STANDARD = "Standard";
+const THROW = "Throw";
+const IMPALE = "Impale";
+const JAB = "Jab";
+const STRAFE = "Strafe";
+const FEND = "Fend";
+const TIGER_STRIKE = "Tiger Strike";
+const COBRA_STRIKE = "Cobra Strike";
+const PHOENIX_STRIKE = "Phoenix Strike";
+const FISTS_OF_FIRE = "Fists of Fire";
+const CLAWS_OF_THUNDER = "Claws of Thunder";
+const BLADES_OF_ICE = "Blades of Ice";
+const DRAGON_CLAW = "Dragon Claw";
+const DRAGON_TAIL = "Dragon Tail";
+const DRAGON_TALON = "Dragon Talon";
+const LAYING_TRAPS = "Laying Traps";
+const DOUBLE_SWING = "Double Swing";
+const FRENZY = "Frenzy";
+const DOUBLE_THROW = "Double Throw";
+const WHIRLWIND = "Whirlwind";
+const CONCENTRATE = "Concentrate";
+const BERSERK = "Berserk";
+const BASH = "Bash";
+const STUN = "Stun";
+const ZEAL = "Zeal";
+const SMITE = "Smite";
+const FERAL_RAGE = "Feral Rage";
+const HUNGER = "Hunger";
+const RABIES = "Rabies";
+const FURY = "Fury";
+const SACRIFICE = "Sacrifice";
+const VENGEANCE = "Vengeance";
+const CONVERSION = "Conversion";
 
-class WeaponType {
+const UNARMED = new WeaponType(true, true, new Map([[AMAZON, [13, 8]], [ASSASSIN, [11, 12, 6]], [BARBARIAN, [12, 6]], [DRUID, [16, 8]], [NECROMANCER, [15, 8]], [PALADIN, [14, 7]], [SORCERESS, [16, 9]]]));
+const CLAW = new WeaponType(true, true, new Map([[ASSASSIN, [11, 12, 0]]]));
+const ONE_HANDED_SWINGING = new WeaponType(true, true, new Map([[AMAZON, [16, 10]], [ASSASSIN, [15, 7]], [BARBARIAN, [16, 7]], [DRUID, [19, 9]], [NECROMANCER, [19, 9]], [PALADIN, [15, 7]], [SORCERESS, [20, 12]], [MERC_A5, 16]]));
+const TWO_HANDED_SWORD = new WeaponType(true, false, new Map([[AMAZON, [20, 12]], [ASSASSIN, [23, 11]], [BARBARIAN, [18, 8]], [DRUID, [21, 10]], [NECROMANCER, [23, 11]], [PALADIN, [19, 8]], [SORCERESS, [24, 14]], [MERC_A5, 16]]));
+const ONE_HANDED_THRUSTING = new WeaponType(true, true, new Map([[AMAZON, [15, 9]], [ASSASSIN, [15, 7]], [BARBARIAN, [16, 7]], [DRUID, [19, 8]], [NECROMANCER, [19, 9]], [PALADIN, [17, 8]], [SORCERESS, [19, 11]], [MERC_A2, 16]]));
+const TWO_HANDED_THRUSTING = new WeaponType(true, false, new Map([[AMAZON, [18, 11]], [ASSASSIN, [23, 10]], [BARBARIAN, [19, 9]], [DRUID, [23, 9]], [NECROMANCER, [24, 10]], [PALADIN, [20, 8]], [SORCERESS, [23, 13]], [MERC_A2, 16]]));
+const TWO_HANDED = new WeaponType(true, false, new Map([[AMAZON, [20, 12]], [ASSASSIN, [19, 9]], [BARBARIAN, [19, 9]], [DRUID, [17, 9]], [NECROMANCER, [20, 11]], [PALADIN, [18, 19, 9]], [SORCERESS, [18, 11]], [MERC_A2, 16]])); // two-handed weapon (not sword)
+const BOW = new WeaponType(false, false, new Map([[AMAZON, [14, 6]], [ASSASSIN, [16, 7]], [BARBARIAN, [15, 7]], [DRUID, [16, 8]], [NECROMANCER, [18, 9]], [PALADIN, [16, 8]], [SORCERESS, [17, 9]], [MERC_A1, 15]]));
+const CROSSBOW = new WeaponType(false, false, new Map([[AMAZON, [20, 9]], [ASSASSIN, [21, 10]], [BARBARIAN, [20, 10]], [DRUID, [20, 10]], [NECROMANCER, [20, 11]], [PALADIN, [20, 10]], [SORCERESS, [20, 11]]]));
+const THROWING = new WeaponType(true, true, new Map([[AMAZON, 16], [ASSASSIN, 16], [BARBARIAN, 16], [DRUID, 18], [NECROMANCER, 20], [PALADIN, 16], [SORCERESS, 20]]));
 
-	constructor(type, startingFrame, framesPerDirectionMap) {
-		this.type = type;
-		this.startingFrame = startingFrame;
-		this.framesPerDirectionMap = framesPerDirectionMap;
-	}
-
-	getFramesPerDirection(character) {
-		let value = this.framesPerDirectionMap.get(character);
-		return (Array.isArray(value) ? value[0] : value);
-	}
-
-	hasAlternateAnimation(character) {
-		return Array.isArray(this.framesPerDirectionMap.get(character));
-	}
-
-	getAlternateFramesPerDirection(character) {
-		return this.framesPerDirectionMap.get(character)[1];
-	}
-
-}
-
-const UNARMED = new WeaponType(0, 1, new Map([[AMAZON, 13], [ASSASSIN, [11, 12]], [BARBARIAN, 12], [DRUID, 16], [NECROMANCER, 15], [PALADIN, 14], [SORCERESS, 16]]));
-const CLAW = new WeaponType(1, 0, new Map([[ASSASSIN, [11, 12]]]));
-const ONE_HANDED_SWINGING = new WeaponType(2, 2, new Map([[AMAZON, 16], [ASSASSIN, 15], [BARBARIAN, 16], [DRUID, 19], [NECROMANCER, 19], [PALADIN, 15], [SORCERESS, 20], [MERC_A5, 16]]));
-const TWO_HANDED_SWORD = new WeaponType(3, 2, new Map([[AMAZON, 20], [ASSASSIN, 23], [BARBARIAN, 18], [DRUID, 21], [NECROMANCER, 23], [PALADIN, 19], [SORCERESS, 24], [MERC_A5, 16]]));
-const ONE_HANDED_THRUSTING = new WeaponType(4, 2, new Map([[AMAZON, 15], [ASSASSIN, 15], [BARBARIAN, 16], [DRUID, 19], [NECROMANCER, 19], [PALADIN, 17], [SORCERESS, 19], [MERC_A2, 16]]));
-const SPEAR = new WeaponType(5, 2, new Map([[AMAZON, 18], [ASSASSIN, 23], [BARBARIAN, 19], [DRUID, 23], [NECROMANCER, 24], [PALADIN, 20], [SORCERESS, 23], [MERC_A2, 16]]));
-const TWO_HANDED = new WeaponType(6, 2, new Map([[AMAZON, 20], [ASSASSIN, 19], [BARBARIAN, 19], [DRUID, 17], [NECROMANCER, 20], [PALADIN, [18, 19]], [SORCERESS, 18], [MERC_A2, 16]])); // two-handed weapon (not sword)
-const BOW = new WeaponType(7, 0, new Map([[AMAZON, 14], [ASSASSIN, 16], [BARBARIAN, 15], [DRUID, 16], [NECROMANCER, 18], [PALADIN, 16], [SORCERESS, 17], [MERC_A1, 15]]));
-const CROSSBOW = new WeaponType(8, 0, new Map([[AMAZON, 20], [ASSASSIN, 21], [BARBARIAN, 20], [DRUID, 20], [NECROMANCER, 20], [PALADIN, 20], [SORCERESS, 20]]));
-const THROWING = new WeaponType(9, 0, new Map([[AMAZON, 16], [ASSASSIN, 16], [BARBARIAN, 16], [DRUID, 18], [NECROMANCER, 20], [PALADIN, 16], [SORCERESS, 20]]));
-
-const ACTION_FRAMES = [
-	[8, 6, 6, 8, 8, 7, 9],
-	[0, 0, 0, 0, 0, 0, 0],
-	[10, 7, 7, 9, 9, 7, 12],
-	[12, 11, 8, 10, 11, 8, 14],
-	[9, 7, 7, 8, 9, 8, 11],
-	[11, 10, 9, 9, 10, 8, 13],
-	[12, 9, 9, 9, 11, 9, 11],
-	[6, 7, 7, 8, 9, 8, 9],
-	[9, 10, 10, 10, 11, 10, 11]
-];
-
-const SKILLS = [
-	["Standard", 0, 1, 0, 100],
-	["Throw", 1, 2, 0, 100],
-	["Impale", 2, 7, 0, 100],
-	["Jab", 3, 7, 1, 100],
-	["Strafe", 4, 0, 0, 50],
-	["Fend", 5, 0, 0, 40],
-	["Tiger Strike", 6, 0, 0, 100],
-	["Cobra Strike", 7, 0, 0, 100],
-	["Phoenix Strike", 8, 0, 0, 100],
-	["Fists of Fire", 9, 7, 2, 100],
-	["Claws of Thunder", 10, 7, 2, 100],
-	["Blades of Ice", 11, 7, 2, 100],
-	["Dragon Claw", 12, 7, 2, 100],
-	["Dragon Tail", 13, 3, 0, 100],
-	["Dragon Talon", 14, 3, 0, 0],
-	["Laying Traps", 15, 5, 0, 100],
-	["Double Swing", 16, 7, 3, 100],
-	["Frenzy", 17, 7, 3, 100],
-	["Double Throw", 18, 7, 4, 100],
-	["Whirlwind", 19, 7, 0, 100],
-	["Concentrate", 20, 0, 0, 100],
-	["Berserk", 21, 0, 0, 100],
-	["Bash", 22, 0, 0, 100],
-	["Stun", 23, 0, 0, 100],
-	["Zeal", 24, 0, 0, 0],
-	["Smite", 25, 4, 0, 100],
-	["Feral Rage", 26, 0, 0, 100],
-	["Hunger", 27, 6, 0, 100],
-	["Rabies", 28, 6, 0, 100],
-	["Fury", 29, 0, 0, 0],
-	["Sacrifice", 30, 0, 0, 100],
-	["Vengeance", 31, 0, 0, 100],
-	["Conversion", 32, 0, 0, 100]
-];
-
-const SEQUENCES = [
-	[0, 0, 0, 0, 21, 24, 0, 0, 0],
-	[0, 0, 0, 0, 18, 21, 0, 0, 0],
-	[12, 12, 16, 0, 0, 0, 0, 0, 0],
-	[0, 0, 17, 17, 17, 0, 0, 0, 0],
-	[0, 0, 12, 0, 12, 0, 0, 0, 0]
-];
-
-function Weapon(name, WSM, weaponType) {
-	this.name = name;
-	this.WSM = WSM;
-	this.weaponType = weaponType;
-}
-
-// \["([\w \-']+)", ([-]?[\d]+), ([\d]+), [-]?[\d]+, [\d]+, [\d]+\][,]?
-// WEAPONS.set("\1", new Weapon("\1", \2, \3));
+const CLASS_NONE = "None";
+const CLASS_AXE = "Axe";
+const CLASS_DAGGER = "Dagger";
+const CLASS_POLEARM = "Polearm";
+const CLASS_JAVELIN = "Javelin";
+const CLASS_SPEAR = "Spear";
+const CLASS_SWORD = "Sword";
+const CLASS_MACE = "Mace";
+const CLASS_MISSILE = "Missile";
+const CLASS_STAFF = "Staff";
+const CLASS_ORB = "Orb";
+const CLASS_CLAW = "Claw";
+const CLASS_THROWING = "Throwing";
 
 const WEAPONS = new Map();
-WEAPONS.set("None", new Weapon("None", 0, UNARMED))
-	   .set("Ancient Axe", new Weapon("Ancient Axe", 10, TWO_HANDED))
-	   .set("Ancient Sword", new Weapon("Ancient Sword", 0, ONE_HANDED_SWINGING))
-	   .set("Arbalest", new Weapon("Arbalest", -10, CROSSBOW))
-	   .set("Archon Staff", new Weapon("Archon Staff", 10, TWO_HANDED))
-	   .set("Ashwood Bow", new Weapon("Ashwood Bow", 0, BOW))
-	   .set("Ataghan", new Weapon("Ataghan", -20, ONE_HANDED_SWINGING))
-	   .set("Axe", new Weapon("Axe", 10, ONE_HANDED_SWINGING))
-	   .set("Balanced Axe", new Weapon("Balanced Axe", -10, ONE_HANDED_SWINGING))
-	   .set("Balanced Knife", new Weapon("Balanced Knife", -20, ONE_HANDED_THRUSTING))
-	   .set("Ballista", new Weapon("Ballista", 10, CROSSBOW))
-	   .set("Balrog Blade", new Weapon("Balrog Blade", 0, TWO_HANDED_SWORD))
-	   .set("Balrog Spear", new Weapon("Balrog Spear", 10, ONE_HANDED_THRUSTING))
-	   .set("Barbed Club", new Weapon("Barbed Club", 0, ONE_HANDED_SWINGING))
-	   .set("Bardiche", new Weapon("Bardiche", 10, TWO_HANDED))
-	   .set("Bastard Sword", new Weapon("Bastard Sword", 10, TWO_HANDED_SWORD))
-	   .set("Battle Axe", new Weapon("Battle Axe", 10, TWO_HANDED))
-	   .set("Battle Cestus", new Weapon("Battle Cestus", -10, CLAW))
-	   .set("Battle Dart", new Weapon("Battle Dart", 0, ONE_HANDED_THRUSTING))
-	   .set("Battle Hammer", new Weapon("Battle Hammer", 20, ONE_HANDED_SWINGING))
-	   .set("Battle Scythe", new Weapon("Battle Scythe", -10, TWO_HANDED))
-	   .set("Battle Staff", new Weapon("Battle Staff", 0, TWO_HANDED))
-	   .set("Battle Sword", new Weapon("Battle Sword", 0, ONE_HANDED_SWINGING))
-	   .set("Bearded Axe", new Weapon("Bearded Axe", 0, TWO_HANDED))
-	   .set("Bec-de-Corbin", new Weapon("Bec-de-Corbin", 0, TWO_HANDED))
-	   .set("Berserker Axe", new Weapon("Berserker Axe", 0, ONE_HANDED_SWINGING))
-	   .set("Bill", new Weapon("Bill", 0, TWO_HANDED))
-	   .set("Blade Bow", new Weapon("Blade Bow", -10, BOW))
-	   .set("Blade Talons", new Weapon("Blade Talons", -20, CLAW))
-	   .set("Blade", new Weapon("Blade", -10, ONE_HANDED_THRUSTING))
-	   .set("Bone Knife", new Weapon("Bone Knife", -20, ONE_HANDED_THRUSTING))
-	   .set("Bone Wand", new Weapon("Bone Wand", -20, ONE_HANDED_SWINGING))
-	   .set("Brandistock", new Weapon("Brandistock", -20, SPEAR))
-	   .set("Broad Axe", new Weapon("Broad Axe", 0, TWO_HANDED))
-	   .set("Broad Sword", new Weapon("Broad Sword", 0, ONE_HANDED_SWINGING))
-	   .set("Burnt Wand", new Weapon("Burnt Wand", 0, ONE_HANDED_SWINGING))
-	   .set("Caduceus", new Weapon("Caduceus", -10, ONE_HANDED_SWINGING))
-	   .set("Cedar Bow", new Weapon("Cedar Bow", 0, BOW))
-	   .set("Cedar Staff", new Weapon("Cedar Staff", 10, TWO_HANDED))
-	   .set("Ceremonial Bow", new Weapon("Ceremonial Bow", 10, BOW))
-	   .set("Ceremonial Javelin", new Weapon("Ceremonial Javelin", -10, ONE_HANDED_THRUSTING))
-	   .set("Ceremonial Pike", new Weapon("Ceremonial Pike", 20, SPEAR))
-	   .set("Ceremonial Spear", new Weapon("Ceremonial Spear", 0, SPEAR))
-	   .set("Cestus", new Weapon("Cestus", 0, CLAW))
-	   .set("Champion Axe", new Weapon("Champion Axe", -10, TWO_HANDED))
-	   .set("Champion Sword", new Weapon("Champion Sword", -10, TWO_HANDED_SWORD))
-	   .set("Chu-Ko-Nu", new Weapon("Chu-Ko-Nu", -60, CROSSBOW))
-	   .set("Cinquedeas", new Weapon("Cinquedeas", -20, ONE_HANDED_THRUSTING))
-	   .set("Clasped Orb", new Weapon("Clasped Orb", 0, ONE_HANDED_SWINGING))
-	   .set("Claws", new Weapon("Claws", -10, CLAW))
-	   .set("Claymore", new Weapon("Claymore", 10, TWO_HANDED_SWORD))
-	   .set("Cleaver", new Weapon("Cleaver", 10, ONE_HANDED_SWINGING))
-	   .set("Cloudy Sphere", new Weapon("Cloudy Sphere", 0, ONE_HANDED_SWINGING))
-	   .set("Club", new Weapon("Club", -10, ONE_HANDED_SWINGING))
-	   .set("Colossus Blade", new Weapon("Colossus Blade", 5, TWO_HANDED_SWORD))
-	   .set("Colossus Crossbow", new Weapon("Colossus Crossbow", 10, CROSSBOW))
-	   .set("Colossus Sword", new Weapon("Colossus Sword", 10, TWO_HANDED_SWORD))
-	   .set("Colossus Voulge", new Weapon("Colossus Voulge", 10, TWO_HANDED))
-	   .set("Composite Bow", new Weapon("Composite Bow", -10, BOW))
-	   .set("Conquest Sword", new Weapon("Conquest Sword", 0, ONE_HANDED_SWINGING))
-	   .set("Crossbow", new Weapon("Crossbow", 0, CROSSBOW))
-	   .set("Crowbill", new Weapon("Crowbill", -10, ONE_HANDED_SWINGING))
-	   .set("Crusader Bow", new Weapon("Crusader Bow", 10, BOW))
-	   .set("Cryptic Axe", new Weapon("Cryptic Axe", 10, TWO_HANDED))
-	   .set("Cryptic Sword", new Weapon("Cryptic Sword", -10, ONE_HANDED_SWINGING))
-	   .set("Crystal Sword", new Weapon("Crystal Sword", 0, ONE_HANDED_SWINGING))
-	   .set("Crystalline Globe", new Weapon("Crystalline Globe", -10, ONE_HANDED_SWINGING))
-	   .set("Cudgel", new Weapon("Cudgel", -10, ONE_HANDED_SWINGING))
-	   .set("Cutlass", new Weapon("Cutlass", -30, ONE_HANDED_SWINGING))
-	   .set("Dacian Falx", new Weapon("Dacian Falx", 10, TWO_HANDED_SWORD))
-	   .set("Dagger", new Weapon("Dagger", -20, ONE_HANDED_THRUSTING))
-	   .set("Decapitator", new Weapon("Decapitator", 10, TWO_HANDED))
-	   .set("Demon Crossbow", new Weapon("Demon Crossbow", -60, CROSSBOW))
-	   .set("Demon Heart", new Weapon("Demon Heart", 0, ONE_HANDED_SWINGING))
-	   .set("Devil Star", new Weapon("Devil Star", 10, ONE_HANDED_SWINGING))
-	   .set("Diamond Bow", new Weapon("Diamond Bow", 0, BOW))
-	   .set("Dimensional Blade", new Weapon("Dimensional Blade", 0, ONE_HANDED_SWINGING))
-	   .set("Dimensional Shard", new Weapon("Dimensional Shard", 10, ONE_HANDED_SWINGING))
-	   .set("Dirk", new Weapon("Dirk", 0, ONE_HANDED_THRUSTING))
-	   .set("Divine Scepter", new Weapon("Divine Scepter", -10, ONE_HANDED_SWINGING))
-	   .set("Double Axe", new Weapon("Double Axe", 10, ONE_HANDED_SWINGING))
-	   .set("Double Bow", new Weapon("Double Bow", -10, BOW))
-	   .set("Eagle Orb", new Weapon("Eagle Orb", -10, ONE_HANDED_SWINGING))
-	   .set("Edge Bow", new Weapon("Edge Bow", 5, BOW))
-	   .set("Elder Staff", new Weapon("Elder Staff", 0, TWO_HANDED))
-	   .set("Eldritch Orb", new Weapon("Eldritch Orb", -10, ONE_HANDED_SWINGING))
-	   .set("Elegant Blade", new Weapon("Elegant Blade", -10, ONE_HANDED_SWINGING))
-	   .set("Espandon", new Weapon("Espandon", 0, TWO_HANDED_SWORD))
-	   .set("Ettin Axe", new Weapon("Ettin Axe", 10, ONE_HANDED_SWINGING))
-	   .set("Executioner Sword", new Weapon("Executioner Sword", 10, TWO_HANDED_SWORD))
-	   .set("Falcata", new Weapon("Falcata", 0, ONE_HANDED_SWINGING))
-	   .set("Falchion", new Weapon("Falchion", 20, ONE_HANDED_SWINGING))
-	   .set("Fanged Knife", new Weapon("Fanged Knife", -20, ONE_HANDED_THRUSTING))
-	   .set("Fascia", new Weapon("Fascia", 10, CLAW))
-	   .set("Feral Axe", new Weapon("Feral Axe", -15, TWO_HANDED))
-	   .set("Feral Claws", new Weapon("Feral Claws", -20, CLAW))
-	   .set("Flail", new Weapon("Flail", -10, ONE_HANDED_SWINGING))
-	   .set("Flamberge", new Weapon("Flamberge", -10, TWO_HANDED_SWORD))
-	   .set("Flanged Mace", new Weapon("Flanged Mace", 0, ONE_HANDED_SWINGING))
-	   .set("Flying Axe", new Weapon("Flying Axe", 10, ONE_HANDED_SWINGING))
-	   .set("Francisca", new Weapon("Francisca", 10, ONE_HANDED_SWINGING))
-	   .set("Fuscina", new Weapon("Fuscina", 0, SPEAR))
-	   .set("Ghost Glaive", new Weapon("Ghost Glaive", 20, ONE_HANDED_THRUSTING))
-	   .set("Ghost Spear", new Weapon("Ghost Spear", 0, SPEAR))
-	   .set("Ghost Wand", new Weapon("Ghost Wand", 10, ONE_HANDED_SWINGING))
-	   .set("Giant Axe", new Weapon("Giant Axe", 10, TWO_HANDED))
-	   .set("Giant Sword", new Weapon("Giant Sword", 0, TWO_HANDED_SWORD))
-	   .set("Giant Thresher", new Weapon("Giant Thresher", -10, TWO_HANDED))
-	   .set("Gladius", new Weapon("Gladius", 0, ONE_HANDED_SWINGING))
-	   .set("Glaive", new Weapon("Glaive", 20, ONE_HANDED_THRUSTING))
-	   .set("Glorious Axe", new Weapon("Glorious Axe", 10, TWO_HANDED))
-	   .set("Glowing Orb", new Weapon("Glowing Orb", -10, ONE_HANDED_SWINGING))
-	   .set("Gnarled Staff", new Weapon("Gnarled Staff", 10, TWO_HANDED))
-	   .set("Gorgon Crossbow", new Weapon("Gorgon Crossbow", 0, CROSSBOW))
-	   .set("Gothic Axe", new Weapon("Gothic Axe", -10, TWO_HANDED))
-	   .set("Gothic Bow", new Weapon("Gothic Bow", 10, BOW))
-	   .set("Gothic Staff", new Weapon("Gothic Staff", 0, TWO_HANDED))
-	   .set("Gothic Sword", new Weapon("Gothic Sword", 10, TWO_HANDED_SWORD))
-	   .set("Grand Matron Bow", new Weapon("Grand Matron Bow", 10, BOW))
-	   .set("Grand Scepter", new Weapon("Grand Scepter", 10, ONE_HANDED_SWINGING))
-	   .set("Grave Wand", new Weapon("Grave Wand", 0, ONE_HANDED_SWINGING))
-	   .set("Great Axe", new Weapon("Great Axe", -10, TWO_HANDED))
-	   .set("Great Bow", new Weapon("Great Bow", -10, BOW))
-	   .set("Great Maul", new Weapon("Great Maul", 20, TWO_HANDED))
-	   .set("Great Pilum", new Weapon("Great Pilum", 0, ONE_HANDED_THRUSTING))
-	   .set("Great Poleaxe", new Weapon("Great Poleaxe", 0, TWO_HANDED))
-	   .set("Great Sword", new Weapon("Great Sword", 10, TWO_HANDED_SWORD))
-	   .set("Greater Claws", new Weapon("Greater Claws", -20, CLAW))
-	   .set("Greater Talons", new Weapon("Greater Talons", -30, CLAW))
-	   .set("Grim Scythe", new Weapon("Grim Scythe", -10, TWO_HANDED))
-	   .set("Grim Wand", new Weapon("Grim Wand", 0, ONE_HANDED_SWINGING))
-	   .set("Halberd", new Weapon("Halberd", 0, TWO_HANDED))
-	   .set("Hand Axe", new Weapon("Hand Axe", 0, ONE_HANDED_SWINGING))
-	   .set("Hand Scythe", new Weapon("Hand Scythe", -10, CLAW))
-	   .set("Harpoon", new Weapon("Harpoon", -10, ONE_HANDED_THRUSTING))
-	   .set("Hatchet Hands", new Weapon("Hatchet Hands", 10, CLAW))
-	   .set("Hatchet", new Weapon("Hatchet", 0, ONE_HANDED_SWINGING))
-	   .set("Heavenly Stone", new Weapon("Heavenly Stone", -10, ONE_HANDED_SWINGING))
-	   .set("Heavy Crossbow", new Weapon("Heavy Crossbow", 10, CROSSBOW))
-	   .set("Highland Blade", new Weapon("Highland Blade", -5, TWO_HANDED_SWORD))
-	   .set("Holy Water Sprinkler", new Weapon("Holy Water Sprinkler", 10, ONE_HANDED_SWINGING))
-	   .set("Hunter's Bow", new Weapon("Hunter's Bow", -10, BOW))
-	   .set("Hurlbat", new Weapon("Hurlbat", -10, ONE_HANDED_SWINGING))
-	   .set("Hydra Bow", new Weapon("Hydra Bow", 10, BOW))
-	   .set("Hydra Edge", new Weapon("Hydra Edge", 10, ONE_HANDED_SWINGING))
-	   .set("Hyperion Javelin", new Weapon("Hyperion Javelin", -10, ONE_HANDED_THRUSTING))
-	   .set("Hyperion Spear", new Weapon("Hyperion Spear", -10, SPEAR))
-	   .set("Jagged Star", new Weapon("Jagged Star", 10, ONE_HANDED_SWINGING))
-	   .set("Jared's Stone", new Weapon("Jared's Stone", 10, ONE_HANDED_SWINGING))
-	   .set("Javelin", new Weapon("Javelin", -10, ONE_HANDED_THRUSTING))
-	   .set("Jo Staff", new Weapon("Jo Staff", -10, TWO_HANDED))
-	   .set("Katar", new Weapon("Katar", -10, CLAW))
-	   .set("Knout", new Weapon("Knout", -10, ONE_HANDED_SWINGING))
-	   .set("Kris", new Weapon("Kris", -20, ONE_HANDED_THRUSTING))
-	   .set("Lance", new Weapon("Lance", 20, SPEAR))
-	   .set("Large Axe", new Weapon("Large Axe", -10, TWO_HANDED))
-	   .set("Large Siege Bow", new Weapon("Large Siege Bow", 10, BOW))
-	   .set("Legend Spike", new Weapon("Legend Spike", -10, ONE_HANDED_THRUSTING))
-	   .set("Legend Sword", new Weapon("Legend Sword", -15, TWO_HANDED_SWORD))
-	   .set("Legendary Mallet", new Weapon("Legendary Mallet", 20, ONE_HANDED_SWINGING))
-	   .set("Lich Wand", new Weapon("Lich Wand", -20, ONE_HANDED_SWINGING))
-	   .set("Light Crossbow", new Weapon("Light Crossbow", -10, CROSSBOW))
-	   .set("Lochaber Axe", new Weapon("Lochaber Axe", 10, TWO_HANDED))
-	   .set("Long Battle Bow", new Weapon("Long Battle Bow", 10, BOW))
-	   .set("Long Bow", new Weapon("Long Bow", 0, BOW))
-	   .set("Long Staff", new Weapon("Long Staff", 0, TWO_HANDED))
-	   .set("Long Sword", new Weapon("Long Sword", -10, ONE_HANDED_SWINGING))
-	   .set("Long War Bow", new Weapon("Long War Bow", 10, BOW))
-	   .set("Mace", new Weapon("Mace", 0, ONE_HANDED_SWINGING))
-	   .set("Maiden Javelin", new Weapon("Maiden Javelin", -10, ONE_HANDED_THRUSTING))
-	   .set("Maiden Pike", new Weapon("Maiden Pike", 10, SPEAR))
-	   .set("Maiden Spear", new Weapon("Maiden Spear", 0, SPEAR))
-	   .set("Mancatcher", new Weapon("Mancatcher", -20, SPEAR))
-	   .set("Martel de Fer", new Weapon("Martel de Fer", 20, TWO_HANDED))
-	   .set("Matriarchal Bow", new Weapon("Matriarchal Bow", -10, BOW))
-	   .set("Matriarchal Javelin", new Weapon("Matriarchal Javelin", -10, ONE_HANDED_THRUSTING))
-	   .set("Matriarchal Pike", new Weapon("Matriarchal Pike", 20, SPEAR))
-	   .set("Matriarchal Spear", new Weapon("Matriarchal Spear", 0, SPEAR))
-	   .set("Maul", new Weapon("Maul", 10, TWO_HANDED))
-	   .set("Mighty Scepter", new Weapon("Mighty Scepter", 0, ONE_HANDED_SWINGING))
-	   .set("Military Axe", new Weapon("Military Axe", -10, TWO_HANDED))
-	   .set("Military Pick", new Weapon("Military Pick", -10, ONE_HANDED_SWINGING))
-	   .set("Mithril Point", new Weapon("Mithril Point", 0, ONE_HANDED_THRUSTING))
-	   .set("Morning Star", new Weapon("Morning Star", 10, ONE_HANDED_SWINGING))
-	   .set("Mythical Sword", new Weapon("Mythical Sword", 0, ONE_HANDED_SWINGING))
-	   .set("Naga", new Weapon("Naga", 0, ONE_HANDED_SWINGING))
-	   .set("Ogre Axe", new Weapon("Ogre Axe", 0, TWO_HANDED))
-	   .set("Ogre Maul", new Weapon("Ogre Maul", 10, TWO_HANDED))
-	   .set("Partizan", new Weapon("Partizan", 10, TWO_HANDED))
-	   .set("Pellet Bow", new Weapon("Pellet Bow", -10, CROSSBOW))
-	   .set("Petrified Wand", new Weapon("Petrified Wand", 10, ONE_HANDED_SWINGING))
-	   .set("Phase Blade", new Weapon("Phase Blade", -30, ONE_HANDED_SWINGING))
-	   .set("Pike", new Weapon("Pike", 20, SPEAR))
-	   .set("Pilum", new Weapon("Pilum", 0, ONE_HANDED_THRUSTING))
-	   .set("Poignard", new Weapon("Poignard", -20, ONE_HANDED_THRUSTING))
-	   .set("Poleaxe", new Weapon("Poleaxe", 10, TWO_HANDED))
-	   .set("Polished Wand", new Weapon("Polished Wand", 0, ONE_HANDED_SWINGING))
-	   .set("Quarterstaff", new Weapon("Quarterstaff", 0, TWO_HANDED))
-	   .set("Quhab", new Weapon("Quhab", 0, CLAW))
-	   .set("Razor Bow", new Weapon("Razor Bow", -10, BOW))
-	   .set("Reflex Bow", new Weapon("Reflex Bow", 10, BOW))
-	   .set("Reinforced Mace", new Weapon("Reinforced Mace", 0, ONE_HANDED_SWINGING))
-	   .set("Repeating Crossbow", new Weapon("Repeating Crossbow", -40, CROSSBOW))
-	   .set("Rondel", new Weapon("Rondel", 0, ONE_HANDED_THRUSTING))
-	   .set("Rune Bow", new Weapon("Rune Bow", 0, BOW))
-	   .set("Rune Scepter", new Weapon("Rune Scepter", 0, ONE_HANDED_SWINGING))
-	   .set("Rune Staff", new Weapon("Rune Staff", 20, TWO_HANDED))
-	   .set("Rune Sword", new Weapon("Rune Sword", -10, ONE_HANDED_SWINGING))
-	   .set("Runic Talons", new Weapon("Runic Talons", -30, CLAW))
-	   .set("Sabre", new Weapon("Sabre", -10, ONE_HANDED_SWINGING))
-	   .set("Sacred Globe", new Weapon("Sacred Globe", -10, ONE_HANDED_SWINGING))
-	   .set("Scepter", new Weapon("Scepter", 0, ONE_HANDED_SWINGING))
-	   .set("Scimitar", new Weapon("Scimitar", -20, ONE_HANDED_SWINGING))
-	   .set("Scissors Katar", new Weapon("Scissors Katar", -10, CLAW))
-	   .set("Scissors Quhab", new Weapon("Scissors Quhab", 0, CLAW))
-	   .set("Scissors Suwayyah", new Weapon("Scissors Suwayyah", 0, CLAW))
-	   .set("Scourge", new Weapon("Scourge", -10, ONE_HANDED_SWINGING))
-	   .set("Scythe", new Weapon("Scythe", -10, TWO_HANDED))
-	   .set("Seraph Rod", new Weapon("Seraph Rod", 10, ONE_HANDED_SWINGING))
-	   .set("Shadow Bow", new Weapon("Shadow Bow", 0, BOW))
-	   .set("Shamshir", new Weapon("Shamshir", -10, ONE_HANDED_SWINGING))
-	   .set("Shillelagh", new Weapon("Shillelagh", 0, TWO_HANDED))
-	   .set("Short Battle Bow", new Weapon("Short Battle Bow", 0, BOW))
-	   .set("Short Bow", new Weapon("Short Bow", 5, BOW))
-	   .set("Short Siege Bow", new Weapon("Short Siege Bow", 0, BOW))
-	   .set("Short Spear", new Weapon("Short Spear", 10, ONE_HANDED_THRUSTING))
-	   .set("Short Staff", new Weapon("Short Staff", -10, TWO_HANDED))
-	   .set("Short Sword", new Weapon("Short Sword", 0, ONE_HANDED_SWINGING))
-	   .set("Short War Bow", new Weapon("Short War Bow", 0, BOW))
-	   .set("Siege Crossbow", new Weapon("Siege Crossbow", 0, CROSSBOW))
-	   .set("Silver-edged Axe", new Weapon("Silver-edged Axe", 0, TWO_HANDED))
-	   .set("Simbilan", new Weapon("Simbilan", 10, ONE_HANDED_THRUSTING))
-	   .set("Small Crescent", new Weapon("Small Crescent", 10, ONE_HANDED_SWINGING))
-	   .set("Smoked Sphere", new Weapon("Smoked Sphere", 0, ONE_HANDED_SWINGING))
-	   .set("Sparkling Ball", new Weapon("Sparkling Ball", 0, ONE_HANDED_SWINGING))
-	   .set("Spear", new Weapon("Spear", -10, SPEAR))
-	   .set("Spetum", new Weapon("Spetum", 0, SPEAR))
-	   .set("Spiculum", new Weapon("Spiculum", 20, ONE_HANDED_THRUSTING))
-	   .set("Spider Bow", new Weapon("Spider Bow", 5, BOW))
-	   .set("Spiked Club", new Weapon("Spiked Club", 0, ONE_HANDED_SWINGING))
-	   .set("Stag Bow", new Weapon("Stag Bow", 0, BOW))
-	   .set("Stalagmite", new Weapon("Stalagmite", 10, TWO_HANDED))
-	   .set("Stiletto", new Weapon("Stiletto", -10, ONE_HANDED_THRUSTING))
-	   .set("Stygian Pike", new Weapon("Stygian Pike", 0, SPEAR))
-	   .set("Stygian Pilum", new Weapon("Stygian Pilum", 0, ONE_HANDED_THRUSTING))
-	   .set("Suwayyah", new Weapon("Suwayyah", 0, CLAW))
-	   .set("Swirling Crystal", new Weapon("Swirling Crystal", 10, ONE_HANDED_SWINGING))
-	   .set("Tabar", new Weapon("Tabar", 10, TWO_HANDED))
-	   .set("Thresher", new Weapon("Thresher", -10, TWO_HANDED))
-	   .set("Throwing Axe", new Weapon("Throwing Axe", 10, ONE_HANDED_SWINGING))
-	   .set("Throwing Knife", new Weapon("Throwing Knife", 0, ONE_HANDED_THRUSTING))
-	   .set("Throwing Spear", new Weapon("Throwing Spear", -10, ONE_HANDED_THRUSTING))
-	   .set("Thunder Maul", new Weapon("Thunder Maul", 20, TWO_HANDED))
-	   .set("Tomahawk", new Weapon("Tomahawk", 0, ONE_HANDED_SWINGING))
-	   .set("Tomb Wand", new Weapon("Tomb Wand", -20, ONE_HANDED_SWINGING))
-	   .set("Trident", new Weapon("Trident", 0, SPEAR))
-	   .set("Truncheon", new Weapon("Truncheon", -10, ONE_HANDED_SWINGING))
-	   .set("Tulwar", new Weapon("Tulwar", 20, ONE_HANDED_SWINGING))
-	   .set("Tusk Sword", new Weapon("Tusk Sword", 0, TWO_HANDED_SWORD))
-	   .set("Twin Axe", new Weapon("Twin Axe", 10, ONE_HANDED_SWINGING))
-	   .set("Two-Handed Sword", new Weapon("Two-Handed Sword", 0, TWO_HANDED_SWORD))
-	   .set("Tyrant Club", new Weapon("Tyrant Club", 0, ONE_HANDED_SWINGING))
-	   .set("Unearthed Wand", new Weapon("Unearthed Wand", 0, ONE_HANDED_SWINGING))
-	   .set("Vortex Orb", new Weapon("Vortex Orb", 0, ONE_HANDED_SWINGING))
-	   .set("Voulge", new Weapon("Voulge", 0, TWO_HANDED))
-	   .set("Walking Stick", new Weapon("Walking Stick", -10, TWO_HANDED))
-	   .set("Wand", new Weapon("Wand", 0, ONE_HANDED_SWINGING))
-	   .set("War Axe", new Weapon("War Axe", 0, ONE_HANDED_SWINGING))
-	   .set("War Club", new Weapon("War Club", 10, TWO_HANDED))
-	   .set("War Dart", new Weapon("War Dart", -20, ONE_HANDED_THRUSTING))
-	   .set("War Fist", new Weapon("War Fist", 10, CLAW))
-	   .set("War Fork", new Weapon("War Fork", -20, SPEAR))
-	   .set("War Hammer", new Weapon("War Hammer", 20, ONE_HANDED_SWINGING))
-	   .set("War Javelin", new Weapon("War Javelin", -10, ONE_HANDED_THRUSTING))
-	   .set("War Pike", new Weapon("War Pike", 20, SPEAR))
-	   .set("War Scepter", new Weapon("War Scepter", -10, ONE_HANDED_SWINGING))
-	   .set("War Scythe", new Weapon("War Scythe", -10, TWO_HANDED))
-	   .set("War Spear", new Weapon("War Spear", -10, SPEAR))
-	   .set("War Spike", new Weapon("War Spike", -10, ONE_HANDED_SWINGING))
-	   .set("War Staff", new Weapon("War Staff", 20, TWO_HANDED))
-	   .set("War Sword", new Weapon("War Sword", 0, ONE_HANDED_SWINGING))
-	   .set("Ward Bow", new Weapon("Ward Bow", 0, BOW))
-	   .set("Winged Axe", new Weapon("Winged Axe", -10, ONE_HANDED_SWINGING))
-	   .set("Winged Harpoon", new Weapon("Winged Harpoon", -10, ONE_HANDED_THRUSTING))
-	   .set("Winged Knife", new Weapon("Winged Knife", -20, ONE_HANDED_THRUSTING))
-	   .set("Wrist Blade", new Weapon("Wrist Blade", 0, CLAW))
-	   .set("Wrist Spike", new Weapon("Wrist Spike", -10, CLAW))
-	   .set("Wrist Sword", new Weapon("Wrist Sword", -10, CLAW))
-	   .set("Yari", new Weapon("Yari", 0, SPEAR))
-	   .set("Yew Wand", new Weapon("Yew Wand", 10, ONE_HANDED_SWINGING))
-	   .set("Zweihander", new Weapon("Zweihander", -10, TWO_HANDED_SWORD));
+WEAPONS.set("None", new Weapon("None", 0, UNARMED, CLASS_NONE, 0))
+	.set("Ancient Axe", new Weapon("Ancient Axe", 10, TWO_HANDED, CLASS_AXE, 6))
+	.set("Ancient Sword", new Weapon("Ancient Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 3))
+	.set("Arbalest", new Weapon("Arbalest", -10, CROSSBOW, CLASS_MISSILE, 3))
+	.set("Archon Staff", new Weapon("Archon Staff", 10, TWO_HANDED, CLASS_STAFF, 6))
+	.set("Ashwood Bow", new Weapon("Ashwood Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Ataghan", new Weapon("Ataghan", -20, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Axe", new Weapon("Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 4))
+	.set("Balanced Axe", new Weapon("Balanced Axe", -10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
+	.set("Balanced Knife", new Weapon("Balanced Knife", -20, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
+	.set("Ballista", new Weapon("Ballista", 10, CROSSBOW, CLASS_MISSILE, 6))
+	.set("Balrog Blade", new Weapon("Balrog Blade", 0, TWO_HANDED_SWORD, CLASS_SWORD, 4))
+	.set("Balrog Spear", new Weapon("Balrog Spear", 10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Barbed Club", new Weapon("Barbed Club", 0, ONE_HANDED_SWINGING, CLASS_MACE, 3))
+	.set("Bardiche", new Weapon("Bardiche", 10, TWO_HANDED, CLASS_POLEARM, 3))
+	.set("Bastard Sword", new Weapon("Bastard Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
+	.set("Battle Axe", new Weapon("Battle Axe", 10, TWO_HANDED, CLASS_AXE, 5))
+	.set("Battle Cestus", new Weapon("Battle Cestus", -10, CLAW, CLASS_CLAW, 2))
+	.set("Battle Dart", new Weapon("Battle Dart", 0, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
+	.set("Battle Hammer", new Weapon("Battle Hammer", 20, ONE_HANDED_SWINGING, CLASS_MACE, 4))
+	.set("Battle Scythe", new Weapon("Battle Scythe", -10, TWO_HANDED, CLASS_POLEARM, 5))
+	.set("Battle Staff", new Weapon("Battle Staff", 0, TWO_HANDED, CLASS_STAFF, 4))
+	.set("Battle Sword", new Weapon("Battle Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
+	.set("Bearded Axe", new Weapon("Bearded Axe", 0, TWO_HANDED, CLASS_AXE, 5))
+	.set("Bec-de-Corbin", new Weapon("Bec-de-Corbin", 0, TWO_HANDED, CLASS_POLEARM, 6))
+	.set("Berserker Axe", new Weapon("Berserker Axe", 0, ONE_HANDED_SWINGING, CLASS_AXE, 6))
+	.set("Bill", new Weapon("Bill", 0, TWO_HANDED, CLASS_POLEARM, 4))
+	.set("Blade Bow", new Weapon("Blade Bow", -10, BOW, CLASS_MISSILE, 4))
+	.set("Blade Talons", new Weapon("Blade Talons", -20, CLAW, CLASS_CLAW, 3))
+	.set("Blade", new Weapon("Blade", -10, ONE_HANDED_THRUSTING, CLASS_DAGGER, 2))
+	.set("Bone Knife", new Weapon("Bone Knife", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
+	.set("Bone Wand", new Weapon("Bone Wand", -20, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
+	.set("Brandistock", new Weapon("Brandistock", -20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 5))
+	.set("Broad Axe", new Weapon("Broad Axe", 0, TWO_HANDED, CLASS_AXE, 5))
+	.set("Broad Sword", new Weapon("Broad Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
+	.set("Burnt Wand", new Weapon("Burnt Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 1))
+	.set("Caduceus", new Weapon("Caduceus", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
+	.set("Cedar Bow", new Weapon("Cedar Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Cedar Staff", new Weapon("Cedar Staff", 10, TWO_HANDED, CLASS_STAFF, 4))
+	.set("Ceremonial Bow", new Weapon("Ceremonial Bow", 10, BOW, CLASS_MISSILE, 5))
+	.set("Ceremonial Javelin", new Weapon("Ceremonial Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Ceremonial Pike", new Weapon("Ceremonial Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Ceremonial Spear", new Weapon("Ceremonial Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Cestus", new Weapon("Cestus", 0, CLAW, CLASS_CLAW, 2))
+	.set("Champion Axe", new Weapon("Champion Axe", -10, TWO_HANDED, CLASS_AXE, 6))
+	.set("Champion Sword", new Weapon("Champion Sword", -10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
+	.set("Chu-Ko-Nu", new Weapon("Chu-Ko-Nu", -60, CROSSBOW, CLASS_MISSILE, 5))
+	.set("Cinquedeas", new Weapon("Cinquedeas", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 3))
+	.set("Clasped Orb", new Weapon("Clasped Orb", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Claws", new Weapon("Claws", -10, CLAW, CLASS_CLAW, 3))
+	.set("Claymore", new Weapon("Claymore", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
+	.set("Cleaver", new Weapon("Cleaver", 10, ONE_HANDED_SWINGING, CLASS_AXE, 4))
+	.set("Cloudy Sphere", new Weapon("Cloudy Sphere", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Club", new Weapon("Club", -10, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Colossus Blade", new Weapon("Colossus Blade", 5, TWO_HANDED_SWORD, CLASS_SWORD, 6))
+	.set("Colossus Crossbow", new Weapon("Colossus Crossbow", 10, CROSSBOW, CLASS_MISSILE, 6))
+	.set("Colossus Sword", new Weapon("Colossus Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 5))
+	.set("Colossus Voulge", new Weapon("Colossus Voulge", 10, TWO_HANDED, CLASS_POLEARM, 4))
+	.set("Composite Bow", new Weapon("Composite Bow", -10, BOW, CLASS_MISSILE, 4))
+	.set("Conquest Sword", new Weapon("Conquest Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
+	.set("Crossbow", new Weapon("Crossbow", 0, CROSSBOW, CLASS_MISSILE, 4))
+	.set("Crowbill", new Weapon("Crowbill", -10, ONE_HANDED_SWINGING, CLASS_AXE, 6))
+	.set("Crusader Bow", new Weapon("Crusader Bow", 10, BOW, CLASS_MISSILE, 6))
+	.set("Cryptic Axe", new Weapon("Cryptic Axe", 10, TWO_HANDED, CLASS_POLEARM, 5))
+	.set("Cryptic Sword", new Weapon("Cryptic Sword", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
+	.set("Crystal Sword", new Weapon("Crystal Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 6))
+	.set("Crystalline Globe", new Weapon("Crystalline Globe", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Cudgel", new Weapon("Cudgel", -10, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Cutlass", new Weapon("Cutlass", -30, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Dacian Falx", new Weapon("Dacian Falx", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
+	.set("Dagger", new Weapon("Dagger", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
+	.set("Decapitator", new Weapon("Decapitator", 10, TWO_HANDED, CLASS_AXE, 5))
+	.set("Demon Crossbow", new Weapon("Demon Crossbow", -60, CROSSBOW, CLASS_MISSILE, 5))
+	.set("Demon Heart", new Weapon("Demon Heart", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Devil Star", new Weapon("Devil Star", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
+	.set("Diamond Bow", new Weapon("Diamond Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Dimensional Blade", new Weapon("Dimensional Blade", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 6))
+	.set("Dimensional Shard", new Weapon("Dimensional Shard", 10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Dirk", new Weapon("Dirk", 0, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
+	.set("Divine Scepter", new Weapon("Divine Scepter", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
+	.set("Double Axe", new Weapon("Double Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 5))
+	.set("Double Bow", new Weapon("Double Bow", -10, BOW, CLASS_MISSILE, 4))
+	.set("Eagle Orb", new Weapon("Eagle Orb", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Edge Bow", new Weapon("Edge Bow", 5, BOW, CLASS_MISSILE, 3))
+	.set("Elder Staff", new Weapon("Elder Staff", 0, TWO_HANDED, CLASS_STAFF, 4))
+	.set("Eldritch Orb", new Weapon("Eldritch Orb", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Elegant Blade", new Weapon("Elegant Blade", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Espandon", new Weapon("Espandon", 0, TWO_HANDED_SWORD, CLASS_SWORD, 3))
+	.set("Ettin Axe", new Weapon("Ettin Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 5))
+	.set("Executioner Sword", new Weapon("Executioner Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 6))
+	.set("Falcata", new Weapon("Falcata", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Falchion", new Weapon("Falchion", 20, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Fanged Knife", new Weapon("Fanged Knife", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 3))
+	.set("Fascia", new Weapon("Fascia", 10, CLAW, CLASS_CLAW, 2))
+	.set("Feral Axe", new Weapon("Feral Axe", -15, TWO_HANDED, CLASS_AXE, 4))
+	.set("Feral Claws", new Weapon("Feral Claws", -20, CLAW, CLASS_CLAW, 3))
+	.set("Flail", new Weapon("Flail", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
+	.set("Flamberge", new Weapon("Flamberge", -10, TWO_HANDED_SWORD, CLASS_SWORD, 5))
+	.set("Flanged Mace", new Weapon("Flanged Mace", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Flying Axe", new Weapon("Flying Axe", 10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
+	.set("Flying Knife", new Weapon("Flying Knife", 0, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
+	.set("Francisca", new Weapon("Francisca", 10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
+	.set("Fuscina", new Weapon("Fuscina", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 4))
+	.set("Ghost Glaive", new Weapon("Ghost Glaive", 20, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Ghost Spear", new Weapon("Ghost Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Ghost Wand", new Weapon("Ghost Wand", 10, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
+	.set("Giant Axe", new Weapon("Giant Axe", 10, TWO_HANDED, CLASS_AXE, 6))
+	.set("Giant Sword", new Weapon("Giant Sword", 0, TWO_HANDED_SWORD, CLASS_SWORD, 4))
+	.set("Giant Thresher", new Weapon("Giant Thresher", -10, TWO_HANDED, CLASS_POLEARM, 6))
+	.set("Gladius", new Weapon("Gladius", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Glaive", new Weapon("Glaive", 20, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Glorious Axe", new Weapon("Glorious Axe", 10, TWO_HANDED, CLASS_AXE, 6))
+	.set("Glowing Orb", new Weapon("Glowing Orb", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Gnarled Staff", new Weapon("Gnarled Staff", 10, TWO_HANDED, CLASS_STAFF, 4))
+	.set("Gorgon Crossbow", new Weapon("Gorgon Crossbow", 0, CROSSBOW, CLASS_MISSILE, 4))
+	.set("Gothic Axe", new Weapon("Gothic Axe", -10, TWO_HANDED, CLASS_AXE, 6))
+	.set("Gothic Bow", new Weapon("Gothic Bow", 10, BOW, CLASS_MISSILE, 6))
+	.set("Gothic Staff", new Weapon("Gothic Staff", 0, TWO_HANDED, CLASS_STAFF, 4))
+	.set("Gothic Sword", new Weapon("Gothic Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
+	.set("Grand Matron Bow", new Weapon("Grand Matron Bow", 10, BOW, CLASS_MISSILE, 5))
+	.set("Grand Scepter", new Weapon("Grand Scepter", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
+	.set("Grave Wand", new Weapon("Grave Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
+	.set("Great Axe", new Weapon("Great Axe", -10, TWO_HANDED, CLASS_AXE, 6))
+	.set("Great Bow", new Weapon("Great Bow", -10, BOW, CLASS_MISSILE, 4))
+	.set("Great Maul", new Weapon("Great Maul", 20, TWO_HANDED, CLASS_MACE, 6))
+	.set("Great Pilum", new Weapon("Great Pilum", 0, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Great Poleaxe", new Weapon("Great Poleaxe", 0, TWO_HANDED, CLASS_POLEARM, 6))
+	.set("Great Sword", new Weapon("Great Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 6))
+	.set("Greater Claws", new Weapon("Greater Claws", -20, CLAW, CLASS_CLAW, 3))
+	.set("Greater Talons", new Weapon("Greater Talons", -30, CLAW, CLASS_CLAW, 3))
+	.set("Grim Scythe", new Weapon("Grim Scythe", -10, TWO_HANDED, CLASS_POLEARM, 6))
+	.set("Grim Wand", new Weapon("Grim Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
+	.set("Halberd", new Weapon("Halberd", 0, TWO_HANDED, CLASS_POLEARM, 6))
+	.set("Hand Axe", new Weapon("Hand Axe", 0, ONE_HANDED_SWINGING, CLASS_AXE, 2))
+	.set("Hand Scythe", new Weapon("Hand Scythe", -10, CLAW, CLASS_CLAW, 2))
+	.set("Harpoon", new Weapon("Harpoon", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Hatchet Hands", new Weapon("Hatchet Hands", 10, CLAW, CLASS_CLAW, 2))
+	.set("Hatchet", new Weapon("Hatchet", 0, ONE_HANDED_SWINGING, CLASS_AXE, 2))
+	.set("Heavenly Stone", new Weapon("Heavenly Stone", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Heavy Crossbow", new Weapon("Heavy Crossbow", 10, CROSSBOW, CLASS_MISSILE, 6))
+	.set("Highland Blade", new Weapon("Highland Blade", -5, TWO_HANDED_SWORD, CLASS_SWORD, 4))
+	.set("Holy Water Sprinkler", new Weapon("Holy Water Sprinkler", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
+	.set("Hunter's Bow", new Weapon("Hunter's Bow", -10, BOW, CLASS_MISSILE, 4))
+	.set("Hurlbat", new Weapon("Hurlbat", -10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
+	.set("Hydra Bow", new Weapon("Hydra Bow", 10, BOW, CLASS_MISSILE, 6))
+	.set("Hydra Edge", new Weapon("Hydra Edge", 10, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Hyperion Javelin", new Weapon("Hyperion Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Hyperion Spear", new Weapon("Hyperion Spear", -10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 3))
+	.set("Jagged Star", new Weapon("Jagged Star", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
+	.set("Jared's Stone", new Weapon("Jared's Stone", 10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Javelin", new Weapon("Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Jo Staff", new Weapon("Jo Staff", -10, TWO_HANDED, CLASS_STAFF, 2))
+	.set("Katar", new Weapon("Katar", -10, CLAW, CLASS_CLAW, 2))
+	.set("Knout", new Weapon("Knout", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
+	.set("Kris", new Weapon("Kris", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 3))
+	.set("Lance", new Weapon("Lance", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Large Axe", new Weapon("Large Axe", -10, TWO_HANDED, CLASS_AXE, 4))
+	.set("Large Siege Bow", new Weapon("Large Siege Bow", 10, BOW, CLASS_MISSILE, 6))
+	.set("Legend Spike", new Weapon("Legend Spike", -10, ONE_HANDED_THRUSTING, CLASS_DAGGER, 2))
+	.set("Legend Sword", new Weapon("Legend Sword", -15, TWO_HANDED_SWORD, CLASS_SWORD, 3))
+	.set("Legendary Mallet", new Weapon("Legendary Mallet", 20, ONE_HANDED_SWINGING, CLASS_MACE, 4))
+	.set("Lich Wand", new Weapon("Lich Wand", -20, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
+	.set("Light Crossbow", new Weapon("Light Crossbow", -10, CROSSBOW, CLASS_MISSILE, 3))
+	.set("Lochaber Axe", new Weapon("Lochaber Axe", 10, TWO_HANDED, CLASS_POLEARM, 3))
+	.set("Long Battle Bow", new Weapon("Long Battle Bow", 10, BOW, CLASS_MISSILE, 6))
+	.set("Long Bow", new Weapon("Long Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Long Staff", new Weapon("Long Staff", 0, TWO_HANDED, CLASS_STAFF, 3))
+	.set("Long Sword", new Weapon("Long Sword", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
+	.set("Long War Bow", new Weapon("Long War Bow", 10, BOW, CLASS_MISSILE, 6))
+	.set("Mace", new Weapon("Mace", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Maiden Javelin", new Weapon("Maiden Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Maiden Pike", new Weapon("Maiden Pike", 10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Maiden Spear", new Weapon("Maiden Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Mancatcher", new Weapon("Mancatcher", -20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 5))
+	.set("Martel de Fer", new Weapon("Martel de Fer", 20, TWO_HANDED, CLASS_MACE, 6))
+	.set("Matriarchal Bow", new Weapon("Matriarchal Bow", -10, BOW, CLASS_MISSILE, 5))
+	.set("Matriarchal Javelin", new Weapon("Matriarchal Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Matriarchal Pike", new Weapon("Matriarchal Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Matriarchal Spear", new Weapon("Matriarchal Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Maul", new Weapon("Maul", 10, TWO_HANDED, CLASS_MACE, 6))
+	.set("Mighty Scepter", new Weapon("Mighty Scepter", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Military Axe", new Weapon("Military Axe", -10, TWO_HANDED, CLASS_AXE, 4))
+	.set("Military Pick", new Weapon("Military Pick", -10, ONE_HANDED_SWINGING, CLASS_AXE, 6))
+	.set("Mithril Point", new Weapon("Mithril Point", 0, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
+	.set("Morning Star", new Weapon("Morning Star", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
+	.set("Mythical Sword", new Weapon("Mythical Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 3))
+	.set("Naga", new Weapon("Naga", 0, ONE_HANDED_SWINGING, CLASS_AXE, 6))
+	.set("Ogre Axe", new Weapon("Ogre Axe", 0, TWO_HANDED, CLASS_POLEARM, 3))
+	.set("Ogre Maul", new Weapon("Ogre Maul", 10, TWO_HANDED, CLASS_MACE, 6))
+	.set("Partizan", new Weapon("Partizan", 10, TWO_HANDED, CLASS_POLEARM, 5))
+	.set("Pellet Bow", new Weapon("Pellet Bow", -10, CROSSBOW, CLASS_MISSILE, 3))
+	.set("Petrified Wand", new Weapon("Petrified Wand", 10, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
+	.set("Phase Blade", new Weapon("Phase Blade", -30, ONE_HANDED_SWINGING, CLASS_SWORD, 6))
+	.set("Pike", new Weapon("Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Pilum", new Weapon("Pilum", 0, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Poignard", new Weapon("Poignard", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
+	.set("Poleaxe", new Weapon("Poleaxe", 10, TWO_HANDED, CLASS_POLEARM, 5))
+	.set("Polished Wand", new Weapon("Polished Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
+	.set("Quarterstaff", new Weapon("Quarterstaff", 0, TWO_HANDED, CLASS_STAFF, 3))
+	.set("Quhab", new Weapon("Quhab", 0, CLAW, CLASS_CLAW, 3))
+	.set("Razor Bow", new Weapon("Razor Bow", -10, BOW, CLASS_MISSILE, 4))
+	.set("Reflex Bow", new Weapon("Reflex Bow", 10, BOW, CLASS_MISSILE, 5))
+	.set("Reinforced Mace", new Weapon("Reinforced Mace", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Repeating Crossbow", new Weapon("Repeating Crossbow", -40, CROSSBOW, CLASS_MISSILE, 5))
+	.set("Rondel", new Weapon("Rondel", 0, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
+	.set("Rune Bow", new Weapon("Rune Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Rune Scepter", new Weapon("Rune Scepter", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Rune Staff", new Weapon("Rune Staff", 20, TWO_HANDED, CLASS_STAFF, 6))
+	.set("Rune Sword", new Weapon("Rune Sword", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
+	.set("Runic Talons", new Weapon("Runic Talons", -30, CLAW, CLASS_CLAW, 3))
+	.set("Sabre", new Weapon("Sabre", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Sacred Globe", new Weapon("Sacred Globe", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Scepter", new Weapon("Scepter", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Scimitar", new Weapon("Scimitar", -20, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Scissors Katar", new Weapon("Scissors Katar", -10, CLAW, CLASS_CLAW, 3))
+	.set("Scissors Quhab", new Weapon("Scissors Quhab", 0, CLAW, CLASS_CLAW, 3))
+	.set("Scissors Suwayyah", new Weapon("Scissors Suwayyah", 0, CLAW, CLASS_CLAW, 3))
+	.set("Scourge", new Weapon("Scourge", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
+	.set("Scythe", new Weapon("Scythe", -10, TWO_HANDED, CLASS_POLEARM, 5))
+	.set("Seraph Rod", new Weapon("Seraph Rod", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
+	.set("Shadow Bow", new Weapon("Shadow Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Shamshir", new Weapon("Shamshir", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Shillelagh", new Weapon("Shillelagh", 0, TWO_HANDED, CLASS_STAFF, 4))
+	.set("Short Battle Bow", new Weapon("Short Battle Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Short Bow", new Weapon("Short Bow", 5, BOW, CLASS_MISSILE, 3))
+	.set("Short Siege Bow", new Weapon("Short Siege Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Short Spear", new Weapon("Short Spear", 10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Short Staff", new Weapon("Short Staff", -10, TWO_HANDED, CLASS_STAFF, 2))
+	.set("Short Sword", new Weapon("Short Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Short War Bow", new Weapon("Short War Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Siege Crossbow", new Weapon("Siege Crossbow", 0, CROSSBOW, CLASS_MISSILE, 4))
+	.set("Silver-edged Axe", new Weapon("Silver-edged Axe", 0, TWO_HANDED, CLASS_AXE, 5))
+	.set("Simbilan", new Weapon("Simbilan", 10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Small Crescent", new Weapon("Small Crescent", 10, ONE_HANDED_SWINGING, CLASS_AXE, 4))
+	.set("Smoked Sphere", new Weapon("Smoked Sphere", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Sparkling Ball", new Weapon("Sparkling Ball", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Spear", new Weapon("Spear", -10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 3))
+	.set("Spetum", new Weapon("Spetum", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Spiculum", new Weapon("Spiculum", 20, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Spider Bow", new Weapon("Spider Bow", 5, BOW, CLASS_MISSILE, 3))
+	.set("Spiked Club", new Weapon("Spiked Club", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Stag Bow", new Weapon("Stag Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Stalagmite", new Weapon("Stalagmite", 10, TWO_HANDED, CLASS_STAFF, 3))
+	.set("Stiletto", new Weapon("Stiletto", -10, ONE_HANDED_THRUSTING, CLASS_DAGGER, 2))
+	.set("Stygian Pike", new Weapon("Stygian Pike", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 4))
+	.set("Stygian Pilum", new Weapon("Stygian Pilum", 0, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Suwayyah", new Weapon("Suwayyah", 0, CLAW, CLASS_CLAW, 3))
+	.set("Swirling Crystal", new Weapon("Swirling Crystal", 10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Tabar", new Weapon("Tabar", 10, TWO_HANDED, CLASS_AXE, 5))
+	.set("Thresher", new Weapon("Thresher", -10, TWO_HANDED, CLASS_POLEARM, 5))
+	.set("Throwing Axe", new Weapon("Throwing Axe", 10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
+	.set("Throwing Knife", new Weapon("Throwing Knife", 0, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
+	.set("Throwing Spear", new Weapon("Throwing Spear", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Thunder Maul", new Weapon("Thunder Maul", 20, TWO_HANDED, CLASS_MACE, 6))
+	.set("Tomahawk", new Weapon("Tomahawk", 0, ONE_HANDED_SWINGING, CLASS_AXE, 2))
+	.set("Tomb Wand", new Weapon("Tomb Wand", -20, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
+	.set("Trident", new Weapon("Trident", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 4))
+	.set("Truncheon", new Weapon("Truncheon", -10, ONE_HANDED_SWINGING, CLASS_MACE, 2))
+	.set("Tulwar", new Weapon("Tulwar", 20, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
+	.set("Tusk Sword", new Weapon("Tusk Sword", 0, TWO_HANDED_SWORD, CLASS_SWORD, 4))
+	.set("Twin Axe", new Weapon("Twin Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 5))
+	.set("Two-Handed Sword", new Weapon("Two-Handed Sword", 0, TWO_HANDED_SWORD, CLASS_SWORD, 3))
+	.set("Tyrant Club", new Weapon("Tyrant Club", 0, ONE_HANDED_SWINGING, CLASS_MACE, 3))
+	.set("Unearthed Wand", new Weapon("Unearthed Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
+	.set("Vortex Orb", new Weapon("Vortex Orb", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
+	.set("Voulge", new Weapon("Voulge", 0, TWO_HANDED, CLASS_POLEARM, 4))
+	.set("Walking Stick", new Weapon("Walking Stick", -10, TWO_HANDED, CLASS_STAFF, 2))
+	.set("Wand", new Weapon("Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 1))
+	.set("War Axe", new Weapon("War Axe", 0, ONE_HANDED_SWINGING, CLASS_AXE, 6))
+	.set("War Club", new Weapon("War Club", 10, TWO_HANDED, CLASS_MACE, 6))
+	.set("War Dart", new Weapon("War Dart", -20, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
+	.set("War Fist", new Weapon("War Fist", 10, CLAW, CLASS_CLAW, 2))
+	.set("War Fork", new Weapon("War Fork", -20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 5))
+	.set("War Hammer", new Weapon("War Hammer", 20, ONE_HANDED_SWINGING, CLASS_MACE, 4))
+	.set("War Javelin", new Weapon("War Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("War Pike", new Weapon("War Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("War Scepter", new Weapon("War Scepter", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
+	.set("War Scythe", new Weapon("War Scythe", -10, TWO_HANDED, CLASS_POLEARM, 6))
+	.set("War Spear", new Weapon("War Spear", -10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 3))
+	.set("War Spike", new Weapon("War Spike", -10, ONE_HANDED_SWINGING, CLASS_AXE, 6))
+	.set("War Staff", new Weapon("War Staff", 20, TWO_HANDED, CLASS_STAFF, 6))
+	.set("War Sword", new Weapon("War Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 3))
+	.set("Ward Bow", new Weapon("Ward Bow", 0, BOW, CLASS_MISSILE, 5))
+	.set("Winged Axe", new Weapon("Winged Axe", -10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
+	.set("Winged Harpoon", new Weapon("Winged Harpoon", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
+	.set("Winged Knife", new Weapon("Winged Knife", -20, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
+	.set("Wrist Blade", new Weapon("Wrist Blade", 0, CLAW, CLASS_CLAW, 2))
+	.set("Wrist Spike", new Weapon("Wrist Spike", -10, CLAW, CLASS_CLAW, 2))
+	.set("Wrist Sword", new Weapon("Wrist Sword", -10, CLAW, CLASS_CLAW, 3))
+	.set("Yari", new Weapon("Yari", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
+	.set("Yew Wand", new Weapon("Yew Wand", 10, ONE_HANDED_SWINGING, CLASS_STAFF, 1))
+	.set("Zweihander", new Weapon("Zweihander", -10, TWO_HANDED_SWORD, CLASS_SWORD, 5));
+
