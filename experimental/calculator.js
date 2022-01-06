@@ -1092,17 +1092,16 @@ function load() {
 			"wsmbug": CHECKBOX_WSM_BUGGED.checked
 		};
 		let encodedData = btoa(JSON.stringify(data));
-		copyToClipboard(window.location.href + "?data=" + encodedData);
+		let link = window.location.href;
+		if (link.includes("?data=")) link = link.substring(0, link.indexOf("?data="));
+		copyToClipboard(link + "?data=" + encodedData);
 	}
 
 	function loadFromParams() {
 		let params = new URLSearchParams(location.search);
 		let encode = params.get("data");
 		if (encode == null) return;
-		console.log("(load) encode=" + encode);
-		let decode = atob(encode);
-		console.log("(load) decode=" + decode);
-		let data = JSON.parse(decode);
+		let data = JSON.parse(atob(encode));
 		character = data["character"];
 		SELECT_CHARACTER.value = character;
 		onCharacterChange(false);
