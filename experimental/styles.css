@@ -28,8 +28,6 @@ h4 {
   word-break: normal;
   white-space: normal;
   width: 132px;
-  display: inline-block;
-  vertical-align: bottom;
 }
 
 .headerDiv {
@@ -45,7 +43,7 @@ h4 {
 
 th, td {
   text-align: center;
-  border:  2px solid;
+  border: 2px solid;
   border-color: rgb(55, 55, 55);
   min-width: 50px;
   padding: 0px 2px;
