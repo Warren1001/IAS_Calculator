@@ -8,7 +8,7 @@ window.addEventListener("load", load, false);
  * frenzy needs table variable weapon ias implementation
  * dual wielding needs secondary weapon ias implementation for non-ias table variable
  * wereforms needs table variable weapon ias implementation
- * contemplate the use of a WSM table variable
+ * contemplate the usefulness of a WSM table variable
  */
 
 function load() {
@@ -41,7 +41,7 @@ function load() {
 	const TABLE_VARIABLE_WEREWOLF = setupInputElement(document.getElementById("tableVariableWerewolf"), e => onTableVariableChange(true));
 	const TABLE_VARIABLE_FRENZY = setupInputElement(document.getElementById("tableVariableFrenzy"), e => onTableVariableChange(true));
 
-	const SELECT_CHARACTER = setupInputElement(document.getElementById("characterSelect"), onCharacterChange);
+	const SELECT_CHARACTER = setupInputElement(document.getElementById("characterSelect"), e => onCharacterChange(true));
 	const SELECT_WEREFORM = setupInputElement(document.getElementById("wereformSelect"), e => onWereformChange(true));
 	const SELECT_PRIMARY_WEAPON = setupInputElement(document.getElementById("primaryWeaponSelect"), e => onPrimaryWeaponChange(true));
 	const SELECT_SECONDARY_WEAPON = setupInputElement(document.getElementById("secondaryWeaponSelect"), e => onSecondaryWeaponChange(true));
@@ -61,6 +61,9 @@ function load() {
 	const CHECKBOX_DECREPIFY = setupInputElement(document.getElementById("decrepify"), displayFrames);
 
 	const OPTION_WEREWOLF = SELECT_WEREFORM.options[2];
+
+	const BUTTON_GENERATE_LINK = document.getElementById("generateLink");
+	BUTTON_GENERATE_LINK.addEventListener("click", generateLink, false);
 
 	const SKILL_FANATICISM = new AttackSpeedSkill(NUMBER_FANATICISM, 10, 30, 40, TABLE_VARIABLE_FANATICISM);
 	const SKILL_BURST_OF_SPEED = new AttackSpeedSkill(NUMBER_BURST_OF_SPEED, 15, 45, 60, TABLE_VARIABLE_BURST_OF_SPEED, () => character == ASSASSIN);
@@ -87,11 +90,12 @@ function load() {
 
 	setPrimaryWeapons();
 	setSkills();
+	loadFromParams();
 	displayFrames();
 
 	function onTableVariableChange(updateTable) {
 		let newTableVariable = document.querySelector('input[name="tableVariable"]:checked');
-		if (tableVariable == newTableVariable) return;
+		//if (tableVariable == newTableVariable) return;
 		tableVariable = newTableVariable;
 		switch (tableVariable) {
 			case TABLE_VARIABLE_IAS:
@@ -158,7 +162,7 @@ function load() {
 		return null;
 	}
 
-	function onCharacterChange() {
+	function onCharacterChange(updateTable) {
 		character = parseInt(SELECT_CHARACTER.value);
 
 		if (isCharacterSelected()) {
@@ -233,7 +237,8 @@ function load() {
 
 		setPrimaryWeapons();
 		setSkills();
-		displayFrames();
+
+		if (updateTable) displayFrames();
 	}
 
 	function onWereformChange(updateTable) {
@@ -286,7 +291,10 @@ function load() {
 	}
 
 	function onSecondaryWeaponChange(updateTable) {
-		secondaryWeapon = WEAPONS.get(SELECT_SECONDARY_WEAPON.value);
+		let a = SELECT_SECONDARY_WEAPON.value;
+		console.log("a=" + a);
+		secondaryWeapon = WEAPONS.get(a);
+		console.log(secondaryWeapon);
 
 		if (secondaryWeapon.type != UNARMED) {
 			isDualWielding = true;
@@ -319,9 +327,9 @@ function load() {
 			hideElement(CONTAINER_HOLY_FREEZE);
 		} else {
 			unhideElement(CONTAINER_TABLE_VARIABLE);
-			unhideElement(CONTAINER_FANATICISM);
-			if (character == ASSASSIN) unhideElement(CONTAINER_BURST_OF_SPEED);
-			if (character == BARBARIAN) unhideElement(CONTAINER_FRENZY);
+			if (tableVariable != TABLE_VARIABLE_FANATICISM) unhideElement(CONTAINER_FANATICISM);
+			if (character == ASSASSIN && tableVariable != TABLE_VARIABLE_BURST_OF_SPEED) unhideElement(CONTAINER_BURST_OF_SPEED);
+			if (character == BARBARIAN && tableVariable != TABLE_VARIABLE_FRENZY) unhideElement(CONTAINER_FRENZY);
 			unhideElement(CONTAINER_HOLY_FREEZE);
 		}
 
@@ -1063,6 +1071,101 @@ function load() {
 		return true;
 	}
 
+	function generateLink() {
+		let data = {
+			"character": character,
+			"wereform": form,
+			"pweapon": primaryWeapon.name,
+			"skill": skill,
+			"sweapon": secondaryWeapon.name,
+			"tablevar": tableVariable.id,
+			"pwias": NUMBER_PRIMARY_WEAPON_IAS.value,
+			"swias": NUMBER_SECONDARY_WEAPON_IAS.value,
+			"ias": NUMBER_IAS.value,
+			"fanat": NUMBER_FANATICISM.value,
+			"bos": NUMBER_BURST_OF_SPEED.value,
+			"ww": NUMBER_WEREWOLF.value,
+			"frenzy": NUMBER_FRENZY.value,
+			"hf": NUMBER_HOLY_FREEZE.value,
+			"decrep": CHECKBOX_DECREPIFY.checked,
+			"onehand": CHECKBOX_IS_ONE_HANDED.checked,
+			"wsmbug": CHECKBOX_WSM_BUGGED.checked
+		};
+		let encodedData = btoa(JSON.stringify(data));
+		copyToClipboard(window.location.href + "?data=" + encodedData);
+	}
+
+	function loadFromParams() {
+		let params = new URLSearchParams(location.search);
+		let encode = params.get("data");
+		if (encode == null) return;
+		console.log("(load) encode=" + encode);
+		let decode = atob(encode);
+		console.log("(load) decode=" + decode);
+		let data = JSON.parse(decode);
+		character = data["character"];
+		SELECT_CHARACTER.value = character;
+		onCharacterChange(false);
+		form = data["wereform"];
+		SELECT_WEREFORM.value = form;
+		onWereformChange(false);
+		primaryWeapon = WEAPONS.get(data["pweapon"]);
+		SELECT_PRIMARY_WEAPON.value = primaryWeapon.name;
+		onPrimaryWeaponChange(false);
+		CHECKBOX_IS_ONE_HANDED.checked = data["onehand"];
+		let weaponType = primaryWeapon.type;
+		if ((character == ASSASSIN && weaponType == CLAW) || (character == BARBARIAN
+				&& (weaponType.isOneHand || (weaponType == TWO_HANDED_SWORD && CHECKBOX_IS_ONE_HANDED.checked)))) {
+			secondaryWeapon = WEAPONS.get(data["sweapon"]);
+			SELECT_SECONDARY_WEAPON.value = secondaryWeapon.name;
+			onSecondaryWeaponChange(false);
+		}
+		skill = data["skill"];
+		SELECT_SKILL.value = skill;
+		onSkillChange(false);
+		tableVariable = document.querySelector('input[id="' + data["tablevar"] + '"]');
+		tableVariable.checked = true;
+		onTableVariableChange(false);
+		NUMBER_PRIMARY_WEAPON_IAS.value = data["pwias"];
+		NUMBER_SECONDARY_WEAPON_IAS.value = data["swias"];
+		NUMBER_IAS.value = data["ias"];
+		NUMBER_FANATICISM.value = data["fanat"];
+		NUMBER_BURST_OF_SPEED.value = data["bos"];
+		NUMBER_WEREWOLF.value = data["ww"];
+		NUMBER_FRENZY.value = data["frenzy"];
+		NUMBER_HOLY_FREEZE.value = data["hf"];
+		CHECKBOX_DECREPIFY.checked = data["decrep"];
+		CHECKBOX_WSM_BUGGED.checked = data["wsmbug"];
+	}
+
+}
+
+/**
+ * https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript/33928558#33928558
+ */
+ function copyToClipboard(text) {
+	if (window.clipboardData && window.clipboardData.setData) {
+		// Internet Explorer-specific code path to prevent textarea being shown while dialog is visible.
+		return window.clipboardData.setData("Text", text);
+
+	}
+	else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+		var textarea = document.createElement("textarea");
+		textarea.textContent = text;
+		textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in Microsoft Edge.
+		document.body.appendChild(textarea);
+		textarea.select();
+		try {
+			return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+		}
+		catch (ex) {
+			console.warn("Copy to clipboard failed.", ex);
+			return prompt("Copy to clipboard: Ctrl+C, Enter", text);
+		}
+		finally {
+			document.body.removeChild(textarea);
+		}
+	}
 }
 
 function setupInputElement(element, eventListener) {
