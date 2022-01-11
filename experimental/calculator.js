@@ -2,10 +2,9 @@ window.addEventListener("load", load, false);
 
 /**
  * bugs:
- * 
+ * frenzy tables are slightly off - possibly only when NOT indexing by a weapon ias
  * 
  * missing features:
- * frenzy needs table variable weapon ias implementation
  * dual wielding needs secondary weapon ias implementation for non-ias table variable
  * wereforms needs table variable weapon ias implementation
  * contemplate the usefulness of a WSM table variable
@@ -67,7 +66,7 @@ function load() {
 
 	const SKILL_FANATICISM = new AttackSpeedSkill(NUMBER_FANATICISM, 10, 30, 40, TABLE_VARIABLE_FANATICISM);
 	const SKILL_BURST_OF_SPEED = new AttackSpeedSkill(NUMBER_BURST_OF_SPEED, 15, 45, 60, TABLE_VARIABLE_BURST_OF_SPEED, () => character == ASSASSIN);
-	const SKILL_WEREWOLF = new AttackSpeedSkill(NUMBER_WEREWOLF, 10, 70, 80, TABLE_VARIABLE_WEREWOLF, () => form == WEREWOLF);
+	const SKILL_WEREWOLF = new AttackSpeedSkill(NUMBER_WEREWOLF, 10, 70, 80, TABLE_VARIABLE_WEREWOLF, () => wereform == WEREWOLF);
 	const SKILL_FRENZY = new AttackSpeedSkill(NUMBER_FRENZY, 0, 50, 50, TABLE_VARIABLE_FRENZY, () => character == BARBARIAN);
 	const SKILL_HOLY_FREEZE = new AttackSpeedSkill(NUMBER_HOLY_FREEZE, 25, 35, 60);
 	
@@ -80,9 +79,9 @@ function load() {
 	const MAX_IAS_ACCELERATION_MERCENARY = 78;
 
 	let character = PALADIN;
-	let form = HUMAN;
+	let wereform = HUMAN;
 	let primaryWeapon = WEAPONS.get("None");
-	let skill = STANDARD;
+	let skill = SKILLS.get("Standard");
 	let secondaryWeapon = WEAPONS.get("None");
 	let isDualWielding = false;
 	let tableVariable = TABLE_VARIABLE_IAS;
@@ -107,7 +106,11 @@ function load() {
 				}
 				break;
 			case TABLE_VARIABLE_PRIMARY_WEAPON_IAS:
+				hideElement(CONTAINER_PRIMARY_WEAPON_IAS);
+				maxAccelerationIncrease = MAX_IAS_ACCELERATION_WEAPON;
+				break;
 			case TABLE_VARIABLE_SECONDARY_WEAPON_IAS:
+				hideElement(CONTAINER_SECONDARY_WEAPON_IAS);
 				maxAccelerationIncrease = MAX_IAS_ACCELERATION_WEAPON;
 				break;
 			case TABLE_VARIABLE_FANATICISM:
@@ -126,6 +129,12 @@ function load() {
 				maxAccelerationIncrease = SKILL_FRENZY.max;
 				break;
 		}
+		if (tableVariable != TABLE_VARIABLE_PRIMARY_WEAPON_IAS && isDualWielding) {
+			unhideElement(CONTAINER_PRIMARY_WEAPON_IAS);
+		}
+		if (tableVariable != TABLE_VARIABLE_SECONDARY_WEAPON_IAS && isDualWielding) {
+			unhideElement(CONTAINER_SECONDARY_WEAPON_IAS);
+		}
 		if (tableVariable != TABLE_VARIABLE_IAS) {
 			unhideElement(CONTAINER_IAS);
 		}
@@ -135,7 +144,7 @@ function load() {
 		if (tableVariable != TABLE_VARIABLE_BURST_OF_SPEED && character == ASSASSIN) {
 			unhideElement(CONTAINER_BURST_OF_SPEED);
 		}
-		if (tableVariable != TABLE_VARIABLE_WEREWOLF && form == WEREWOLF) {
+		if (tableVariable != TABLE_VARIABLE_WEREWOLF && wereform == WEREWOLF) {
 			unhideElement(CONTAINER_WEREWOLF);
 		}
 		if (tableVariable != TABLE_VARIABLE_FRENZY && character == BARBARIAN) {
@@ -180,7 +189,7 @@ function load() {
 			}
 
 			hideElement(CONTAINER_WEREFORM);
-			if (form != HUMAN) {
+			if (wereform != HUMAN) {
 				SELECT_WEREFORM.value = HUMAN;
 				onWereformChange(false);
 			}
@@ -242,13 +251,13 @@ function load() {
 	}
 
 	function onWereformChange(updateTable) {
-		form = SELECT_WEREFORM.value;
-		if (form == HUMAN) {
+		wereform = SELECT_WEREFORM.value;
+		if (wereform == HUMAN) {
 			hideElement(CONTAINER_PRIMARY_WEAPON_IAS);
 		} else {
 			unhideElement(CONTAINER_PRIMARY_WEAPON_IAS);
 		}
-		if (form == WEREWOLF) {
+		if (wereform == WEREWOLF) {
 			unhideElement(CONTAINER_TABLE_VARIABLE_WEREWOLF);
 			unhideElement(CONTAINER_WEREWOLF);
 		} else {
@@ -317,7 +326,7 @@ function load() {
 	}
 
 	function onSkillChange(updateTable) {
-		skill = SELECT_SKILL.value;
+		skill = SKILLS.get(SELECT_SKILL.value);
 
 		if (skill == WHIRLWIND) {
 			hideElement(CONTAINER_TABLE_VARIABLE);
@@ -331,6 +340,20 @@ function load() {
 			if (character == ASSASSIN && tableVariable != TABLE_VARIABLE_BURST_OF_SPEED) unhideElement(CONTAINER_BURST_OF_SPEED);
 			if (character == BARBARIAN && tableVariable != TABLE_VARIABLE_FRENZY) unhideElement(CONTAINER_FRENZY);
 			unhideElement(CONTAINER_HOLY_FREEZE);
+
+			if (skill == FRENZY) {
+				unhideElement(CONTAINER_TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+				unhideElement(CONTAINER_TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
+			} else {
+				hideElement(CONTAINER_TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+				hideElement(CONTAINER_TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
+				console.log(tableVariable);
+				if (tableVariable == TABLE_VARIABLE_PRIMARY_WEAPON_IAS || tableVariable == TABLE_VARIABLE_SECONDARY_WEAPON_IAS) {
+					TABLE_VARIABLE_IAS.checked = true;
+					onTableVariableChange(false);
+				}
+			}
+
 		}
 
 		if (updateTable) displayFrames();
@@ -391,13 +414,13 @@ function load() {
 
 		clear(SELECT_SKILL);
 
-		if (form == HUMAN && isCharacterSelected() && (itemClass == CLASS_THROWING || itemClass == CLASS_JAVELIN)) {
+		if (wereform == HUMAN && isCharacterSelected() && (itemClass == CLASS_THROWING || itemClass == CLASS_JAVELIN)) {
 			currentSkills.push(THROW);
 		}
 
 		switch (parseInt(character)) {
 			case AMAZON:
-				if (form == HUMAN) {
+				if (wereform == HUMAN) {
 					if (type == BOW || type == CROSSBOW) {
 						currentSkills.push(STRAFE);
 					} else if (itemClass == CLASS_SPEAR || itemClass == CLASS_JAVELIN) {
@@ -408,7 +431,7 @@ function load() {
 				}
 				break;
 			case ASSASSIN:
-				if (form == HUMAN) {
+				if (wereform == HUMAN) {
 					currentSkills.push(LAYING_TRAPS);
 					currentSkills.push(DRAGON_TALON);
 					if (type.isMelee) {
@@ -431,7 +454,7 @@ function load() {
 				}
 				break;
 			case BARBARIAN:
-				if (form == HUMAN) {
+				if (wereform == HUMAN) {
 					if (type.isMelee) {
 						if (isDualWielding) {
 							currentSkills.push(FRENZY);
@@ -446,21 +469,21 @@ function load() {
 					if ((type == ONE_HANDED_THRUSTING || type == THROWING) && isDualWielding && (secondaryWeapon.type == ONE_HANDED_THRUSTING || secondaryWeapon.type == TWO_HANDED_THRUSTING)) {
 						currentSkills.push(DOUBLE_THROW);
 					}
-				} else if (form == WEREWOLF) {
+				} else if (wereform == WEREWOLF) {
 					currentSkills.push(FERAL_RAGE);
 				}
 				break;
 			case DRUID:
-				if (form == WEREWOLF) {
+				if (wereform == WEREWOLF) {
 					currentSkills.push(FURY);
 					currentSkills.push(RABIES);
 					currentSkills.push(FERAL_RAGE);
-				} else if (form == WEREBEAR) {
+				} else if (wereform == WEREBEAR) {
 					currentSkills.push(HUNGER);
 				}
 				break;
 			case PALADIN:
-				if (form == HUMAN && type.isMelee) {
+				if (wereform == HUMAN && type.isMelee) {
 					if (type.isOneHand) currentSkills.push(SMITE);
 					currentSkills.push(ZEAL);
 					currentSkills.push(SACRIFICE);
@@ -478,24 +501,30 @@ function load() {
 
 		}
 
-		if (form == HUMAN && character != PALADIN && isCharacterSelected() &&
+		if (wereform == HUMAN && character != PALADIN && isCharacterSelected() &&
 			!(primaryWeapon.type == UNARMED || primaryWeapon.type == BOW || primaryWeapon.type == CROSSBOW || primaryWeapon.type == CLAW) && primaryWeapon.maxSockets >= 4) {
 			currentSkills.push(ZEAL);
 		}
 
-		currentSkills.forEach(skill => SELECT_SKILL.add(createOption(skill)));
+		if (isCharacterSelected()) {
+			currentSkills.push(KICK);
+		}
+
+		currentSkills.forEach(s => SELECT_SKILL.add(createOption(s.name)));
 
 		if (!currentSkills.includes(skill)) {
 			onSkillChange(false);
 		} else {
-			SELECT_SKILL.value = skill;
+			SELECT_SKILL.value = skill.name;
 		}
-
 
 	}
 
 	function getWeaponIAS(isPrimary) {
-		return isPrimary ? parseInt(NUMBER_PRIMARY_WEAPON_IAS.value) : parseInt(NUMBER_SECONDARY_WEAPON_IAS.value);
+		let wIAS = 0;
+		if (isPrimary && tableVariable != TABLE_VARIABLE_PRIMARY_WEAPON_IAS) wIAS = parseInt(NUMBER_PRIMARY_WEAPON_IAS.value);
+		else if (!isPrimary && tableVariable != TABLE_VARIABLE_SECONDARY_WEAPON_IAS) wIAS = parseInt(NUMBER_SECONDARY_WEAPON_IAS.value);
+		return wIAS;
 	}
 
 	function displayFrames() {
@@ -504,7 +533,7 @@ function load() {
 
 		removeAllChildNodes(CONTAINER_TABLE);
 
-		if (form != HUMAN) {
+		if (wereform != HUMAN) {
 			displayWereformTables();
 		} else if (skill == FRENZY) {
 			displayFrenzyTable();
@@ -575,7 +604,7 @@ function load() {
 		let framesPerDirection1 = 0;
 		let framesPerDirection2 = 0;
 		let framesPerDirection3 = 13;
-		if (form == WEREWOLF) {
+		if (wereform == WEREWOLF) {
 			if (skill == FERAL_RAGE || skill == FURY) framesPerDirection1 = 7;
 			else if (skill == RABIES) framesPerDirection1 = 10;
 			else framesPerDirection1 = 13;
@@ -925,11 +954,11 @@ function load() {
 				console.log("acceleration=" + accelerationNeeded + ",FPA=" + FPA + ",level=" + level);
 			}
 			
-		} else if (tableVariable == TABLE_VARIABLE_IAS) {
-			variableLabel = "IAS";
+		} else if (tableVariable == TABLE_VARIABLE_IAS || tableVariable == TABLE_VARIABLE_PRIMARY_WEAPON_IAS || tableVariable == TABLE_VARIABLE_SECONDARY_WEAPON_IAS) {
+			variableLabel = tableVariable == TABLE_VARIABLE_IAS ? "IAS" : "WIAS";
 			for (const [accelerationNeeded, FPA] of table) {
 				let IAS = convertEIAStoIAS(accelerationNeeded);
-				if (form != HUMAN) IAS -= getWeaponIAS(true);
+				if (wereform != HUMAN) IAS -= getWeaponIAS(true);
 				if (IAS < 0) IAS = 0;
 				newTable.set(IAS, FPA);
 			}
@@ -946,6 +975,8 @@ function load() {
 	}
 
 	function calculateFramesPerDirection(weaponType) {
+
+		if (skill == KICK) return character == ASSASSIN ? 13 : 12;
 
 		if (character == BARBARIAN && weaponType == TWO_HANDED_SWORD && (CHECKBOX_IS_ONE_HANDED.checked || isDualWielding)) weaponType = ONE_HANDED_SWINGING;
 
@@ -1074,9 +1105,9 @@ function load() {
 	function generateLink() {
 		let data = {
 			"character": character,
-			"wereform": form,
+			"wereform": wereform,
 			"pweapon": primaryWeapon.name,
-			"skill": skill,
+			"skill": skill.name,
 			"sweapon": secondaryWeapon.name,
 			"tablevar": tableVariable.id,
 			"pwias": NUMBER_PRIMARY_WEAPON_IAS.value,
@@ -1105,8 +1136,8 @@ function load() {
 		character = data["character"];
 		SELECT_CHARACTER.value = character;
 		onCharacterChange(false);
-		form = data["wereform"];
-		SELECT_WEREFORM.value = form;
+		wereform = data["wereform"];
+		SELECT_WEREFORM.value = wereform;
 		onWereformChange(false);
 		primaryWeapon = WEAPONS.get(data["pweapon"]);
 		SELECT_PRIMARY_WEAPON.value = primaryWeapon.name;
@@ -1119,8 +1150,8 @@ function load() {
 			SELECT_SECONDARY_WEAPON.value = secondaryWeapon.name;
 			onSecondaryWeaponChange(false);
 		}
-		skill = data["skill"];
-		SELECT_SKILL.value = skill;
+		skill = SKILLS.get(data["skill"]);
+		SELECT_SKILL.value = skill.name;
 		onSkillChange(false);
 		tableVariable = document.querySelector('input[id="' + data["tablevar"] + '"]');
 		tableVariable.checked = true;
@@ -1245,7 +1276,7 @@ class WeaponType {
 	constructor(isMelee, isOneHand, frameData) {
 		this.isMelee = isMelee;
 		this.isOneHand = isOneHand;
-		this.frameData = frameData;
+		this.frameData = new Map(frameData);
 	}
 
 	getFramesPerDirection(character) {
@@ -1317,6 +1348,15 @@ class Weapon {
 
 }
 
+class Skill {
+
+	constructor(name, isDualWieldOnly) {
+		this.name = name;
+		this.isDualWieldOnly = isDualWieldOnly;
+	}
+
+}
+
 const AMAZON = 0;
 const ASSASSIN = 1;
 const BARBARIAN = 2;
@@ -1332,50 +1372,133 @@ const HUMAN = "None";
 const WEREWOLF = "Werewolf";
 const WEREBEAR = "Werebear";
 
-const STANDARD = "Standard";
-const THROW = "Throw";
-const IMPALE = "Impale";
-const JAB = "Jab";
-const STRAFE = "Strafe";
-const FEND = "Fend";
-const TIGER_STRIKE = "Tiger Strike";
-const COBRA_STRIKE = "Cobra Strike";
-const PHOENIX_STRIKE = "Phoenix Strike";
-const FISTS_OF_FIRE = "Fists of Fire";
-const CLAWS_OF_THUNDER = "Claws of Thunder";
-const BLADES_OF_ICE = "Blades of Ice";
-const DRAGON_CLAW = "Dragon Claw";
-const DRAGON_TAIL = "Dragon Tail";
-const DRAGON_TALON = "Dragon Talon";
-const LAYING_TRAPS = "Laying Traps";
-const DOUBLE_SWING = "Double Swing";
-const FRENZY = "Frenzy";
-const DOUBLE_THROW = "Double Throw";
-const WHIRLWIND = "Whirlwind";
-const CONCENTRATE = "Concentrate";
-const BERSERK = "Berserk";
-const BASH = "Bash";
-const STUN = "Stun";
-const ZEAL = "Zeal";
-const SMITE = "Smite";
-const FERAL_RAGE = "Feral Rage";
-const HUNGER = "Hunger";
-const RABIES = "Rabies";
-const FURY = "Fury";
-const SACRIFICE = "Sacrifice";
-const VENGEANCE = "Vengeance";
-const CONVERSION = "Conversion";
+const SKILLS = new Map();
+const STANDARD = add(new Skill("Standard", false));
+const KICK = add(new Skill("Kick", false));
+const THROW = add(new Skill("Throw", false));
+const IMPALE = add(new Skill("Impale", false));
+const JAB = add(new Skill("Jab", false));
+const STRAFE = add(new Skill("Strafe", false));
+const FEND = add(new Skill("Fend", false));
+const TIGER_STRIKE = add(new Skill("Tiger Strike", false));
+const COBRA_STRIKE = add(new Skill("Cobra Strike", false));
+const PHOENIX_STRIKE = add(new Skill("Phoenix Strike", false));
+const FISTS_OF_FIRE = add(new Skill("Fists of Fire", false));
+const CLAWS_OF_THUNDER = add(new Skill("Claws of Thunder", false));
+const BLADES_OF_ICE = add(new Skill("Blades of Ice", false));
+const DRAGON_CLAW = add(new Skill("Dragon Claw", true));
+const DRAGON_TAIL = add(new Skill("Dragon Tail", false));
+const DRAGON_TALON = add(new Skill("Dragon Talon", false));
+const LAYING_TRAPS = add(new Skill("Laying Traps", false));
+const DOUBLE_SWING = add(new Skill("Double Swing", true));
+const FRENZY = add(new Skill("Frenzy", true));
+const DOUBLE_THROW = add(new Skill("Double Throw", true));
+const WHIRLWIND = add(new Skill("Whirlwind", false));
+const CONCENTRATE = add(new Skill("Concentrate", false));
+const BERSERK = add(new Skill("Berserk", false));
+const BASH = add(new Skill("Bash", false));
+const STUN = add(new Skill("Stun", false));
+const ZEAL = add(new Skill("Zeal", false));
+const SMITE = add(new Skill("Smite", false));
+const FERAL_RAGE = add(new Skill("Feral Rage", false));
+const HUNGER = add(new Skill("Hunger", false));
+const RABIES = add(new Skill("Rabies", false));
+const FURY = add(new Skill("Fury", false));
+const SACRIFICE = add(new Skill("Sacrifice", false));
+const VENGEANCE = add(new Skill("Vengeance", false));
+const CONVERSION = add(new Skill("Conversion", false));
 
-const UNARMED = new WeaponType(true, true, new Map([[AMAZON, [13, 8]], [ASSASSIN, [11, 12, 6]], [BARBARIAN, [12, 6]], [DRUID, [16, 8]], [NECROMANCER, [15, 8]], [PALADIN, [14, 7]], [SORCERESS, [16, 9]]]));
-const CLAW = new WeaponType(true, true, new Map([[ASSASSIN, [11, 12, 0]]]));
-const ONE_HANDED_SWINGING = new WeaponType(true, true, new Map([[AMAZON, [16, 10]], [ASSASSIN, [15, 7]], [BARBARIAN, [16, 7]], [DRUID, [19, 9]], [NECROMANCER, [19, 9]], [PALADIN, [15, 7]], [SORCERESS, [20, 12]], [MERC_A5, 16]]));
-const TWO_HANDED_SWORD = new WeaponType(true, false, new Map([[AMAZON, [20, 12]], [ASSASSIN, [23, 11]], [BARBARIAN, [18, 8]], [DRUID, [21, 10]], [NECROMANCER, [23, 11]], [PALADIN, [19, 8]], [SORCERESS, [24, 14]], [MERC_A5, 16]]));
-const ONE_HANDED_THRUSTING = new WeaponType(true, true, new Map([[AMAZON, [15, 9]], [ASSASSIN, [15, 7]], [BARBARIAN, [16, 7]], [DRUID, [19, 8]], [NECROMANCER, [19, 9]], [PALADIN, [17, 8]], [SORCERESS, [19, 11]], [MERC_A2, 16]]));
-const TWO_HANDED_THRUSTING = new WeaponType(true, false, new Map([[AMAZON, [18, 11]], [ASSASSIN, [23, 10]], [BARBARIAN, [19, 9]], [DRUID, [23, 9]], [NECROMANCER, [24, 10]], [PALADIN, [20, 8]], [SORCERESS, [23, 13]], [MERC_A2, 16]]));
-const TWO_HANDED = new WeaponType(true, false, new Map([[AMAZON, [20, 12]], [ASSASSIN, [19, 9]], [BARBARIAN, [19, 9]], [DRUID, [17, 9]], [NECROMANCER, [20, 11]], [PALADIN, [18, 19, 9]], [SORCERESS, [18, 11]], [MERC_A2, 16]])); // two-handed weapon (not sword)
-const BOW = new WeaponType(false, false, new Map([[AMAZON, [14, 6]], [ASSASSIN, [16, 7]], [BARBARIAN, [15, 7]], [DRUID, [16, 8]], [NECROMANCER, [18, 9]], [PALADIN, [16, 8]], [SORCERESS, [17, 9]], [MERC_A1, 15]]));
-const CROSSBOW = new WeaponType(false, false, new Map([[AMAZON, [20, 9]], [ASSASSIN, [21, 10]], [BARBARIAN, [20, 10]], [DRUID, [20, 10]], [NECROMANCER, [20, 11]], [PALADIN, [20, 10]], [SORCERESS, [20, 11]]]));
-const THROWING = new WeaponType(true, true, new Map([[AMAZON, 16], [ASSASSIN, 16], [BARBARIAN, 16], [DRUID, 18], [NECROMANCER, 20], [PALADIN, 16], [SORCERESS, 20]]));
+function add(skill) { SKILLS.set(skill.name, skill); return skill; }
+
+const UNARMED = new WeaponType(true, true, [
+	[AMAZON, [13, 8]],
+	[ASSASSIN, [11, 12, 6]],
+	[BARBARIAN, [12, 6]],
+	[DRUID, [16, 8]],
+	[NECROMANCER, [15, 8]],
+	[PALADIN, [14, 7]],
+	[SORCERESS, [16, 9]]
+]);
+const CLAW = new WeaponType(true, true, [[ASSASSIN, [11, 12, 0]]]);
+const ONE_HANDED_SWINGING = new WeaponType(true, true, [
+	[AMAZON, [16, 10]],
+	[ASSASSIN, [15, 7]],
+	[BARBARIAN, [16, 7]],
+	[DRUID, [19, 9]],
+	[NECROMANCER, [19, 9]],
+	[PALADIN, [15, 7]],
+	[SORCERESS, [20, 12]],
+	[MERC_A5, 16]
+]);
+const ONE_HANDED_THRUSTING = new WeaponType(true, true, [
+	[AMAZON, [15, 9]],
+	[ASSASSIN, [15, 7]],
+	[BARBARIAN, [16, 7]],
+	[DRUID, [19, 8]],
+	[NECROMANCER, [19, 9]],
+	[PALADIN, [17, 8]],
+	[SORCERESS, [19, 11]],
+	[MERC_A2, 16]
+]);
+const TWO_HANDED_SWORD = new WeaponType(true, false, [
+	[AMAZON, [20, 12]],
+	[ASSASSIN, [23, 11]],
+	[BARBARIAN, [18, 8]],
+	[DRUID, [21, 10]],
+	[NECROMANCER, [23, 11]],
+	[PALADIN, [19, 8]],
+	[SORCERESS, [24, 14]],
+	[MERC_A5, 16]
+]);
+const TWO_HANDED_THRUSTING = new WeaponType(true, false, [
+	[AMAZON, [18, 11]],
+	[ASSASSIN, [23, 10]],
+	[BARBARIAN, [19, 9]],
+	[DRUID, [23, 9]],
+	[NECROMANCER, [24, 10]],
+	[PALADIN, [20, 8]],
+	[SORCERESS, [23, 13]],
+	[MERC_A2, 16]
+]);
+// all other two handed weapons
+const TWO_HANDED = new WeaponType(true, false, [
+	[AMAZON, [20, 12]],
+	[ASSASSIN, [19, 9]],
+	[BARBARIAN, [19, 9]],
+	[DRUID, [17, 9]],
+	[NECROMANCER, [20, 11]],
+	[PALADIN, [18, 19, 9]],
+	[SORCERESS, [18, 11]],
+	[MERC_A2, 16]
+]);
+const BOW = new WeaponType(false, false, [
+	[AMAZON, [14, 6]],
+	[ASSASSIN, [16, 7]],
+	[BARBARIAN, [15, 7]],
+	[DRUID, [16, 8]],
+	[NECROMANCER, [18, 9]],
+	[PALADIN, [16, 8]],
+	[SORCERESS, [17, 9]],
+	[MERC_A1, 15]
+]);
+const CROSSBOW = new WeaponType(false, false, [
+	[AMAZON, [20, 9]],
+	[ASSASSIN, [21, 10]],
+	[BARBARIAN, [20, 10]],
+	[DRUID, [20, 10]],
+	[NECROMANCER, [20, 11]],
+	[PALADIN, [20, 10]],
+	[SORCERESS, [20, 11]]
+]);
+const THROWING = new WeaponType(true, true, [
+	[AMAZON, 16],
+	[ASSASSIN, 16],
+	[BARBARIAN, 16],
+	[DRUID, 18],
+	[NECROMANCER, 20],
+	[PALADIN, 16],
+	[SORCERESS, 20]
+]);
 
 const CLASS_NONE = "None";
 const CLASS_AXE = "Axe";
@@ -1391,297 +1514,297 @@ const CLASS_ORB = "Orb";
 const CLASS_CLAW = "Claw";
 const CLASS_THROWING = "Throwing";
 
-const WEAPONS = new Map();
-WEAPONS.set("None", new Weapon("None", 0, UNARMED, CLASS_NONE, 0))
-	.set("Ancient Axe", new Weapon("Ancient Axe", 10, TWO_HANDED, CLASS_AXE, 6))
-	.set("Ancient Sword", new Weapon("Ancient Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 3))
-	.set("Arbalest", new Weapon("Arbalest", -10, CROSSBOW, CLASS_MISSILE, 3))
-	.set("Archon Staff", new Weapon("Archon Staff", 10, TWO_HANDED, CLASS_STAFF, 6))
-	.set("Ashwood Bow", new Weapon("Ashwood Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Ataghan", new Weapon("Ataghan", -20, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Axe", new Weapon("Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 4))
-	.set("Balanced Axe", new Weapon("Balanced Axe", -10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
-	.set("Balanced Knife", new Weapon("Balanced Knife", -20, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
-	.set("Ballista", new Weapon("Ballista", 10, CROSSBOW, CLASS_MISSILE, 6))
-	.set("Balrog Blade", new Weapon("Balrog Blade", 0, TWO_HANDED_SWORD, CLASS_SWORD, 4))
-	.set("Balrog Spear", new Weapon("Balrog Spear", 10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Barbed Club", new Weapon("Barbed Club", 0, ONE_HANDED_SWINGING, CLASS_MACE, 3))
-	.set("Bardiche", new Weapon("Bardiche", 10, TWO_HANDED, CLASS_POLEARM, 3))
-	.set("Bastard Sword", new Weapon("Bastard Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
-	.set("Battle Axe", new Weapon("Battle Axe", 10, TWO_HANDED, CLASS_AXE, 5))
-	.set("Battle Cestus", new Weapon("Battle Cestus", -10, CLAW, CLASS_CLAW, 2))
-	.set("Battle Dart", new Weapon("Battle Dart", 0, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
-	.set("Battle Hammer", new Weapon("Battle Hammer", 20, ONE_HANDED_SWINGING, CLASS_MACE, 4))
-	.set("Battle Scythe", new Weapon("Battle Scythe", -10, TWO_HANDED, CLASS_POLEARM, 5))
-	.set("Battle Staff", new Weapon("Battle Staff", 0, TWO_HANDED, CLASS_STAFF, 4))
-	.set("Battle Sword", new Weapon("Battle Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
-	.set("Bearded Axe", new Weapon("Bearded Axe", 0, TWO_HANDED, CLASS_AXE, 5))
-	.set("Bec-de-Corbin", new Weapon("Bec-de-Corbin", 0, TWO_HANDED, CLASS_POLEARM, 6))
-	.set("Berserker Axe", new Weapon("Berserker Axe", 0, ONE_HANDED_SWINGING, CLASS_AXE, 6))
-	.set("Bill", new Weapon("Bill", 0, TWO_HANDED, CLASS_POLEARM, 4))
-	.set("Blade Bow", new Weapon("Blade Bow", -10, BOW, CLASS_MISSILE, 4))
-	.set("Blade Talons", new Weapon("Blade Talons", -20, CLAW, CLASS_CLAW, 3))
-	.set("Blade", new Weapon("Blade", -10, ONE_HANDED_THRUSTING, CLASS_DAGGER, 2))
-	.set("Bone Knife", new Weapon("Bone Knife", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
-	.set("Bone Wand", new Weapon("Bone Wand", -20, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
-	.set("Brandistock", new Weapon("Brandistock", -20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 5))
-	.set("Broad Axe", new Weapon("Broad Axe", 0, TWO_HANDED, CLASS_AXE, 5))
-	.set("Broad Sword", new Weapon("Broad Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
-	.set("Burnt Wand", new Weapon("Burnt Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 1))
-	.set("Caduceus", new Weapon("Caduceus", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
-	.set("Cedar Bow", new Weapon("Cedar Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Cedar Staff", new Weapon("Cedar Staff", 10, TWO_HANDED, CLASS_STAFF, 4))
-	.set("Ceremonial Bow", new Weapon("Ceremonial Bow", 10, BOW, CLASS_MISSILE, 5))
-	.set("Ceremonial Javelin", new Weapon("Ceremonial Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Ceremonial Pike", new Weapon("Ceremonial Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Ceremonial Spear", new Weapon("Ceremonial Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Cestus", new Weapon("Cestus", 0, CLAW, CLASS_CLAW, 2))
-	.set("Champion Axe", new Weapon("Champion Axe", -10, TWO_HANDED, CLASS_AXE, 6))
-	.set("Champion Sword", new Weapon("Champion Sword", -10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
-	.set("Chu-Ko-Nu", new Weapon("Chu-Ko-Nu", -60, CROSSBOW, CLASS_MISSILE, 5))
-	.set("Cinquedeas", new Weapon("Cinquedeas", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 3))
-	.set("Clasped Orb", new Weapon("Clasped Orb", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Claws", new Weapon("Claws", -10, CLAW, CLASS_CLAW, 3))
-	.set("Claymore", new Weapon("Claymore", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
-	.set("Cleaver", new Weapon("Cleaver", 10, ONE_HANDED_SWINGING, CLASS_AXE, 4))
-	.set("Cloudy Sphere", new Weapon("Cloudy Sphere", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Club", new Weapon("Club", -10, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Colossus Blade", new Weapon("Colossus Blade", 5, TWO_HANDED_SWORD, CLASS_SWORD, 6))
-	.set("Colossus Crossbow", new Weapon("Colossus Crossbow", 10, CROSSBOW, CLASS_MISSILE, 6))
-	.set("Colossus Sword", new Weapon("Colossus Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 5))
-	.set("Colossus Voulge", new Weapon("Colossus Voulge", 10, TWO_HANDED, CLASS_POLEARM, 4))
-	.set("Composite Bow", new Weapon("Composite Bow", -10, BOW, CLASS_MISSILE, 4))
-	.set("Conquest Sword", new Weapon("Conquest Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
-	.set("Crossbow", new Weapon("Crossbow", 0, CROSSBOW, CLASS_MISSILE, 4))
-	.set("Crowbill", new Weapon("Crowbill", -10, ONE_HANDED_SWINGING, CLASS_AXE, 6))
-	.set("Crusader Bow", new Weapon("Crusader Bow", 10, BOW, CLASS_MISSILE, 6))
-	.set("Cryptic Axe", new Weapon("Cryptic Axe", 10, TWO_HANDED, CLASS_POLEARM, 5))
-	.set("Cryptic Sword", new Weapon("Cryptic Sword", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
-	.set("Crystal Sword", new Weapon("Crystal Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 6))
-	.set("Crystalline Globe", new Weapon("Crystalline Globe", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Cudgel", new Weapon("Cudgel", -10, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Cutlass", new Weapon("Cutlass", -30, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Dacian Falx", new Weapon("Dacian Falx", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
-	.set("Dagger", new Weapon("Dagger", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
-	.set("Decapitator", new Weapon("Decapitator", 10, TWO_HANDED, CLASS_AXE, 5))
-	.set("Demon Crossbow", new Weapon("Demon Crossbow", -60, CROSSBOW, CLASS_MISSILE, 5))
-	.set("Demon Heart", new Weapon("Demon Heart", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Devil Star", new Weapon("Devil Star", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
-	.set("Diamond Bow", new Weapon("Diamond Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Dimensional Blade", new Weapon("Dimensional Blade", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 6))
-	.set("Dimensional Shard", new Weapon("Dimensional Shard", 10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Dirk", new Weapon("Dirk", 0, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
-	.set("Divine Scepter", new Weapon("Divine Scepter", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
-	.set("Double Axe", new Weapon("Double Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 5))
-	.set("Double Bow", new Weapon("Double Bow", -10, BOW, CLASS_MISSILE, 4))
-	.set("Eagle Orb", new Weapon("Eagle Orb", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Edge Bow", new Weapon("Edge Bow", 5, BOW, CLASS_MISSILE, 3))
-	.set("Elder Staff", new Weapon("Elder Staff", 0, TWO_HANDED, CLASS_STAFF, 4))
-	.set("Eldritch Orb", new Weapon("Eldritch Orb", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Elegant Blade", new Weapon("Elegant Blade", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Espandon", new Weapon("Espandon", 0, TWO_HANDED_SWORD, CLASS_SWORD, 3))
-	.set("Ettin Axe", new Weapon("Ettin Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 5))
-	.set("Executioner Sword", new Weapon("Executioner Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 6))
-	.set("Falcata", new Weapon("Falcata", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Falchion", new Weapon("Falchion", 20, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Fanged Knife", new Weapon("Fanged Knife", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 3))
-	.set("Fascia", new Weapon("Fascia", 10, CLAW, CLASS_CLAW, 2))
-	.set("Feral Axe", new Weapon("Feral Axe", -15, TWO_HANDED, CLASS_AXE, 4))
-	.set("Feral Claws", new Weapon("Feral Claws", -20, CLAW, CLASS_CLAW, 3))
-	.set("Flail", new Weapon("Flail", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
-	.set("Flamberge", new Weapon("Flamberge", -10, TWO_HANDED_SWORD, CLASS_SWORD, 5))
-	.set("Flanged Mace", new Weapon("Flanged Mace", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Flying Axe", new Weapon("Flying Axe", 10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
-	.set("Flying Knife", new Weapon("Flying Knife", 0, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
-	.set("Francisca", new Weapon("Francisca", 10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
-	.set("Fuscina", new Weapon("Fuscina", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 4))
-	.set("Ghost Glaive", new Weapon("Ghost Glaive", 20, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Ghost Spear", new Weapon("Ghost Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Ghost Wand", new Weapon("Ghost Wand", 10, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
-	.set("Giant Axe", new Weapon("Giant Axe", 10, TWO_HANDED, CLASS_AXE, 6))
-	.set("Giant Sword", new Weapon("Giant Sword", 0, TWO_HANDED_SWORD, CLASS_SWORD, 4))
-	.set("Giant Thresher", new Weapon("Giant Thresher", -10, TWO_HANDED, CLASS_POLEARM, 6))
-	.set("Gladius", new Weapon("Gladius", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Glaive", new Weapon("Glaive", 20, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Glorious Axe", new Weapon("Glorious Axe", 10, TWO_HANDED, CLASS_AXE, 6))
-	.set("Glowing Orb", new Weapon("Glowing Orb", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Gnarled Staff", new Weapon("Gnarled Staff", 10, TWO_HANDED, CLASS_STAFF, 4))
-	.set("Gorgon Crossbow", new Weapon("Gorgon Crossbow", 0, CROSSBOW, CLASS_MISSILE, 4))
-	.set("Gothic Axe", new Weapon("Gothic Axe", -10, TWO_HANDED, CLASS_AXE, 6))
-	.set("Gothic Bow", new Weapon("Gothic Bow", 10, BOW, CLASS_MISSILE, 6))
-	.set("Gothic Staff", new Weapon("Gothic Staff", 0, TWO_HANDED, CLASS_STAFF, 4))
-	.set("Gothic Sword", new Weapon("Gothic Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4))
-	.set("Grand Matron Bow", new Weapon("Grand Matron Bow", 10, BOW, CLASS_MISSILE, 5))
-	.set("Grand Scepter", new Weapon("Grand Scepter", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
-	.set("Grave Wand", new Weapon("Grave Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
-	.set("Great Axe", new Weapon("Great Axe", -10, TWO_HANDED, CLASS_AXE, 6))
-	.set("Great Bow", new Weapon("Great Bow", -10, BOW, CLASS_MISSILE, 4))
-	.set("Great Maul", new Weapon("Great Maul", 20, TWO_HANDED, CLASS_MACE, 6))
-	.set("Great Pilum", new Weapon("Great Pilum", 0, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Great Poleaxe", new Weapon("Great Poleaxe", 0, TWO_HANDED, CLASS_POLEARM, 6))
-	.set("Great Sword", new Weapon("Great Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 6))
-	.set("Greater Claws", new Weapon("Greater Claws", -20, CLAW, CLASS_CLAW, 3))
-	.set("Greater Talons", new Weapon("Greater Talons", -30, CLAW, CLASS_CLAW, 3))
-	.set("Grim Scythe", new Weapon("Grim Scythe", -10, TWO_HANDED, CLASS_POLEARM, 6))
-	.set("Grim Wand", new Weapon("Grim Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
-	.set("Halberd", new Weapon("Halberd", 0, TWO_HANDED, CLASS_POLEARM, 6))
-	.set("Hand Axe", new Weapon("Hand Axe", 0, ONE_HANDED_SWINGING, CLASS_AXE, 2))
-	.set("Hand Scythe", new Weapon("Hand Scythe", -10, CLAW, CLASS_CLAW, 2))
-	.set("Harpoon", new Weapon("Harpoon", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Hatchet Hands", new Weapon("Hatchet Hands", 10, CLAW, CLASS_CLAW, 2))
-	.set("Hatchet", new Weapon("Hatchet", 0, ONE_HANDED_SWINGING, CLASS_AXE, 2))
-	.set("Heavenly Stone", new Weapon("Heavenly Stone", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Heavy Crossbow", new Weapon("Heavy Crossbow", 10, CROSSBOW, CLASS_MISSILE, 6))
-	.set("Highland Blade", new Weapon("Highland Blade", -5, TWO_HANDED_SWORD, CLASS_SWORD, 4))
-	.set("Holy Water Sprinkler", new Weapon("Holy Water Sprinkler", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
-	.set("Hunter's Bow", new Weapon("Hunter's Bow", -10, BOW, CLASS_MISSILE, 4))
-	.set("Hurlbat", new Weapon("Hurlbat", -10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
-	.set("Hydra Bow", new Weapon("Hydra Bow", 10, BOW, CLASS_MISSILE, 6))
-	.set("Hydra Edge", new Weapon("Hydra Edge", 10, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Hyperion Javelin", new Weapon("Hyperion Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Hyperion Spear", new Weapon("Hyperion Spear", -10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 3))
-	.set("Jagged Star", new Weapon("Jagged Star", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
-	.set("Jared's Stone", new Weapon("Jared's Stone", 10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Javelin", new Weapon("Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Jo Staff", new Weapon("Jo Staff", -10, TWO_HANDED, CLASS_STAFF, 2))
-	.set("Katar", new Weapon("Katar", -10, CLAW, CLASS_CLAW, 2))
-	.set("Knout", new Weapon("Knout", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
-	.set("Kris", new Weapon("Kris", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 3))
-	.set("Lance", new Weapon("Lance", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Large Axe", new Weapon("Large Axe", -10, TWO_HANDED, CLASS_AXE, 4))
-	.set("Large Siege Bow", new Weapon("Large Siege Bow", 10, BOW, CLASS_MISSILE, 6))
-	.set("Legend Spike", new Weapon("Legend Spike", -10, ONE_HANDED_THRUSTING, CLASS_DAGGER, 2))
-	.set("Legend Sword", new Weapon("Legend Sword", -15, TWO_HANDED_SWORD, CLASS_SWORD, 3))
-	.set("Legendary Mallet", new Weapon("Legendary Mallet", 20, ONE_HANDED_SWINGING, CLASS_MACE, 4))
-	.set("Lich Wand", new Weapon("Lich Wand", -20, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
-	.set("Light Crossbow", new Weapon("Light Crossbow", -10, CROSSBOW, CLASS_MISSILE, 3))
-	.set("Lochaber Axe", new Weapon("Lochaber Axe", 10, TWO_HANDED, CLASS_POLEARM, 3))
-	.set("Long Battle Bow", new Weapon("Long Battle Bow", 10, BOW, CLASS_MISSILE, 6))
-	.set("Long Bow", new Weapon("Long Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Long Staff", new Weapon("Long Staff", 0, TWO_HANDED, CLASS_STAFF, 3))
-	.set("Long Sword", new Weapon("Long Sword", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
-	.set("Long War Bow", new Weapon("Long War Bow", 10, BOW, CLASS_MISSILE, 6))
-	.set("Mace", new Weapon("Mace", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Maiden Javelin", new Weapon("Maiden Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Maiden Pike", new Weapon("Maiden Pike", 10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Maiden Spear", new Weapon("Maiden Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Mancatcher", new Weapon("Mancatcher", -20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 5))
-	.set("Martel de Fer", new Weapon("Martel de Fer", 20, TWO_HANDED, CLASS_MACE, 6))
-	.set("Matriarchal Bow", new Weapon("Matriarchal Bow", -10, BOW, CLASS_MISSILE, 5))
-	.set("Matriarchal Javelin", new Weapon("Matriarchal Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Matriarchal Pike", new Weapon("Matriarchal Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Matriarchal Spear", new Weapon("Matriarchal Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Maul", new Weapon("Maul", 10, TWO_HANDED, CLASS_MACE, 6))
-	.set("Mighty Scepter", new Weapon("Mighty Scepter", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Military Axe", new Weapon("Military Axe", -10, TWO_HANDED, CLASS_AXE, 4))
-	.set("Military Pick", new Weapon("Military Pick", -10, ONE_HANDED_SWINGING, CLASS_AXE, 6))
-	.set("Mithril Point", new Weapon("Mithril Point", 0, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
-	.set("Morning Star", new Weapon("Morning Star", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
-	.set("Mythical Sword", new Weapon("Mythical Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 3))
-	.set("Naga", new Weapon("Naga", 0, ONE_HANDED_SWINGING, CLASS_AXE, 6))
-	.set("Ogre Axe", new Weapon("Ogre Axe", 0, TWO_HANDED, CLASS_POLEARM, 3))
-	.set("Ogre Maul", new Weapon("Ogre Maul", 10, TWO_HANDED, CLASS_MACE, 6))
-	.set("Partizan", new Weapon("Partizan", 10, TWO_HANDED, CLASS_POLEARM, 5))
-	.set("Pellet Bow", new Weapon("Pellet Bow", -10, CROSSBOW, CLASS_MISSILE, 3))
-	.set("Petrified Wand", new Weapon("Petrified Wand", 10, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
-	.set("Phase Blade", new Weapon("Phase Blade", -30, ONE_HANDED_SWINGING, CLASS_SWORD, 6))
-	.set("Pike", new Weapon("Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Pilum", new Weapon("Pilum", 0, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Poignard", new Weapon("Poignard", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
-	.set("Poleaxe", new Weapon("Poleaxe", 10, TWO_HANDED, CLASS_POLEARM, 5))
-	.set("Polished Wand", new Weapon("Polished Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
-	.set("Quarterstaff", new Weapon("Quarterstaff", 0, TWO_HANDED, CLASS_STAFF, 3))
-	.set("Quhab", new Weapon("Quhab", 0, CLAW, CLASS_CLAW, 3))
-	.set("Razor Bow", new Weapon("Razor Bow", -10, BOW, CLASS_MISSILE, 4))
-	.set("Reflex Bow", new Weapon("Reflex Bow", 10, BOW, CLASS_MISSILE, 5))
-	.set("Reinforced Mace", new Weapon("Reinforced Mace", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Repeating Crossbow", new Weapon("Repeating Crossbow", -40, CROSSBOW, CLASS_MISSILE, 5))
-	.set("Rondel", new Weapon("Rondel", 0, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1))
-	.set("Rune Bow", new Weapon("Rune Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Rune Scepter", new Weapon("Rune Scepter", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Rune Staff", new Weapon("Rune Staff", 20, TWO_HANDED, CLASS_STAFF, 6))
-	.set("Rune Sword", new Weapon("Rune Sword", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 4))
-	.set("Runic Talons", new Weapon("Runic Talons", -30, CLAW, CLASS_CLAW, 3))
-	.set("Sabre", new Weapon("Sabre", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Sacred Globe", new Weapon("Sacred Globe", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Scepter", new Weapon("Scepter", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Scimitar", new Weapon("Scimitar", -20, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Scissors Katar", new Weapon("Scissors Katar", -10, CLAW, CLASS_CLAW, 3))
-	.set("Scissors Quhab", new Weapon("Scissors Quhab", 0, CLAW, CLASS_CLAW, 3))
-	.set("Scissors Suwayyah", new Weapon("Scissors Suwayyah", 0, CLAW, CLASS_CLAW, 3))
-	.set("Scourge", new Weapon("Scourge", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
-	.set("Scythe", new Weapon("Scythe", -10, TWO_HANDED, CLASS_POLEARM, 5))
-	.set("Seraph Rod", new Weapon("Seraph Rod", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3))
-	.set("Shadow Bow", new Weapon("Shadow Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Shamshir", new Weapon("Shamshir", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Shillelagh", new Weapon("Shillelagh", 0, TWO_HANDED, CLASS_STAFF, 4))
-	.set("Short Battle Bow", new Weapon("Short Battle Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Short Bow", new Weapon("Short Bow", 5, BOW, CLASS_MISSILE, 3))
-	.set("Short Siege Bow", new Weapon("Short Siege Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Short Spear", new Weapon("Short Spear", 10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Short Staff", new Weapon("Short Staff", -10, TWO_HANDED, CLASS_STAFF, 2))
-	.set("Short Sword", new Weapon("Short Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Short War Bow", new Weapon("Short War Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Siege Crossbow", new Weapon("Siege Crossbow", 0, CROSSBOW, CLASS_MISSILE, 4))
-	.set("Silver-edged Axe", new Weapon("Silver-edged Axe", 0, TWO_HANDED, CLASS_AXE, 5))
-	.set("Simbilan", new Weapon("Simbilan", 10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Small Crescent", new Weapon("Small Crescent", 10, ONE_HANDED_SWINGING, CLASS_AXE, 4))
-	.set("Smoked Sphere", new Weapon("Smoked Sphere", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Sparkling Ball", new Weapon("Sparkling Ball", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Spear", new Weapon("Spear", -10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 3))
-	.set("Spetum", new Weapon("Spetum", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Spiculum", new Weapon("Spiculum", 20, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Spider Bow", new Weapon("Spider Bow", 5, BOW, CLASS_MISSILE, 3))
-	.set("Spiked Club", new Weapon("Spiked Club", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Stag Bow", new Weapon("Stag Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Stalagmite", new Weapon("Stalagmite", 10, TWO_HANDED, CLASS_STAFF, 3))
-	.set("Stiletto", new Weapon("Stiletto", -10, ONE_HANDED_THRUSTING, CLASS_DAGGER, 2))
-	.set("Stygian Pike", new Weapon("Stygian Pike", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 4))
-	.set("Stygian Pilum", new Weapon("Stygian Pilum", 0, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Suwayyah", new Weapon("Suwayyah", 0, CLAW, CLASS_CLAW, 3))
-	.set("Swirling Crystal", new Weapon("Swirling Crystal", 10, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Tabar", new Weapon("Tabar", 10, TWO_HANDED, CLASS_AXE, 5))
-	.set("Thresher", new Weapon("Thresher", -10, TWO_HANDED, CLASS_POLEARM, 5))
-	.set("Throwing Axe", new Weapon("Throwing Axe", 10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
-	.set("Throwing Knife", new Weapon("Throwing Knife", 0, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
-	.set("Throwing Spear", new Weapon("Throwing Spear", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Thunder Maul", new Weapon("Thunder Maul", 20, TWO_HANDED, CLASS_MACE, 6))
-	.set("Tomahawk", new Weapon("Tomahawk", 0, ONE_HANDED_SWINGING, CLASS_AXE, 2))
-	.set("Tomb Wand", new Weapon("Tomb Wand", -20, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
-	.set("Trident", new Weapon("Trident", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 4))
-	.set("Truncheon", new Weapon("Truncheon", -10, ONE_HANDED_SWINGING, CLASS_MACE, 2))
-	.set("Tulwar", new Weapon("Tulwar", 20, ONE_HANDED_SWINGING, CLASS_SWORD, 2))
-	.set("Tusk Sword", new Weapon("Tusk Sword", 0, TWO_HANDED_SWORD, CLASS_SWORD, 4))
-	.set("Twin Axe", new Weapon("Twin Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 5))
-	.set("Two-Handed Sword", new Weapon("Two-Handed Sword", 0, TWO_HANDED_SWORD, CLASS_SWORD, 3))
-	.set("Tyrant Club", new Weapon("Tyrant Club", 0, ONE_HANDED_SWINGING, CLASS_MACE, 3))
-	.set("Unearthed Wand", new Weapon("Unearthed Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2))
-	.set("Vortex Orb", new Weapon("Vortex Orb", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3))
-	.set("Voulge", new Weapon("Voulge", 0, TWO_HANDED, CLASS_POLEARM, 4))
-	.set("Walking Stick", new Weapon("Walking Stick", -10, TWO_HANDED, CLASS_STAFF, 2))
-	.set("Wand", new Weapon("Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 1))
-	.set("War Axe", new Weapon("War Axe", 0, ONE_HANDED_SWINGING, CLASS_AXE, 6))
-	.set("War Club", new Weapon("War Club", 10, TWO_HANDED, CLASS_MACE, 6))
-	.set("War Dart", new Weapon("War Dart", -20, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
-	.set("War Fist", new Weapon("War Fist", 10, CLAW, CLASS_CLAW, 2))
-	.set("War Fork", new Weapon("War Fork", -20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 5))
-	.set("War Hammer", new Weapon("War Hammer", 20, ONE_HANDED_SWINGING, CLASS_MACE, 4))
-	.set("War Javelin", new Weapon("War Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("War Pike", new Weapon("War Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("War Scepter", new Weapon("War Scepter", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5))
-	.set("War Scythe", new Weapon("War Scythe", -10, TWO_HANDED, CLASS_POLEARM, 6))
-	.set("War Spear", new Weapon("War Spear", -10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 3))
-	.set("War Spike", new Weapon("War Spike", -10, ONE_HANDED_SWINGING, CLASS_AXE, 6))
-	.set("War Staff", new Weapon("War Staff", 20, TWO_HANDED, CLASS_STAFF, 6))
-	.set("War Sword", new Weapon("War Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 3))
-	.set("Ward Bow", new Weapon("Ward Bow", 0, BOW, CLASS_MISSILE, 5))
-	.set("Winged Axe", new Weapon("Winged Axe", -10, ONE_HANDED_SWINGING, CLASS_THROWING, 0))
-	.set("Winged Harpoon", new Weapon("Winged Harpoon", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0))
-	.set("Winged Knife", new Weapon("Winged Knife", -20, ONE_HANDED_THRUSTING, CLASS_THROWING, 0))
-	.set("Wrist Blade", new Weapon("Wrist Blade", 0, CLAW, CLASS_CLAW, 2))
-	.set("Wrist Spike", new Weapon("Wrist Spike", -10, CLAW, CLASS_CLAW, 2))
-	.set("Wrist Sword", new Weapon("Wrist Sword", -10, CLAW, CLASS_CLAW, 3))
-	.set("Yari", new Weapon("Yari", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6))
-	.set("Yew Wand", new Weapon("Yew Wand", 10, ONE_HANDED_SWINGING, CLASS_STAFF, 1))
-	.set("Zweihander", new Weapon("Zweihander", -10, TWO_HANDED_SWORD, CLASS_SWORD, 5));
-
+const WEAPONS = new Map([
+	["None", new Weapon("None", 0, UNARMED, CLASS_NONE, 0)],
+	["Ancient Axe", new Weapon("Ancient Axe", 10, TWO_HANDED, CLASS_AXE, 6)],
+	["Ancient Sword", new Weapon("Ancient Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 3)],
+	["Arbalest", new Weapon("Arbalest", -10, CROSSBOW, CLASS_MISSILE, 3)],
+	["Archon Staff", new Weapon("Archon Staff", 10, TWO_HANDED, CLASS_STAFF, 6)],
+	["Ashwood Bow", new Weapon("Ashwood Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Ataghan", new Weapon("Ataghan", -20, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Axe", new Weapon("Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 4)],
+	["Balanced Axe", new Weapon("Balanced Axe", -10, ONE_HANDED_SWINGING, CLASS_THROWING, 0)],
+	["Balanced Knife", new Weapon("Balanced Knife", -20, ONE_HANDED_THRUSTING, CLASS_THROWING, 0)],
+	["Ballista", new Weapon("Ballista", 10, CROSSBOW, CLASS_MISSILE, 6)],
+	["Balrog Blade", new Weapon("Balrog Blade", 0, TWO_HANDED_SWORD, CLASS_SWORD, 4)],
+	["Balrog Spear", new Weapon("Balrog Spear", 10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Barbed Club", new Weapon("Barbed Club", 0, ONE_HANDED_SWINGING, CLASS_MACE, 3)],
+	["Bardiche", new Weapon("Bardiche", 10, TWO_HANDED, CLASS_POLEARM, 3)],
+	["Bastard Sword", new Weapon("Bastard Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4)],
+	["Battle Axe", new Weapon("Battle Axe", 10, TWO_HANDED, CLASS_AXE, 5)],
+	["Battle Cestus", new Weapon("Battle Cestus", -10, CLAW, CLASS_CLAW, 2)],
+	["Battle Dart", new Weapon("Battle Dart", 0, ONE_HANDED_THRUSTING, CLASS_THROWING, 0)],
+	["Battle Hammer", new Weapon("Battle Hammer", 20, ONE_HANDED_SWINGING, CLASS_MACE, 4)],
+	["Battle Scythe", new Weapon("Battle Scythe", -10, TWO_HANDED, CLASS_POLEARM, 5)],
+	["Battle Staff", new Weapon("Battle Staff", 0, TWO_HANDED, CLASS_STAFF, 4)],
+	["Battle Sword", new Weapon("Battle Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 4)],
+	["Bearded Axe", new Weapon("Bearded Axe", 0, TWO_HANDED, CLASS_AXE, 5)],
+	["Bec-de-Corbin", new Weapon("Bec-de-Corbin", 0, TWO_HANDED, CLASS_POLEARM, 6)],
+	["Berserker Axe", new Weapon("Berserker Axe", 0, ONE_HANDED_SWINGING, CLASS_AXE, 6)],
+	["Bill", new Weapon("Bill", 0, TWO_HANDED, CLASS_POLEARM, 4)],
+	["Blade Bow", new Weapon("Blade Bow", -10, BOW, CLASS_MISSILE, 4)],
+	["Blade Talons", new Weapon("Blade Talons", -20, CLAW, CLASS_CLAW, 3)],
+	["Blade", new Weapon("Blade", -10, ONE_HANDED_THRUSTING, CLASS_DAGGER, 2)],
+	["Bone Knife", new Weapon("Bone Knife", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1)],
+	["Bone Wand", new Weapon("Bone Wand", -20, ONE_HANDED_SWINGING, CLASS_STAFF, 2)],
+	["Brandistock", new Weapon("Brandistock", -20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 5)],
+	["Broad Axe", new Weapon("Broad Axe", 0, TWO_HANDED, CLASS_AXE, 5)],
+	["Broad Sword", new Weapon("Broad Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 4)],
+	["Burnt Wand", new Weapon("Burnt Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 1)],
+	["Caduceus", new Weapon("Caduceus", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5)],
+	["Cedar Bow", new Weapon("Cedar Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Cedar Staff", new Weapon("Cedar Staff", 10, TWO_HANDED, CLASS_STAFF, 4)],
+	["Ceremonial Bow", new Weapon("Ceremonial Bow", 10, BOW, CLASS_MISSILE, 5)],
+	["Ceremonial Javelin", new Weapon("Ceremonial Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Ceremonial Pike", new Weapon("Ceremonial Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Ceremonial Spear", new Weapon("Ceremonial Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Cestus", new Weapon("Cestus", 0, CLAW, CLASS_CLAW, 2)],
+	["Champion Axe", new Weapon("Champion Axe", -10, TWO_HANDED, CLASS_AXE, 6)],
+	["Champion Sword", new Weapon("Champion Sword", -10, TWO_HANDED_SWORD, CLASS_SWORD, 4)],
+	["Chu-Ko-Nu", new Weapon("Chu-Ko-Nu", -60, CROSSBOW, CLASS_MISSILE, 5)],
+	["Cinquedeas", new Weapon("Cinquedeas", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 3)],
+	["Clasped Orb", new Weapon("Clasped Orb", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Claws", new Weapon("Claws", -10, CLAW, CLASS_CLAW, 3)],
+	["Claymore", new Weapon("Claymore", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4)],
+	["Cleaver", new Weapon("Cleaver", 10, ONE_HANDED_SWINGING, CLASS_AXE, 4)],
+	["Cloudy Sphere", new Weapon("Cloudy Sphere", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Club", new Weapon("Club", -10, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Colossus Blade", new Weapon("Colossus Blade", 5, TWO_HANDED_SWORD, CLASS_SWORD, 6)],
+	["Colossus Crossbow", new Weapon("Colossus Crossbow", 10, CROSSBOW, CLASS_MISSILE, 6)],
+	["Colossus Sword", new Weapon("Colossus Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 5)],
+	["Colossus Voulge", new Weapon("Colossus Voulge", 10, TWO_HANDED, CLASS_POLEARM, 4)],
+	["Composite Bow", new Weapon("Composite Bow", -10, BOW, CLASS_MISSILE, 4)],
+	["Conquest Sword", new Weapon("Conquest Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 4)],
+	["Crossbow", new Weapon("Crossbow", 0, CROSSBOW, CLASS_MISSILE, 4)],
+	["Crowbill", new Weapon("Crowbill", -10, ONE_HANDED_SWINGING, CLASS_AXE, 6)],
+	["Crusader Bow", new Weapon("Crusader Bow", 10, BOW, CLASS_MISSILE, 6)],
+	["Cryptic Axe", new Weapon("Cryptic Axe", 10, TWO_HANDED, CLASS_POLEARM, 5)],
+	["Cryptic Sword", new Weapon("Cryptic Sword", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 4)],
+	["Crystal Sword", new Weapon("Crystal Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 6)],
+	["Crystalline Globe", new Weapon("Crystalline Globe", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Cudgel", new Weapon("Cudgel", -10, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Cutlass", new Weapon("Cutlass", -30, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Dacian Falx", new Weapon("Dacian Falx", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4)],
+	["Dagger", new Weapon("Dagger", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1)],
+	["Decapitator", new Weapon("Decapitator", 10, TWO_HANDED, CLASS_AXE, 5)],
+	["Demon Crossbow", new Weapon("Demon Crossbow", -60, CROSSBOW, CLASS_MISSILE, 5)],
+	["Demon Heart", new Weapon("Demon Heart", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Devil Star", new Weapon("Devil Star", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3)],
+	["Diamond Bow", new Weapon("Diamond Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Dimensional Blade", new Weapon("Dimensional Blade", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 6)],
+	["Dimensional Shard", new Weapon("Dimensional Shard", 10, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Dirk", new Weapon("Dirk", 0, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1)],
+	["Divine Scepter", new Weapon("Divine Scepter", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5)],
+	["Double Axe", new Weapon("Double Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 5)],
+	["Double Bow", new Weapon("Double Bow", -10, BOW, CLASS_MISSILE, 4)],
+	["Eagle Orb", new Weapon("Eagle Orb", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Edge Bow", new Weapon("Edge Bow", 5, BOW, CLASS_MISSILE, 3)],
+	["Elder Staff", new Weapon("Elder Staff", 0, TWO_HANDED, CLASS_STAFF, 4)],
+	["Eldritch Orb", new Weapon("Eldritch Orb", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Elegant Blade", new Weapon("Elegant Blade", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Espandon", new Weapon("Espandon", 0, TWO_HANDED_SWORD, CLASS_SWORD, 3)],
+	["Ettin Axe", new Weapon("Ettin Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 5)],
+	["Executioner Sword", new Weapon("Executioner Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 6)],
+	["Falcata", new Weapon("Falcata", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Falchion", new Weapon("Falchion", 20, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Fanged Knife", new Weapon("Fanged Knife", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 3)],
+	["Fascia", new Weapon("Fascia", 10, CLAW, CLASS_CLAW, 2)],
+	["Feral Axe", new Weapon("Feral Axe", -15, TWO_HANDED, CLASS_AXE, 4)],
+	["Feral Claws", new Weapon("Feral Claws", -20, CLAW, CLASS_CLAW, 3)],
+	["Flail", new Weapon("Flail", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5)],
+	["Flamberge", new Weapon("Flamberge", -10, TWO_HANDED_SWORD, CLASS_SWORD, 5)],
+	["Flanged Mace", new Weapon("Flanged Mace", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Flying Axe", new Weapon("Flying Axe", 10, ONE_HANDED_SWINGING, CLASS_THROWING, 0)],
+	["Flying Knife", new Weapon("Flying Knife", 0, ONE_HANDED_THRUSTING, CLASS_THROWING, 0)],
+	["Francisca", new Weapon("Francisca", 10, ONE_HANDED_SWINGING, CLASS_THROWING, 0)],
+	["Fuscina", new Weapon("Fuscina", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 4)],
+	["Ghost Glaive", new Weapon("Ghost Glaive", 20, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Ghost Spear", new Weapon("Ghost Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Ghost Wand", new Weapon("Ghost Wand", 10, ONE_HANDED_SWINGING, CLASS_STAFF, 2)],
+	["Giant Axe", new Weapon("Giant Axe", 10, TWO_HANDED, CLASS_AXE, 6)],
+	["Giant Sword", new Weapon("Giant Sword", 0, TWO_HANDED_SWORD, CLASS_SWORD, 4)],
+	["Giant Thresher", new Weapon("Giant Thresher", -10, TWO_HANDED, CLASS_POLEARM, 6)],
+	["Gladius", new Weapon("Gladius", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Glaive", new Weapon("Glaive", 20, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Glorious Axe", new Weapon("Glorious Axe", 10, TWO_HANDED, CLASS_AXE, 6)],
+	["Glowing Orb", new Weapon("Glowing Orb", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Gnarled Staff", new Weapon("Gnarled Staff", 10, TWO_HANDED, CLASS_STAFF, 4)],
+	["Gorgon Crossbow", new Weapon("Gorgon Crossbow", 0, CROSSBOW, CLASS_MISSILE, 4)],
+	["Gothic Axe", new Weapon("Gothic Axe", -10, TWO_HANDED, CLASS_AXE, 6)],
+	["Gothic Bow", new Weapon("Gothic Bow", 10, BOW, CLASS_MISSILE, 6)],
+	["Gothic Staff", new Weapon("Gothic Staff", 0, TWO_HANDED, CLASS_STAFF, 4)],
+	["Gothic Sword", new Weapon("Gothic Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 4)],
+	["Grand Matron Bow", new Weapon("Grand Matron Bow", 10, BOW, CLASS_MISSILE, 5)],
+	["Grand Scepter", new Weapon("Grand Scepter", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3)],
+	["Grave Wand", new Weapon("Grave Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2)],
+	["Great Axe", new Weapon("Great Axe", -10, TWO_HANDED, CLASS_AXE, 6)],
+	["Great Bow", new Weapon("Great Bow", -10, BOW, CLASS_MISSILE, 4)],
+	["Great Maul", new Weapon("Great Maul", 20, TWO_HANDED, CLASS_MACE, 6)],
+	["Great Pilum", new Weapon("Great Pilum", 0, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Great Poleaxe", new Weapon("Great Poleaxe", 0, TWO_HANDED, CLASS_POLEARM, 6)],
+	["Great Sword", new Weapon("Great Sword", 10, TWO_HANDED_SWORD, CLASS_SWORD, 6)],
+	["Greater Claws", new Weapon("Greater Claws", -20, CLAW, CLASS_CLAW, 3)],
+	["Greater Talons", new Weapon("Greater Talons", -30, CLAW, CLASS_CLAW, 3)],
+	["Grim Scythe", new Weapon("Grim Scythe", -10, TWO_HANDED, CLASS_POLEARM, 6)],
+	["Grim Wand", new Weapon("Grim Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2)],
+	["Halberd", new Weapon("Halberd", 0, TWO_HANDED, CLASS_POLEARM, 6)],
+	["Hand Axe", new Weapon("Hand Axe", 0, ONE_HANDED_SWINGING, CLASS_AXE, 2)],
+	["Hand Scythe", new Weapon("Hand Scythe", -10, CLAW, CLASS_CLAW, 2)],
+	["Harpoon", new Weapon("Harpoon", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Hatchet Hands", new Weapon("Hatchet Hands", 10, CLAW, CLASS_CLAW, 2)],
+	["Hatchet", new Weapon("Hatchet", 0, ONE_HANDED_SWINGING, CLASS_AXE, 2)],
+	["Heavenly Stone", new Weapon("Heavenly Stone", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Heavy Crossbow", new Weapon("Heavy Crossbow", 10, CROSSBOW, CLASS_MISSILE, 6)],
+	["Highland Blade", new Weapon("Highland Blade", -5, TWO_HANDED_SWORD, CLASS_SWORD, 4)],
+	["Holy Water Sprinkler", new Weapon("Holy Water Sprinkler", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3)],
+	["Hunter's Bow", new Weapon("Hunter's Bow", -10, BOW, CLASS_MISSILE, 4)],
+	["Hurlbat", new Weapon("Hurlbat", -10, ONE_HANDED_SWINGING, CLASS_THROWING, 0)],
+	["Hydra Bow", new Weapon("Hydra Bow", 10, BOW, CLASS_MISSILE, 6)],
+	["Hydra Edge", new Weapon("Hydra Edge", 10, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Hyperion Javelin", new Weapon("Hyperion Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Hyperion Spear", new Weapon("Hyperion Spear", -10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 3)],
+	["Jagged Star", new Weapon("Jagged Star", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3)],
+	["Jared's Stone", new Weapon("Jared's Stone", 10, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Javelin", new Weapon("Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Jo Staff", new Weapon("Jo Staff", -10, TWO_HANDED, CLASS_STAFF, 2)],
+	["Katar", new Weapon("Katar", -10, CLAW, CLASS_CLAW, 2)],
+	["Knout", new Weapon("Knout", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5)],
+	["Kris", new Weapon("Kris", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 3)],
+	["Lance", new Weapon("Lance", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Large Axe", new Weapon("Large Axe", -10, TWO_HANDED, CLASS_AXE, 4)],
+	["Large Siege Bow", new Weapon("Large Siege Bow", 10, BOW, CLASS_MISSILE, 6)],
+	["Legend Spike", new Weapon("Legend Spike", -10, ONE_HANDED_THRUSTING, CLASS_DAGGER, 2)],
+	["Legend Sword", new Weapon("Legend Sword", -15, TWO_HANDED_SWORD, CLASS_SWORD, 3)],
+	["Legendary Mallet", new Weapon("Legendary Mallet", 20, ONE_HANDED_SWINGING, CLASS_MACE, 4)],
+	["Lich Wand", new Weapon("Lich Wand", -20, ONE_HANDED_SWINGING, CLASS_STAFF, 2)],
+	["Light Crossbow", new Weapon("Light Crossbow", -10, CROSSBOW, CLASS_MISSILE, 3)],
+	["Lochaber Axe", new Weapon("Lochaber Axe", 10, TWO_HANDED, CLASS_POLEARM, 3)],
+	["Long Battle Bow", new Weapon("Long Battle Bow", 10, BOW, CLASS_MISSILE, 6)],
+	["Long Bow", new Weapon("Long Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Long Staff", new Weapon("Long Staff", 0, TWO_HANDED, CLASS_STAFF, 3)],
+	["Long Sword", new Weapon("Long Sword", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 4)],
+	["Long War Bow", new Weapon("Long War Bow", 10, BOW, CLASS_MISSILE, 6)],
+	["Mace", new Weapon("Mace", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Maiden Javelin", new Weapon("Maiden Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Maiden Pike", new Weapon("Maiden Pike", 10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Maiden Spear", new Weapon("Maiden Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Mancatcher", new Weapon("Mancatcher", -20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 5)],
+	["Martel de Fer", new Weapon("Martel de Fer", 20, TWO_HANDED, CLASS_MACE, 6)],
+	["Matriarchal Bow", new Weapon("Matriarchal Bow", -10, BOW, CLASS_MISSILE, 5)],
+	["Matriarchal Javelin", new Weapon("Matriarchal Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Matriarchal Pike", new Weapon("Matriarchal Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Matriarchal Spear", new Weapon("Matriarchal Spear", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Maul", new Weapon("Maul", 10, TWO_HANDED, CLASS_MACE, 6)],
+	["Mighty Scepter", new Weapon("Mighty Scepter", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Military Axe", new Weapon("Military Axe", -10, TWO_HANDED, CLASS_AXE, 4)],
+	["Military Pick", new Weapon("Military Pick", -10, ONE_HANDED_SWINGING, CLASS_AXE, 6)],
+	["Mithril Point", new Weapon("Mithril Point", 0, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1)],
+	["Morning Star", new Weapon("Morning Star", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3)],
+	["Mythical Sword", new Weapon("Mythical Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 3)],
+	["Naga", new Weapon("Naga", 0, ONE_HANDED_SWINGING, CLASS_AXE, 6)],
+	["Ogre Axe", new Weapon("Ogre Axe", 0, TWO_HANDED, CLASS_POLEARM, 3)],
+	["Ogre Maul", new Weapon("Ogre Maul", 10, TWO_HANDED, CLASS_MACE, 6)],
+	["Partizan", new Weapon("Partizan", 10, TWO_HANDED, CLASS_POLEARM, 5)],
+	["Pellet Bow", new Weapon("Pellet Bow", -10, CROSSBOW, CLASS_MISSILE, 3)],
+	["Petrified Wand", new Weapon("Petrified Wand", 10, ONE_HANDED_SWINGING, CLASS_STAFF, 2)],
+	["Phase Blade", new Weapon("Phase Blade", -30, ONE_HANDED_SWINGING, CLASS_SWORD, 6)],
+	["Pike", new Weapon("Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Pilum", new Weapon("Pilum", 0, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Poignard", new Weapon("Poignard", -20, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1)],
+	["Poleaxe", new Weapon("Poleaxe", 10, TWO_HANDED, CLASS_POLEARM, 5)],
+	["Polished Wand", new Weapon("Polished Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2)],
+	["Quarterstaff", new Weapon("Quarterstaff", 0, TWO_HANDED, CLASS_STAFF, 3)],
+	["Quhab", new Weapon("Quhab", 0, CLAW, CLASS_CLAW, 3)],
+	["Razor Bow", new Weapon("Razor Bow", -10, BOW, CLASS_MISSILE, 4)],
+	["Reflex Bow", new Weapon("Reflex Bow", 10, BOW, CLASS_MISSILE, 5)],
+	["Reinforced Mace", new Weapon("Reinforced Mace", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Repeating Crossbow", new Weapon("Repeating Crossbow", -40, CROSSBOW, CLASS_MISSILE, 5)],
+	["Rondel", new Weapon("Rondel", 0, ONE_HANDED_THRUSTING, CLASS_DAGGER, 1)],
+	["Rune Bow", new Weapon("Rune Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Rune Scepter", new Weapon("Rune Scepter", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Rune Staff", new Weapon("Rune Staff", 20, TWO_HANDED, CLASS_STAFF, 6)],
+	["Rune Sword", new Weapon("Rune Sword", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 4)],
+	["Runic Talons", new Weapon("Runic Talons", -30, CLAW, CLASS_CLAW, 3)],
+	["Sabre", new Weapon("Sabre", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Sacred Globe", new Weapon("Sacred Globe", -10, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Scepter", new Weapon("Scepter", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Scimitar", new Weapon("Scimitar", -20, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Scissors Katar", new Weapon("Scissors Katar", -10, CLAW, CLASS_CLAW, 3)],
+	["Scissors Quhab", new Weapon("Scissors Quhab", 0, CLAW, CLASS_CLAW, 3)],
+	["Scissors Suwayyah", new Weapon("Scissors Suwayyah", 0, CLAW, CLASS_CLAW, 3)],
+	["Scourge", new Weapon("Scourge", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5)],
+	["Scythe", new Weapon("Scythe", -10, TWO_HANDED, CLASS_POLEARM, 5)],
+	["Seraph Rod", new Weapon("Seraph Rod", 10, ONE_HANDED_SWINGING, CLASS_MACE, 3)],
+	["Shadow Bow", new Weapon("Shadow Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Shamshir", new Weapon("Shamshir", -10, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Shillelagh", new Weapon("Shillelagh", 0, TWO_HANDED, CLASS_STAFF, 4)],
+	["Short Battle Bow", new Weapon("Short Battle Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Short Bow", new Weapon("Short Bow", 5, BOW, CLASS_MISSILE, 3)],
+	["Short Siege Bow", new Weapon("Short Siege Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Short Spear", new Weapon("Short Spear", 10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Short Staff", new Weapon("Short Staff", -10, TWO_HANDED, CLASS_STAFF, 2)],
+	["Short Sword", new Weapon("Short Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Short War Bow", new Weapon("Short War Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Siege Crossbow", new Weapon("Siege Crossbow", 0, CROSSBOW, CLASS_MISSILE, 4)],
+	["Silver-edged Axe", new Weapon("Silver-edged Axe", 0, TWO_HANDED, CLASS_AXE, 5)],
+	["Simbilan", new Weapon("Simbilan", 10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Small Crescent", new Weapon("Small Crescent", 10, ONE_HANDED_SWINGING, CLASS_AXE, 4)],
+	["Smoked Sphere", new Weapon("Smoked Sphere", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Sparkling Ball", new Weapon("Sparkling Ball", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Spear", new Weapon("Spear", -10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 3)],
+	["Spetum", new Weapon("Spetum", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Spiculum", new Weapon("Spiculum", 20, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Spider Bow", new Weapon("Spider Bow", 5, BOW, CLASS_MISSILE, 3)],
+	["Spiked Club", new Weapon("Spiked Club", 0, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Stag Bow", new Weapon("Stag Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Stalagmite", new Weapon("Stalagmite", 10, TWO_HANDED, CLASS_STAFF, 3)],
+	["Stiletto", new Weapon("Stiletto", -10, ONE_HANDED_THRUSTING, CLASS_DAGGER, 2)],
+	["Stygian Pike", new Weapon("Stygian Pike", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 4)],
+	["Stygian Pilum", new Weapon("Stygian Pilum", 0, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Suwayyah", new Weapon("Suwayyah", 0, CLAW, CLASS_CLAW, 3)],
+	["Swirling Crystal", new Weapon("Swirling Crystal", 10, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Tabar", new Weapon("Tabar", 10, TWO_HANDED, CLASS_AXE, 5)],
+	["Thresher", new Weapon("Thresher", -10, TWO_HANDED, CLASS_POLEARM, 5)],
+	["Throwing Axe", new Weapon("Throwing Axe", 10, ONE_HANDED_SWINGING, CLASS_THROWING, 0)],
+	["Throwing Knife", new Weapon("Throwing Knife", 0, ONE_HANDED_THRUSTING, CLASS_THROWING, 0)],
+	["Throwing Spear", new Weapon("Throwing Spear", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Thunder Maul", new Weapon("Thunder Maul", 20, TWO_HANDED, CLASS_MACE, 6)],
+	["Tomahawk", new Weapon("Tomahawk", 0, ONE_HANDED_SWINGING, CLASS_AXE, 2)],
+	["Tomb Wand", new Weapon("Tomb Wand", -20, ONE_HANDED_SWINGING, CLASS_STAFF, 2)],
+	["Trident", new Weapon("Trident", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 4)],
+	["Truncheon", new Weapon("Truncheon", -10, ONE_HANDED_SWINGING, CLASS_MACE, 2)],
+	["Tulwar", new Weapon("Tulwar", 20, ONE_HANDED_SWINGING, CLASS_SWORD, 2)],
+	["Tusk Sword", new Weapon("Tusk Sword", 0, TWO_HANDED_SWORD, CLASS_SWORD, 4)],
+	["Twin Axe", new Weapon("Twin Axe", 10, ONE_HANDED_SWINGING, CLASS_AXE, 5)],
+	["Two-Handed Sword", new Weapon("Two-Handed Sword", 0, TWO_HANDED_SWORD, CLASS_SWORD, 3)],
+	["Tyrant Club", new Weapon("Tyrant Club", 0, ONE_HANDED_SWINGING, CLASS_MACE, 3)],
+	["Unearthed Wand", new Weapon("Unearthed Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 2)],
+	["Vortex Orb", new Weapon("Vortex Orb", 0, ONE_HANDED_SWINGING, CLASS_ORB, 3)],
+	["Voulge", new Weapon("Voulge", 0, TWO_HANDED, CLASS_POLEARM, 4)],
+	["Walking Stick", new Weapon("Walking Stick", -10, TWO_HANDED, CLASS_STAFF, 2)],
+	["Wand", new Weapon("Wand", 0, ONE_HANDED_SWINGING, CLASS_STAFF, 1)],
+	["War Axe", new Weapon("War Axe", 0, ONE_HANDED_SWINGING, CLASS_AXE, 6)],
+	["War Club", new Weapon("War Club", 10, TWO_HANDED, CLASS_MACE, 6)],
+	["War Dart", new Weapon("War Dart", -20, ONE_HANDED_THRUSTING, CLASS_THROWING, 0)],
+	["War Fist", new Weapon("War Fist", 10, CLAW, CLASS_CLAW, 2)],
+	["War Fork", new Weapon("War Fork", -20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 5)],
+	["War Hammer", new Weapon("War Hammer", 20, ONE_HANDED_SWINGING, CLASS_MACE, 4)],
+	["War Javelin", new Weapon("War Javelin", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["War Pike", new Weapon("War Pike", 20, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["War Scepter", new Weapon("War Scepter", -10, ONE_HANDED_SWINGING, CLASS_MACE, 5)],
+	["War Scythe", new Weapon("War Scythe", -10, TWO_HANDED, CLASS_POLEARM, 6)],
+	["War Spear", new Weapon("War Spear", -10, TWO_HANDED_THRUSTING, CLASS_SPEAR, 3)],
+	["War Spike", new Weapon("War Spike", -10, ONE_HANDED_SWINGING, CLASS_AXE, 6)],
+	["War Staff", new Weapon("War Staff", 20, TWO_HANDED, CLASS_STAFF, 6)],
+	["War Sword", new Weapon("War Sword", 0, ONE_HANDED_SWINGING, CLASS_SWORD, 3)],
+	["Ward Bow", new Weapon("Ward Bow", 0, BOW, CLASS_MISSILE, 5)],
+	["Winged Axe", new Weapon("Winged Axe", -10, ONE_HANDED_SWINGING, CLASS_THROWING, 0)],
+	["Winged Harpoon", new Weapon("Winged Harpoon", -10, ONE_HANDED_THRUSTING, CLASS_JAVELIN, 0)],
+	["Winged Knife", new Weapon("Winged Knife", -20, ONE_HANDED_THRUSTING, CLASS_THROWING, 0)],
+	["Wrist Blade", new Weapon("Wrist Blade", 0, CLAW, CLASS_CLAW, 2)],
+	["Wrist Spike", new Weapon("Wrist Spike", -10, CLAW, CLASS_CLAW, 2)],
+	["Wrist Sword", new Weapon("Wrist Sword", -10, CLAW, CLASS_CLAW, 3)],
+	["Yari", new Weapon("Yari", 0, TWO_HANDED_THRUSTING, CLASS_SPEAR, 6)],
+	["Yew Wand", new Weapon("Yew Wand", 10, ONE_HANDED_SWINGING, CLASS_STAFF, 1)],
+	["Zweihander", new Weapon("Zweihander", -10, TWO_HANDED_SWORD, CLASS_SWORD, 5)]
+]);
