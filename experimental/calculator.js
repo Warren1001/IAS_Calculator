@@ -932,7 +932,7 @@ function load() {
 			}
 		}
 
-		displayBreakpoints(accelerationTable);
+		displayBreakpoints(accelerationTable, isPrimary ? "Primary Weapon" : "Secondary Weapon");
 
 		console.log(" -- end displayWhirlwindTable for isPrimary=" + isPrimary + " -- ");
 
