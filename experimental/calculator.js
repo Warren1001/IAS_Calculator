@@ -1141,12 +1141,12 @@ function load() {
 			SELECT_SECONDARY_WEAPON.value = secondaryWeapon.name;
 			onSecondaryWeaponChange(false);
 		}
-		skill = SKILLS.get(data["skill"]);
-		SELECT_SKILL.value = skill.name;
-		onSkillChange(false);
 		tableVariable = document.querySelector('input[id="' + data["tablevar"] + '"]');
 		tableVariable.checked = true;
 		onTableVariableChange(false);
+		skill = SKILLS.get(data["skill"]);
+		SELECT_SKILL.value = skill.name;
+		onSkillChange(false);
 		NUMBER_PRIMARY_WEAPON_IAS.value = data["pwias"];
 		NUMBER_SECONDARY_WEAPON_IAS.value = data["swias"];
 		NUMBER_IAS.value = data["ias"];
