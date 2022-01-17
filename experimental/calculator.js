@@ -330,6 +330,8 @@ function load() {
 
 		if (skill == WHIRLWIND) {
 			hideElement(CONTAINER_TABLE_VARIABLE);
+			hideElement(CONTAINER_PRIMARY_WEAPON_IAS);
+			hideElement(CONTAINER_SECONDARY_WEAPON_IAS);
 			hideElement(CONTAINER_FANATICISM);
 			hideElement(CONTAINER_BURST_OF_SPEED);
 			hideElement(CONTAINER_FRENZY);
