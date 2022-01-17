@@ -944,8 +944,12 @@ function load() {
 
 		let variableLabel = undefined;
 
-		if (skill == WHIRLWIND) displayTable(table, "WIAS");
-		else if (isTableVariableSkill()) {
+		if (skill == WHIRLWIND) {
+			displayTable(table, "WIAS");
+			return;
+		}
+		
+		if (isTableVariableSkill()) {
 			variableLabel = "Level";
 			let skill = getTableVariableSkill();
 			for (const [accelerationNeeded, FPA] of table) {
