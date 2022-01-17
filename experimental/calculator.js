@@ -942,16 +942,13 @@ function load() {
 
 	function displayBreakpoints(table, tableName) {
 
-		let newTable = new Map();
+		let newTable = skill == WHIRLWIND ? table : new Map();
 
 		let variableLabel = undefined;
 
 		if (skill == WHIRLWIND) {
-			displayTable(table, "WIAS");
-			return;
-		}
-		
-		if (isTableVariableSkill()) {
+			variableLabel = "WIAS";
+		} else if (isTableVariableSkill()) {
 			variableLabel = "Level";
 			let skill = getTableVariableSkill();
 			for (const [accelerationNeeded, FPA] of table) {
