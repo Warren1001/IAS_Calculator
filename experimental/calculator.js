@@ -1069,21 +1069,8 @@ function load() {
 		return weaponType.getActionFrame(character);
 	}
 
-	/**
-	 * [calculatedFPA, adjustedFPA]
-	 */
-	const adjustedWhirlwindFPAs = new Map([
-		[11, 4], // 0-11
-		[14, 6], // 12-14
-		[17, 8], // 15-17
-		[19, 10], // 18-19
-		[22, 12], // 20-22
-		[25, 14] // 23-25
-	//  [99, 16] // 26+
-	]);
-
 	function calculateWhirlwindFPA(FPA) {
-		for (const [calculatedFPA, adjustedFPA] of adjustedWhirlwindFPAs) {
+		for (const [calculatedFPA, adjustedFPA] of ADJUSTED_WHIRLWIND_FPAS) {
 			if (FPA <= calculatedFPA) return adjustedFPA;
 		}
 		return 16;
@@ -1502,6 +1489,21 @@ const THROWING = new WeaponType(true, true, [
 	[NECROMANCER, 20],
 	[PALADIN, 16],
 	[SORCERESS, 20]
+]);
+
+
+
+/**
+ * [calculatedFPA, adjustedFPA]
+ */
+ const ADJUSTED_WHIRLWIND_FPAS = new Map([
+	[11, 4], // 0-11
+	[14, 6], // 12-14
+	[17, 8], // 15-17
+	[19, 10], // 18-19
+	[22, 12], // 20-22
+	[25, 14] // 23-25
+//  [99, 16] // 26+
 ]);
 
 const CLASS_NONE = "None";
