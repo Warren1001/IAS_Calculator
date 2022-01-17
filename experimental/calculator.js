@@ -1149,7 +1149,7 @@ function load() {
 		CHECKBOX_IS_ONE_HANDED.checked = data["onehand"];
 		let weaponType = primaryWeapon.type;
 		if ((character == ASSASSIN && weaponType == CLAW) || (character == BARBARIAN
-				&& (weaponType.isOneHand || (weaponType == TWO_HANDED_SWORD && CHECKBOX_IS_ONE_HANDED.checked)))) {
+				&& (weaponType.isOneHand || weaponType == TWO_HANDED_SWORD))) {
 			secondaryWeapon = WEAPONS.get(data["sweapon"]);
 			SELECT_SECONDARY_WEAPON.value = secondaryWeapon.name;
 			onSecondaryWeaponChange(false);
