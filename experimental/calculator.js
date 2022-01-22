@@ -30,6 +30,7 @@ function load() {
 	const CONTAINER_WEREWOLF = document.getElementById("werewolfContainer");
 	const CONTAINER_FRENZY = document.getElementById("frenzyContainer");
 	const CONTAINER_HOLY_FREEZE = document.getElementById("holyFreezeContainer");
+	const CONTAINER_WEREFORM_CHANGES = document.getElementById("wereformChangesContainer");
 	const CONTAINER_TABLE = document.getElementById("tableContainer");
 
 	const TABLE_VARIABLE_IAS = setupInputElement(document.getElementById("tableVariableIAS"), e => onTableVariableChange(true));
@@ -58,6 +59,7 @@ function load() {
 	const CHECKBOX_WSM_BUGGED = setupInputElement(document.getElementById("wsmBugged"), displayFrames);
 	const CHECKBOX_IS_ONE_HANDED = setupInputElement(document.getElementById("isOneHanded"), displayFrames);
 	const CHECKBOX_DECREPIFY = setupInputElement(document.getElementById("decrepify"), displayFrames);
+	const CHECKBOX_WEREFORM_CHANGES = setupInputElement(document.getElementById("wereformChanges"), displayFrames);
 
 	const OPTION_WEREWOLF = SELECT_WEREFORM.options[2];
 
@@ -254,8 +256,10 @@ function load() {
 		wereform = SELECT_WEREFORM.value;
 		if (wereform == HUMAN) {
 			hideElement(CONTAINER_PRIMARY_WEAPON_IAS);
+			hideElement(CONTAINER_WEREFORM_CHANGES);
 		} else {
 			unhideElement(CONTAINER_PRIMARY_WEAPON_IAS);
+			unhideElement(CONTAINER_WEREFORM_CHANGES);
 		}
 		if (wereform == WEREWOLF) {
 			unhideElement(CONTAINER_TABLE_VARIABLE_WEREWOLF);
@@ -619,6 +623,7 @@ function load() {
 
 		let accelerationModifier = Math.floor(256 * framesPerDirection2 /
 			Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
+		if (CHECKBOX_WEREFORM_CHANGES.checked) accelerationModifier = 256;
 		console.log("accelerationModifier: " + accelerationModifier);
 
 		let offset = skill == FERAL_RAGE || skill == FURY ? 0 : 1;
@@ -908,7 +913,7 @@ function load() {
 
 		console.log(" -- start displayWhirlwindTable for isPrimary=" + isPrimary + " -- ");
 
-		let weapon = isPrimary? primaryWeapon : secondaryWeapon;
+		let weapon = isPrimary ? primaryWeapon : secondaryWeapon;
 		let framesPerDirection = calculateFramesPerDirection(weapon.type);
 		let animationSpeed = calculateAnimationSpeed(weapon.type);
 		let WSM = getWSM(isPrimary);
