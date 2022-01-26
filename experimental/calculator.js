@@ -255,10 +255,8 @@ function load() {
 		wereform = SELECT_WEREFORM.value;
 		if (wereform == HUMAN) {
 			hideElement(CONTAINER_PRIMARY_WEAPON_IAS);
-			hideElement(CONTAINER_WEREFORM_CHANGES);
 		} else {
 			unhideElement(CONTAINER_PRIMARY_WEAPON_IAS);
-			unhideElement(CONTAINER_WEREFORM_CHANGES);
 		}
 		if (wereform == WEREWOLF) {
 			unhideElement(CONTAINER_TABLE_VARIABLE_WEREWOLF);
