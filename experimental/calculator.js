@@ -621,12 +621,22 @@ function load() {
 			framesPerDirection2 = 10;
 		}
 
+		console.log("framesPerDirection0: " + framesPerDirection0);
+		console.log("framesPerDirection1: " + framesPerDirection1);
+		console.log("framesPerDirection2: " + framesPerDirection2);
+		console.log("framesPerDirection3: " + framesPerDirection3);
+
 		let accelerationModifier = Math.floor(256 * framesPerDirection2 /
 			Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
-		if (CHECKBOX_WEREFORM_CHANGES.checked) accelerationModifier = 256;
+		if (CHECKBOX_WEREFORM_CHANGES.checked) {
+			//accelerationModifier = Math.floor(256 * framesPerDirection2 / Math.floor(256 * framesPerDirection0 /  Math.floor(100 * animationSpeed / 100)));
+			accelerationModifier = animationSpeed;
+			framesPerDirection1 = framesPerDirection0;
+		}
 		console.log("accelerationModifier: " + accelerationModifier);
 
 		let offset = skill == FERAL_RAGE || skill == FURY ? 0 : 1;
+
 		let accelerationTable = new Map();
 
 		let temp = 0;
