@@ -30,7 +30,6 @@ function load() {
 	const CONTAINER_WEREWOLF = document.getElementById("werewolfContainer");
 	const CONTAINER_FRENZY = document.getElementById("frenzyContainer");
 	const CONTAINER_HOLY_FREEZE = document.getElementById("holyFreezeContainer");
-	const CONTAINER_WEREFORM_CHANGES = document.getElementById("wereformChangesContainer");
 	const CONTAINER_TABLE = document.getElementById("tableContainer");
 
 	const TABLE_VARIABLE_IAS = setupInputElement(document.getElementById("tableVariableIAS"), e => onTableVariableChange(true));
@@ -59,7 +58,7 @@ function load() {
 	const CHECKBOX_WSM_BUGGED = setupInputElement(document.getElementById("wsmBugged"), displayFrames);
 	const CHECKBOX_IS_ONE_HANDED = setupInputElement(document.getElementById("isOneHanded"), displayFrames);
 	const CHECKBOX_DECREPIFY = setupInputElement(document.getElementById("decrepify"), displayFrames);
-	const CHECKBOX_WEREFORM_CHANGES = setupInputElement(document.getElementById("wereformChanges"), displayFrames);
+	const CHECKBOX_2_4_CHANGES = setupInputElement(document.getElementById("2.4Changes"), displayFrames);
 
 	const OPTION_WEREWOLF = SELECT_WEREFORM.options[2];
 
@@ -628,8 +627,7 @@ function load() {
 
 		let accelerationModifier = Math.floor(256 * framesPerDirection2 /
 			Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
-		if (CHECKBOX_WEREFORM_CHANGES.checked) {
-			//accelerationModifier = Math.floor(256 * framesPerDirection2 / Math.floor(256 * framesPerDirection0 /  Math.floor(100 * animationSpeed / 100)));
+		if (CHECKBOX_2_4_CHANGES.checked) {
 			accelerationModifier = animationSpeed;
 			framesPerDirection1 = framesPerDirection0;
 		}
@@ -643,7 +641,7 @@ function load() {
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
 			let frameLengthDivisor = Math.floor(accelerationModifier * limitEIAS(EIAS + acceleration) / 100);
 			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor) - offset;
-			if (skill == FURY) {
+			if (skill == FURY) { // TODO 2.4 could be wrong
 				let FPA2 = Math.ceil(256 * framesPerDirection3 / frameLengthDivisor) - 1;
 				if (temp != FPA + FPA2) {
 					temp = FPA + FPA2;
@@ -651,7 +649,7 @@ function load() {
 					console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2);
 				}
 			} else {
-				if (skill == FERAL_RAGE) {
+				if (skill == FERAL_RAGE) { // TODO 2.4 could be wrong
 					FPA += Math.ceil((256 * framesPerDirection3 - FPA * frameLengthDivisor) / (2 * frameLengthDivisor)) - 1;
 				}
 				if (temp != FPA) {
@@ -778,6 +776,7 @@ function load() {
 		let WSM = getWSM(true);
 		let EIAS = calculateEIAS(WSM, 0);
 		let rollbackFactor = skill == FEND ? 40 : 0;
+		if (skill == FEND && CHECKBOX_2_4_CHANGES.checked) rollbackFactor = 80;
 		console.log("framesPerDirection1: " + framesPerDirection1);
 		console.log("framesPerDirection2: " + framesPerDirection2);
 		console.log("animationSpeed: " + animationSpeed);
@@ -1125,7 +1124,8 @@ function load() {
 			"hf": NUMBER_HOLY_FREEZE.value,
 			"decrep": CHECKBOX_DECREPIFY.checked,
 			"onehand": CHECKBOX_IS_ONE_HANDED.checked,
-			"wsmbug": CHECKBOX_WSM_BUGGED.checked
+			"wsmbug": CHECKBOX_WSM_BUGGED.checked,
+			"2.4Changes": CHECKBOX_2_4_CHANGES.checked
 		};
 		let encodedData = btoa(JSON.stringify(data));
 		let link = window.location.href;
@@ -1171,6 +1171,7 @@ function load() {
 		NUMBER_HOLY_FREEZE.value = data["hf"];
 		CHECKBOX_DECREPIFY.checked = data["decrep"];
 		CHECKBOX_WSM_BUGGED.checked = data["wsmbug"];
+		CHECKBOX_2_4_CHANGES.checked = data["2.4Changes"];
 	}
 
 }
