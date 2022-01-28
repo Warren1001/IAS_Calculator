@@ -58,7 +58,8 @@ function load() {
 	const CHECKBOX_WSM_BUGGED = setupInputElement(document.getElementById("wsmBugged"), displayFrames);
 	const CHECKBOX_IS_ONE_HANDED = setupInputElement(document.getElementById("isOneHanded"), displayFrames);
 	const CHECKBOX_DECREPIFY = setupInputElement(document.getElementById("decrepify"), displayFrames);
-	const CHECKBOX_2_4_CHANGES = setupInputElement(document.getElementById("2.4Changes"), displayFrames);
+	const CHECKBOX_2_4_CHANGES = setupInputElement(document.getElementById("2.4Changes"), checkbox2_4Changes);
+	const CHECKBOX_WARREN_CHANGES = setupInputElement(document.getElementById("warrenChanges"), warrenChanges);
 
 	const OPTION_WEREWOLF = SELECT_WEREFORM.options[2];
 
@@ -92,6 +93,16 @@ function load() {
 	setSkills();
 	loadFromParams();
 	displayFrames();
+
+	function checkbox2_4Changes() {
+		CHECKBOX_WARREN_CHANGES.checked = false
+		displayFrames()
+	}
+
+	function warrenChanges() {
+		CHECKBOX_2_4_CHANGES.checked = false
+		displayFrames()
+	}
 
 	function onTableVariableChange(updateTable) {
 		let newTableVariable = document.querySelector('input[name="tableVariable"]:checked');
@@ -625,10 +636,12 @@ function load() {
 
 		let accelerationModifier = Math.floor(256 * framesPerDirection2 /
 			Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
+
 		if (CHECKBOX_2_4_CHANGES.checked) {
 			accelerationModifier = animationSpeed;
 			framesPerDirection1 = framesPerDirection0;
 		}
+
 		console.log("accelerationModifier: " + accelerationModifier);
 
 		let offset = skill == FERAL_RAGE || skill == FURY ? 0 : 1;
@@ -637,6 +650,12 @@ function load() {
 
 		let temp = 0;
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+
+			if (CHECKBOX_WARREN_CHANGES.checked) {
+				accelerationModifier = Math.floor(256 * framesPerDirection2 /
+					Math.floor(256 * framesPerDirection0 / Math.floor(limitEIAS(100 + wEIAS + acceleration - WSM) * animationSpeed / 100)));
+			}
+
 			let frameLengthDivisor = Math.floor(accelerationModifier * limitEIAS(EIAS + acceleration) / 100);
 			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor) - offset;
 			if (skill == FURY) { // TODO 2.4 could be wrong
@@ -1123,7 +1142,8 @@ function load() {
 			"decrep": CHECKBOX_DECREPIFY.checked,
 			"onehand": CHECKBOX_IS_ONE_HANDED.checked,
 			"wsmbug": CHECKBOX_WSM_BUGGED.checked,
-			"2.4Changes": CHECKBOX_2_4_CHANGES.checked
+			"2.4Changes": CHECKBOX_2_4_CHANGES.checked,
+			"warrenChanges": CHECKBOX_WARREN_CHANGES.checked
 		};
 		let encodedData = btoa(JSON.stringify(data));
 		let link = window.location.href;
@@ -1170,6 +1190,7 @@ function load() {
 		CHECKBOX_DECREPIFY.checked = data["decrep"];
 		CHECKBOX_WSM_BUGGED.checked = data["wsmbug"];
 		CHECKBOX_2_4_CHANGES.checked = data["2.4Changes"];
+		CHECKBOX_WARREN_CHANGES.checked = data["warrenChanges"];
 	}
 
 }
