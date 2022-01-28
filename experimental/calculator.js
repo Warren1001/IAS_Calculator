@@ -60,6 +60,7 @@ function load() {
 	const CHECKBOX_DECREPIFY = setupInputElement(document.getElementById("decrepify"), displayFrames);
 	const CHECKBOX_2_4_CHANGES = setupInputElement(document.getElementById("2.4Changes"), checkbox2_4Changes);
 	const CHECKBOX_WARREN_CHANGES = setupInputElement(document.getElementById("warrenChanges"), warrenChanges);
+	const CHECKBOX_EIAS_CHANGES = setupInputElement(document.getElementById("eiasChanges"), eiasChanges);
 
 	const OPTION_WEREWOLF = SELECT_WEREFORM.options[2];
 
@@ -79,6 +80,7 @@ function load() {
 	const MAX_IAS_ACCELERATION_CHARACTER = 88;
 	const MAX_IAS_ACCELERATION_CHARACTER_TWO_HANDED = 83;
 	const MAX_IAS_ACCELERATION_MERCENARY = 78;
+	const MAX_EIAS_WEREFORMS = 300;
 
 	let character = PALADIN;
 	let wereform = HUMAN;
@@ -96,11 +98,19 @@ function load() {
 
 	function checkbox2_4Changes() {
 		CHECKBOX_WARREN_CHANGES.checked = false
+		//CHECKBOX_EIAS_CHANGES.checked = false
 		displayFrames()
 	}
 
 	function warrenChanges() {
 		CHECKBOX_2_4_CHANGES.checked = false
+		//CHECKBOX_EIAS_CHANGES.checked = false
+		displayFrames()
+	}
+
+	function eiasChanges() {
+		//CHECKBOX_2_4_CHANGES.checked = false
+		//CHECKBOX_WARREN_CHANGES.checked = false
 		displayFrames()
 	}
 
@@ -658,7 +668,7 @@ function load() {
 
 			let frameLengthDivisor = Math.floor(accelerationModifier * limitEIAS(EIAS + acceleration) / 100);
 			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor) - offset;
-			if (skill == FURY) { // TODO 2.4 could be wrong
+			if (skill == FURY) {
 				let FPA2 = Math.ceil(256 * framesPerDirection3 / frameLengthDivisor) - 1;
 				if (temp != FPA + FPA2) {
 					temp = FPA + FPA2;
@@ -1071,7 +1081,7 @@ function load() {
 	}
 
 	function limitEIAS(EIAS) {
-		return Math.max(MIN_EIAS, Math.min(MAX_EIAS, EIAS));
+		return Math.max(MIN_EIAS, Math.min(CHECKBOX_EIAS_CHANGES.checked ? MAX_EIAS_WEREFORMS : MAX_EIAS, EIAS));
 	}
 
 	function getSequence(weaponType) {
@@ -1143,7 +1153,8 @@ function load() {
 			"onehand": CHECKBOX_IS_ONE_HANDED.checked,
 			"wsmbug": CHECKBOX_WSM_BUGGED.checked,
 			"2.4Changes": CHECKBOX_2_4_CHANGES.checked,
-			"warrenChanges": CHECKBOX_WARREN_CHANGES.checked
+			"warrenChanges": CHECKBOX_WARREN_CHANGES.checked,
+			"eiasChanges": CHECKBOX_EIAS_CHANGES.checked
 		};
 		let encodedData = btoa(JSON.stringify(data));
 		let link = window.location.href;
@@ -1191,6 +1202,7 @@ function load() {
 		CHECKBOX_WSM_BUGGED.checked = data["wsmbug"];
 		CHECKBOX_2_4_CHANGES.checked = data["2.4Changes"];
 		CHECKBOX_WARREN_CHANGES.checked = data["warrenChanges"];
+		CHECKBOX_EIAS_CHANGES.checked = data["eiasChanges"];
 	}
 
 }
