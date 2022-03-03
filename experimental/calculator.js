@@ -59,8 +59,6 @@ function load() {
 	const CHECKBOX_IS_ONE_HANDED = setupInputElement(document.getElementById("isOneHanded"), displayFrames);
 	const CHECKBOX_DECREPIFY = setupInputElement(document.getElementById("decrepify"), displayFrames);
 	const CHECKBOX_2_4_CHANGES = setupInputElement(document.getElementById("2.4Changes"), checkbox2_4Changes);
-	const CHECKBOX_WARREN_CHANGES = setupInputElement(document.getElementById("warrenChanges"), warrenChanges);
-	const CHECKBOX_EIAS_CHANGES = setupInputElement(document.getElementById("eiasChanges"), eiasChanges);
 
 	const OPTION_WEREWOLF = SELECT_WEREFORM.options[2];
 
@@ -80,7 +78,7 @@ function load() {
 	const MAX_IAS_ACCELERATION_CHARACTER = 88;
 	const MAX_IAS_ACCELERATION_CHARACTER_TWO_HANDED = 83;
 	const MAX_IAS_ACCELERATION_MERCENARY = 78;
-	const MAX_EIAS_WEREFORMS = 300;
+	const MAX_EIAS_WEREFORMS = 250;
 
 	let character = PALADIN;
 	let wereform = HUMAN;
@@ -97,21 +95,12 @@ function load() {
 	displayFrames();
 
 	function checkbox2_4Changes() {
-		CHECKBOX_WARREN_CHANGES.checked = false
-		//CHECKBOX_EIAS_CHANGES.checked = false
-		displayFrames()
-	}
-
-	function warrenChanges() {
-		CHECKBOX_2_4_CHANGES.checked = false
-		//CHECKBOX_EIAS_CHANGES.checked = false
-		displayFrames()
-	}
-
-	function eiasChanges() {
-		//CHECKBOX_2_4_CHANGES.checked = false
-		//CHECKBOX_WARREN_CHANGES.checked = false
-		displayFrames()
+		if (CHECKBOX_2_4_CHANGES.checked) {
+			hideElement(CONTAINER_WSM_BUGGED);
+		} else if (isDualWielding) {
+			unhideElement(CONTAINER_WSM_BUGGED);
+		}
+		displayFrames();
 	}
 
 	function onTableVariableChange(updateTable) {
@@ -330,7 +319,7 @@ function load() {
 		if (secondaryWeapon.type != UNARMED) {
 			isDualWielding = true;
 			hideElement(CONTAINER_IS_ONE_HANDED);
-			unhideElement(CONTAINER_WSM_BUGGED);
+			if (!CHECKBOX_2_4_CHANGES.checked) unhideElement(CONTAINER_WSM_BUGGED);
 		} else {
 			isDualWielding = false;
 			hideElement(CONTAINER_WSM_BUGGED);
@@ -441,6 +430,8 @@ function load() {
 		if (wereform == HUMAN && isCharacterSelected() && (itemClass == CLASS_THROWING || itemClass == CLASS_JAVELIN)) {
 			currentSkills.push(THROW);
 		}
+
+		currentSkills.push(ZEAL); // TODO
 
 		switch (parseInt(character)) {
 			case AMAZON:
@@ -557,7 +548,9 @@ function load() {
 
 		removeAllChildNodes(CONTAINER_TABLE);
 
-		if (wereform != HUMAN) {
+		if (CHECKBOX_2_4_CHANGES.checked && skill == FURY) {
+			displayComplexRollbackTable();
+		} else if (wereform != HUMAN) {
 			displayWereformTables();
 		} else if (skill == FRENZY) {
 			displayFrenzyTable();
@@ -565,7 +558,7 @@ function load() {
 			displayWhirlwindTable(true);
 			if (isDualWielding) displayWhirlwindTable(false);
 		} else if (skill == STRAFE) {
-			displayStrafeTable();
+			displayComplexRollbackTable();
 		} else if (skill == FEND || skill == ZEAL || skill == DRAGON_TALON) {
 			displaySimpleRollbackTable();
 		}
@@ -625,19 +618,15 @@ function load() {
 		console.log("EIAS: " + EIAS);
 
 		let framesPerDirection0 = calculateFramesPerDirection(weaponType);
+		//framesPerDirection0 = 17;
 		let framesPerDirection1 = 0;
-		let framesPerDirection2 = 0;
+		let framesPerDirection2 = wereform == WEREWOLF ? 9 : 10;
 		let framesPerDirection3 = 13;
 		if (wereform == WEREWOLF) {
 			if (skill == FERAL_RAGE || skill == FURY) framesPerDirection1 = 7;
 			else if (skill == RABIES) framesPerDirection1 = 10;
 			else framesPerDirection1 = 13;
-			framesPerDirection2 = 9;
-		} else {
-			if (skill == HUNGER) framesPerDirection1 = 10;
-			else framesPerDirection1 = 12;
-			framesPerDirection2 = 10;
-		}
+		} else framesPerDirection1 = skill == HUNGER ? 10 : 12;
 
 		console.log("framesPerDirection0: " + framesPerDirection0);
 		console.log("framesPerDirection1: " + framesPerDirection1);
@@ -649,7 +638,16 @@ function load() {
 
 		if (CHECKBOX_2_4_CHANGES.checked) {
 			accelerationModifier = animationSpeed;
-			framesPerDirection1 = framesPerDirection0;
+			if (skill == FURY) {
+				framesPerDirection1 = 13; // 8
+				framesPerDirection3 = framesPerDirection0;
+			}
+			else if (skill == ZEAL) {
+				framesPerDirection1 = calculateActionFrame(weaponType);
+				framesPerDirection3 = framesPerDirection0;
+			} else {
+				framesPerDirection1 = framesPerDirection0;
+			}
 		}
 
 		console.log("accelerationModifier: " + accelerationModifier);
@@ -661,14 +659,9 @@ function load() {
 		let temp = 0;
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
 
-			if (CHECKBOX_WARREN_CHANGES.checked) {
-				accelerationModifier = Math.floor(256 * framesPerDirection2 /
-					Math.floor(256 * framesPerDirection0 / Math.floor(limitEIAS(100 + wEIAS + acceleration - WSM) * animationSpeed / 100)));
-			}
-
 			let frameLengthDivisor = Math.floor(accelerationModifier * limitEIAS(EIAS + acceleration) / 100);
-			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor) - offset;
-			if (skill == FURY) {
+			let FPA = Math.floor(256 * framesPerDirection1 / frameLengthDivisor) - offset;
+			if (skill == FURY || skill == ZEAL) { // wrong for 2.4
 				let FPA2 = Math.ceil(256 * framesPerDirection3 / frameLengthDivisor) - 1;
 				if (temp != FPA + FPA2) {
 					temp = FPA + FPA2;
@@ -803,7 +796,8 @@ function load() {
 		let WSM = getWSM(true);
 		let EIAS = calculateEIAS(WSM, 0);
 		let rollbackFactor = skill == FEND ? 40 : 0;
-		if (skill == FEND && CHECKBOX_2_4_CHANGES.checked) rollbackFactor = 80;
+		if (skill == FEND && CHECKBOX_2_4_CHANGES.checked) rollbackFactor = 70;
+		if (skill == FURY && CHECKBOX_2_4_CHANGES.checked) rollbackFactor = 30;
 		console.log("framesPerDirection1: " + framesPerDirection1);
 		console.log("framesPerDirection2: " + framesPerDirection2);
 		console.log("animationSpeed: " + animationSpeed);
@@ -824,7 +818,11 @@ function load() {
 			let FPA3 = Math.ceil(256 * (framesPerDirection2 - rollback) / frameLengthDivisor) - 1;
 			if (temp != FPA + FPA2 + FPA3) {
 				temp = FPA + FPA2 + FPA3;
-				accelerationTable.set(acceleration, FPA + "+(" + FPA2 + ")+" + FPA3);
+				if (FPA == FPA2) {
+					accelerationTable.set(acceleration, "(" + FPA + ")+" + FPA3);
+				} else {
+					accelerationTable.set(acceleration, FPA + "+(" + FPA2 + ")+" + FPA3);
+				}
 				console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3);
 			}
 		}
@@ -835,19 +833,20 @@ function load() {
 
 	}
 
-	function displayStrafeTable() {
+	function displayComplexRollbackTable() {
 
-		console.log(" -- start displayStrafeTable -- ");
+		console.log(" -- start displayComplexRollbackTable -- ");
 
 		let weapon = primaryWeapon;
 		let weaponType = weapon.type;
 		let framesPerDirection1 = calculateActionFrame(weaponType);
+		if (skill == FURY) framesPerDirection1 = 8;
 		let framesPerDirection2 = calculateFramesPerDirection(weaponType);
 		let animationSpeed = calculateAnimationSpeed(weaponType);
 		let startingFrame = getStartingFrame(weaponType);
-		let WSM = weapon.WSM;
+		let WSM = getWSM(true);
 		let EIAS = calculateEIAS(WSM, 0);
-		let rollbackFactor = 50;
+		let rollbackFactor = skill == STRAFE ? 50 : 30;
 		console.log("framesPerDirection1: " + framesPerDirection1);
 		console.log("framesPerDirection2: " + framesPerDirection2);
 		console.log("animationSpeed: " + animationSpeed);
@@ -909,7 +908,7 @@ function load() {
 		displayBreakpoints(accelerationEvenTable);
 		if (weaponType == CROSSBOW) displayBreakpoints(accelerationOddTable);
 
-		console.log(" -- end displayStrafeTable -- ");
+		console.log(" -- end displayComplexRollbackTable -- ");
 
 	}
 
@@ -1000,10 +999,15 @@ function load() {
 			
 		} else if (tableVariable == TABLE_VARIABLE_IAS || tableVariable == TABLE_VARIABLE_PRIMARY_WEAPON_IAS || tableVariable == TABLE_VARIABLE_SECONDARY_WEAPON_IAS) {
 			variableLabel = tableVariable == TABLE_VARIABLE_IAS ? "IAS" : "WIAS";
+			let firstWasSet = false;
 			for (const [accelerationNeeded, FPA] of table) {
 				let IAS = convertEIAStoIAS(accelerationNeeded);
 				if (wereform != HUMAN) IAS -= getWeaponIAS(true);
-				if (IAS < 0) IAS = 0;
+				if (IAS < 0) {
+					if (firstWasSet) break;
+					else IAS = 0;
+				}
+				if (!firstWasSet) firstWasSet = true;
 				newTable.set(IAS, FPA);
 			}
 		} else {
@@ -1081,7 +1085,7 @@ function load() {
 	}
 
 	function limitEIAS(EIAS) {
-		return Math.max(MIN_EIAS, Math.min(CHECKBOX_EIAS_CHANGES.checked ? MAX_EIAS_WEREFORMS : MAX_EIAS, EIAS));
+		return Math.max(MIN_EIAS, Math.min(CHECKBOX_2_4_CHANGES.checked ? MAX_EIAS_WEREFORMS : MAX_EIAS, EIAS));
 	}
 
 	function getSequence(weaponType) {
@@ -1152,9 +1156,7 @@ function load() {
 			"decrep": CHECKBOX_DECREPIFY.checked,
 			"onehand": CHECKBOX_IS_ONE_HANDED.checked,
 			"wsmbug": CHECKBOX_WSM_BUGGED.checked,
-			"2.4Changes": CHECKBOX_2_4_CHANGES.checked,
-			"warrenChanges": CHECKBOX_WARREN_CHANGES.checked,
-			"eiasChanges": CHECKBOX_EIAS_CHANGES.checked
+			"2.4Changes": CHECKBOX_2_4_CHANGES.checked
 		};
 		let encodedData = btoa(JSON.stringify(data));
 		let link = window.location.href;
@@ -1201,8 +1203,6 @@ function load() {
 		CHECKBOX_DECREPIFY.checked = data["decrep"];
 		CHECKBOX_WSM_BUGGED.checked = data["wsmbug"];
 		CHECKBOX_2_4_CHANGES.checked = data["2.4Changes"];
-		CHECKBOX_WARREN_CHANGES.checked = data["warrenChanges"];
-		CHECKBOX_EIAS_CHANGES.checked = data["eiasChanges"];
 	}
 
 }
