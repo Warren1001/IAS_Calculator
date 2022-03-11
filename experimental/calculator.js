@@ -840,7 +840,7 @@ function load() {
 		let weapon = primaryWeapon;
 		let weaponType = weapon.type;
 		let framesPerDirection1 = calculateActionFrame(weaponType);
-		if (skill == FURY) framesPerDirection1 = 8;
+		if (skill == FURY) framesPerDirection1 = 9;
 		let framesPerDirection2 = calculateFramesPerDirection(weaponType);
 		let animationSpeed = calculateAnimationSpeed(weaponType);
 		let startingFrame = getStartingFrame(weaponType);
