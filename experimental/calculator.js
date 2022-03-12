@@ -1,14 +1,16 @@
 window.addEventListener("load", load, false);
 
 /**
- * bugs:
+ * bugs/todo:
  * frenzy tables are slightly off - possibly only when NOT indexing by a weapon ias
- * fix feral rage
- * fury can hit at 3/6 when non-exp calc and original calc show 4/6, not sure why
+ * fury can hit at 3/6 when non-exp calc and original calc show 4/6, not sure why - non 2.4
+ * figure out fury
+ * test rabies, feral rage, and hunger
+ * fix impale
  * 
  * missing features:
  * dual wielding needs secondary weapon ias implementation for non-ias table variable
- * wereforms needs table variable weapon ias implementation
+ * wereforms needs table variable weapon ias implementation for legacy
  * contemplate the usefulness of a WSM table variable
  */
 
@@ -1419,12 +1421,12 @@ class AttackSpeedSkill {
 	calculate(tableVariable) {
 		if (this.tableVariable == tableVariable || (this.predicate != null && !this.predicate())) return 0;
 		let level = parseInt(this.input.value);
-		if (this.min == -1) return level * this.factor; 
+		if (this.min == -1) return this.factor * (Math.floor(level / 2) + 3); 
 		return level == 0 ? 0 : Math.min(this.min + Math.floor(this.factor * Math.floor((110 * level) / (level + 6)) / 100), this.max);
 	}
 
 	getEIASFromLevel(level) {
-		if (this.min == -1) return level * this.factor; 
+		if (this.min == -1) return this.factor * (Math.floor(level / 2) + 3); 
 		return level == 0 ? 0 : Math.min(this.min + Math.floor(this.factor * Math.floor((110 * level) / (level + 6)) / 100), this.max);
 	}
 
