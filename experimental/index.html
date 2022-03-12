@@ -8,12 +8,9 @@
   <title>D2 IAS Calculator</title>
 </head>
 <body>
-  <h2>Work In Progress - v0.11.1</h2>
+  <h2>Work In Progress - v0.12.0</h2>
   <p>Primarily developed by Warren1001 from Llama's community. You can contact me on his Discord server or DM me directly on Discord (Warren#2433).</p>
   <p>This calculator is open source. You can view the source <a href="https://github.com/Warren1001/IAS_Calculator/tree/master/experimental">here</a>.</p>
-  <p>2.4 Changes: Wereforms should be correct (medium sample size). Fury is still wrong, but it's somewhat close, take it as an estimation. Feral Rage has not been tested yet, probably wrong.
-     Fend change seems correct, very small sample size.</p>
-  <p>Note, Frenzy is slightly off, working on fixing it.</p>
   <p>Every time you visit this page for the first time, or you see mention of me updating this version, please full refresh with CTRL + F5.</p>
   <div id="calculator">
     <div id="tableVariableContainer">
@@ -28,6 +25,10 @@
       <div id="tableVariableWerewolfContainer" style="display: none">
         <input type="radio" id="tableVariableWerewolf" name="tableVariable" value="Werewolf">
         <label for="tableVariableWerewolf">Werewolf</label>
+      </div>
+      <div id="tableVariableMaulContainer" style="display: none">
+        <input type="radio" id="tableVariableMaul" name="tableVariable" value="Maul">
+        <label for="tableVariableMaul">Maul</label>
       </div>
       <div id="tableVariableFrenzyContainer" style="display: none">
         <input type="radio" id="tableVariableFrenzy" name="tableVariable" value="Frenzy">
@@ -113,6 +114,11 @@
     <div id="werewolfContainer" style="display: none">
       <label for="werewolfLevel">Werewolf:</label>
       <input type="number" id="werewolfLevel" value="0" min="0" max="60">
+      <br>
+    </div>
+    <div id="maulContainer" style="display: none">
+      <label for="maulLevel">Maul:</label>
+      <input type="number" id="maulLevel" value="0" min="0" max="60">
       <br>
     </div>
     <div id="frenzyContainer" style="display: none">
