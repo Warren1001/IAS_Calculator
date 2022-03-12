@@ -588,6 +588,7 @@ function load() {
 		let temp = 0;
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
 			let frameLengthDivisor = Math.floor(accelerationModifier * limitEIAS(EIAS + acceleration) / 100);
+			console.log("FLD=" + frameLengthDivisor);
 			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor) - offset;
 			if (skill == FURY) {
 				let FPA2 = Math.ceil(256 * framesPerDirection3 / frameLengthDivisor) - 1;
