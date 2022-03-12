@@ -292,9 +292,13 @@ function load() {
 		if (wereform == WEREWOLF) {
 			unhideElement(CONTAINER_TABLE_VARIABLE_WEREWOLF);
 			unhideElement(CONTAINER_WEREWOLF);
+			hideElement(CONTAINER_MAUL);
+			hideElement(CONTAINER_TABLE_VARIABLE_MAUL);
 		} else if (wereform == WEREBEAR) {
 			unhideElement(CONTAINER_TABLE_VARIABLE_MAUL);
 			unhideElement(CONTAINER_MAUL);
+			hideElement(CONTAINER_WEREWOLF);
+			hideElement(CONTAINER_TABLE_VARIABLE_WEREWOLF);
 		} else {
 			hideElement(CONTAINER_WEREWOLF);
 			hideElement(CONTAINER_TABLE_VARIABLE_WEREWOLF);
