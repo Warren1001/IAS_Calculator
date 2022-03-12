@@ -561,6 +561,7 @@ function load() {
 		console.log("animationSpeed: " + animationSpeed);
 		console.log("WSM: " + WSM);
 		console.log("wIAS: " + wIAS);
+		console.log("wEIAS: " + wEIAS);
 		console.log("EIAS: " + EIAS);
 
 		let framesPerDirection0 = calculateFramesPerDirection(weaponType);
@@ -577,6 +578,11 @@ function load() {
 			else framesPerDirection1 = 12;
 			framesPerDirection2 = 10;
 		}
+
+		console.log("framesPerDirection0: " + framesPerDirection0);
+		console.log("framesPerDirection1: " + framesPerDirection1);
+		console.log("framesPerDirection2: " + framesPerDirection2);
+		console.log("framesPerDirection3: " + framesPerDirection3);
 
 		let accelerationModifier = Math.floor(256 * framesPerDirection2 /
 			Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
