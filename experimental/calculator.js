@@ -574,6 +574,9 @@ function load() {
 			//let tempMaxAccelerationIncrease = maxAccelerationIncrease;
 			//maxAccelerationIncrease = MAX_EIAS_WEREFORMS;
 			if (CHECKBOX_2_4_CHANGES.checked) {
+				if (character != DRUID) {
+					displayTableInfo("No testing has been done for Wereforms on non-Druid classes. If they work the same way as Druid they should be correct.");
+				}
 				if (skill == FURY) {
 					displayComplexRollbackTable();
 				} else if (skill == FERAL_RAGE || skill == RABIES || skill == HUNGER) {
