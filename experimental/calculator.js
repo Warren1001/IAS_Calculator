@@ -2,14 +2,12 @@ window.addEventListener("load", load, false);
 
 /**
  * bugs/todo:
- * frenzy tables are slightly off - possibly only when NOT indexing by a weapon ias
- * fury can hit at 3/6 when non-exp calc and original calc show 4/6, not sure why - non 2.4
- * figure out fury
- * test rabies, feral rage, and hunger
+ * figure out fury -- probably hardcode
+ * test rabies, feral rage, and hunger, and all non-druid versions
  * fix impale
  * 
  * missing features:
- * dual wielding needs secondary weapon ias implementation for non-ias table variable
+ * dual wielding needs secondary weapon ias implementation for non-ias table variable, primary weapon ias does not work
  * wereforms needs table variable weapon ias implementation for legacy
  * contemplate the usefulness of a WSM table variable
  */
@@ -76,7 +74,7 @@ function load() {
 	const SKILL_FANATICISM = new AttackSpeedSkill(NUMBER_FANATICISM, 10, 30, 40, TABLE_VARIABLE_FANATICISM);
 	const SKILL_BURST_OF_SPEED = new AttackSpeedSkill(NUMBER_BURST_OF_SPEED, 15, 45, 60, TABLE_VARIABLE_BURST_OF_SPEED, () => character == ASSASSIN);
 	const SKILL_WEREWOLF = new AttackSpeedSkill(NUMBER_WEREWOLF, 10, 70, 80, TABLE_VARIABLE_WEREWOLF, () => wereform == WEREWOLF);
-	const SKILL_MAUL = new AttackSpeedSkill(NUMBER_MAUL, -1, 3, 3 * 60, TABLE_VARIABLE_MAUL, () => wereform == WEREBEAR);
+	const SKILL_MAUL = new AttackSpeedSkill(NUMBER_MAUL, -1, 3, 99, TABLE_VARIABLE_MAUL, () => wereform == WEREBEAR);
 	const SKILL_FRENZY = new AttackSpeedSkill(NUMBER_FRENZY, 0, 50, 50, TABLE_VARIABLE_FRENZY, () => character == BARBARIAN);
 	const SKILL_HOLY_FREEZE = new AttackSpeedSkill(NUMBER_HOLY_FREEZE, 25, 35, 60);
 	
@@ -264,6 +262,7 @@ function load() {
 
 		if (character != BARBARIAN && character != ASSASSIN) {
 			hideElement(CONTAINER_SECONDARY_WEAPON);
+			hideElement(CONTAINER_SECONDARY_WEAPON_IAS);
 			isDualWielding = false;
 		}
 
@@ -341,10 +340,8 @@ function load() {
 	}
 
 	function onSecondaryWeaponChange(updateTable) {
-		let a = SELECT_SECONDARY_WEAPON.value;
-		console.log("a=" + a);
-		secondaryWeapon = WEAPONS.get(a);
-		console.log(secondaryWeapon);
+		secondaryWeapon = WEAPONS.get(SELECT_SECONDARY_WEAPON.value);
+		//console.log(secondaryWeapon);
 
 		if (secondaryWeapon.type != UNARMED) {
 			isDualWielding = true;
@@ -578,13 +575,13 @@ function load() {
 
 		if (wereform != HUMAN) {
 			//let tempMaxAccelerationIncrease = maxAccelerationIncrease;
-			//maxAccelerationIncrease = MAX_EIAS_WEREFORMS;
+			maxAccelerationIncrease = MAX_EIAS_WEREFORMS;
 			if (CHECKBOX_2_4_CHANGES.checked) {
 				if (character != DRUID) {
 					displayTableInfo("No testing has been done for Wereforms on non-Druid classes. If they work the same way as Druid they should be correct.");
 				}
 				if (skill == FURY) {
-					displayComplexRollbackTable();
+					displayFuryTable();
 				} else if (skill == FERAL_RAGE || skill == RABIES || skill == HUNGER) {
 					displayTableInfo("Feral Rage, Rabies, and Hunger have not been tested for 2.4 yet and are likely wrong.");
 					displayStandardTable(true, false);
@@ -600,7 +597,7 @@ function load() {
 			} else {
 				displayWereformTables();
 			}
-			//maxAccelerationIncrease = tempMaxAccelerationIncrease;
+			maxAccelerationIncrease = tempMaxAccelerationIncrease;
 		} else if (skill == FRENZY) {
 			displayFrenzyTable();
 		} else if (skill == WHIRLWIND) {
@@ -664,6 +661,7 @@ function load() {
 		console.log("animationSpeed: " + animationSpeed);
 		console.log("WSM: " + WSM);
 		console.log("wIAS: " + wIAS);
+		console.log("wEIAS: " + wEIAS);
 		console.log("EIAS: " + EIAS);
 
 		let framesPerDirection0 = calculateFramesPerDirection(weaponType);
@@ -685,20 +683,6 @@ function load() {
 		let accelerationModifier = Math.floor(256 * framesPerDirection2 /
 			Math.floor(256 * framesPerDirection0 / Math.floor((100 + wIAS - WSM) * animationSpeed / 100)));
 
-		if (CHECKBOX_2_4_CHANGES.checked) {
-			accelerationModifier = animationSpeed;
-			if (skill == FURY) {
-				framesPerDirection1 = 13; // 8
-				framesPerDirection3 = framesPerDirection0;
-			}
-			else if (skill == ZEAL) {
-				framesPerDirection1 = calculateActionFrame(weaponType);
-				framesPerDirection3 = framesPerDirection0;
-			} else {
-				framesPerDirection1 = framesPerDirection0;
-			}
-		}
-
 		console.log("accelerationModifier: " + accelerationModifier);
 
 		let offset = skill == FERAL_RAGE || skill == FURY ? 0 : 1;
@@ -709,7 +693,8 @@ function load() {
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
 
 			let frameLengthDivisor = Math.floor(accelerationModifier * limitEIAS(EIAS + acceleration) / 100);
-			let FPA = Math.floor(256 * framesPerDirection1 / frameLengthDivisor) - offset;
+			//console.log("FLD=" + frameLengthDivisor);
+			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor) - offset;
 			if (skill == FURY) { // wrong for 2.4
 				let FPA2 = Math.ceil(256 * framesPerDirection3 / frameLengthDivisor) - 1;
 				if (temp != FPA + FPA2) {
@@ -789,6 +774,9 @@ function load() {
 
 	}
 
+	/**
+	 * lots of info taken from chthonvii (and his/her references): https://chthonvii.github.io/resurrectedfrenzyiascalc/
+	 */
 	function displayFrenzyTable() {
 
 		console.log(" -- start displayFrenzyTables -- ");
@@ -801,7 +789,7 @@ function load() {
 		console.log("animationSpeed: " + animationSpeed);
 
 		// frenzy seems to have its own way of calculating WSM
-		let averageWSM = parseInt((primaryWeapon.WSM + secondaryWeapon.WSM) / 2); // TODO might be wrong
+		let averageWSM = Math.floor((primaryWeapon.WSM + secondaryWeapon.WSM) / 2);
 		let primaryWSM = CHECKBOX_WSM_BUGGED.checked ? primaryWeapon.WSM - secondaryWeapon.WSM + averageWSM : primaryWeapon.WSM + secondaryWeapon.WSM - averageWSM;
 		let secondaryWSM = CHECKBOX_WSM_BUGGED.checked ? averageWSM : 2 * secondaryWeapon.WSM - averageWSM;
 		console.log("primaryWSM: " + primaryWSM);
@@ -814,7 +802,7 @@ function load() {
 
 		let accelerationTable = new Map();
 
-		let temp = 0;
+		let temp = Array(2);
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
 			let acceleration1 = tableVariable == TABLE_VARIABLE_SECONDARY_WEAPON_IAS ? 0 : acceleration;
 			let acceleration2 = tableVariable == TABLE_VARIABLE_PRIMARY_WEAPON_IAS ? 0 : acceleration;
@@ -822,16 +810,17 @@ function load() {
 			let frameLengthDivisor2 = Math.floor(animationSpeed * limitEIAS(secondaryEIAS + acceleration2) / 100);
 			let FPA = Math.ceil(256 * framesPerDirection1 / frameLengthDivisor1) - 1;
 			let FPA2 = Math.ceil((256 * framesPerDirection2 - FPA * frameLengthDivisor1) / frameLengthDivisor2);
-			if (temp != FPA + FPA2) {
-				temp = FPA + FPA2;
+			if (temp[0] != FPA || temp[1] != FPA2) {
+				temp[0] = FPA;
+				temp[1] = FPA2;
 				accelerationTable.set(acceleration, FPA + "/" + FPA2);
 				console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2);
 			}
 		}
 
-		displayTableInfo("Frenzy is slightly off in some cases, working on fixing it.");
-
 		displayBreakpoints(accelerationTable);
+
+		displayTableInfo("Note: For Frenzy, if the first swing misses, the second swing will use the first swing's frame length.");
 
 		console.log(" -- end displayFrenzyTables -- ");
 
@@ -892,6 +881,68 @@ function load() {
 
 	}
 
+	function displayFuryTable() {
+
+		console.log(" -- start displayFuryTable -- ");
+
+		let weapon = primaryWeapon;
+		let weaponType = weapon.type;
+		let framesPerDirection1 = 7;
+		let framesPerDirection2 = 13;
+		let framesPerDirectionHuman = calculateFramesPerDirection(weaponType);
+		let animationSpeed = 240;//calculateAnimationSpeed(weaponType);
+		let startingFrame = getStartingFrame(weaponType);
+	
+		let WSM = getWSM(true);
+		let EIAS = calculateEIAS(WSM, 0);
+		let rollbackFactor = 30;
+		console.log("framesPerDirection1: " + framesPerDirection1);
+		console.log("framesPerDirection2: " + framesPerDirection2);
+		console.log("animationSpeed: " + animationSpeed);
+		console.log("startingFrame: " + startingFrame);
+		console.log("WSM: " + WSM);
+		console.log("EIAS: " + EIAS);
+		console.log("rollbackFactor: " + rollbackFactor);
+
+		let accelerationTable = new Map();
+
+		let temp = new Array(5);
+		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
+			let frameLengthDivisor = Math.floor(Math.floor((animationSpeed * limitEIAS(EIAS + acceleration) / 100)) * ((framesPerDirection2 * 256)/(framesPerDirectionHuman * animationSpeed)));
+			let FPA = Math.ceil(256 * (framesPerDirection1 - startingFrame) / frameLengthDivisor);
+			let rollback = Math.floor(Math.floor((256 * startingFrame + frameLengthDivisor * FPA) / 256) * rollbackFactor / 100);
+			let FPA2 = Math.ceil(256 * (framesPerDirection1 - rollback) / frameLengthDivisor);
+			let rollback2 = Math.floor(Math.floor((256 * rollback + frameLengthDivisor * FPA2) / 256) * rollbackFactor / 100);
+			let FPA3 = Math.ceil(256 * (framesPerDirection1 - rollback2) / frameLengthDivisor);
+			let rollback3 = Math.floor(Math.floor((256 * rollback2 + frameLengthDivisor * FPA3) / 256) * rollbackFactor / 100);
+			let FPA4 = Math.ceil(256 * (framesPerDirection1 - rollback3) / frameLengthDivisor);
+			let rollback4 = Math.floor(Math.floor((256 * rollback3 + frameLengthDivisor * FPA4) / 256) * rollbackFactor / 100);
+			let FPA5 = Math.ceil(256 * (framesPerDirection2 - rollback4) / frameLengthDivisor) - 1;
+			if (temp[0] != FPA || temp[1] != FPA2 || temp[2] != FPA3 || temp[3] != FPA4 || temp[4] != FPA5) {
+				temp[0] = FPA;
+				temp[1] = FPA2;
+				temp[2] = FPA3;
+				temp[3] = FPA4;
+				temp[4] = FPA5;
+				if (FPA2 == FPA3) {
+					accelerationTable.set(acceleration, FPA + "+(" + FPA2 + ")+" + FPA5);
+				} else if (FPA2 == FPA4) {
+					accelerationTable.set(acceleration, FPA + "+" + FPA2 + "+(" + FPA3 + "+" + FPA4 + ")+" + FPA5);
+				} else {
+					accelerationTable.set(acceleration, FPA + "+" + FPA2 + "+(" + FPA3 + ")+" + FPA5);
+				}
+				//console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3 + ",FPA4=" + FPA4 + ",FPA5=" + FPA5);
+			}
+		}
+
+		displayTableInfo("Fury is very likely right. Testing still needs to happen. It's possible for some breakpoints to be off by 1 EIAS (can be 1-5 gear IAS or 1 IAS from skills).");
+
+		displayBreakpoints(accelerationTable);
+
+		console.log(" -- end displayFuryTable -- ");
+
+	}
+
 	function displayComplexRollbackTable() {
 
 		console.log(" -- start displayComplexRollbackTable -- ");
@@ -902,13 +953,9 @@ function load() {
 		let framesPerDirection2 = calculateFramesPerDirection(weaponType);
 		let animationSpeed = calculateAnimationSpeed(weaponType);
 		let startingFrame = getStartingFrame(weaponType);
-		if (skill == FURY) {
-			framesPerDirection1 = 9;
-			displayTableInfo("Fury is wrong. It is fairly close in most regards, but all breakpoints are off by a varying amount.")
-		}
 		let WSM = getWSM(true);
 		let EIAS = calculateEIAS(WSM, 0);
-		let rollbackFactor = skill == STRAFE ? 50 : 30;
+		let rollbackFactor = 50;
 		console.log("framesPerDirection1: " + framesPerDirection1);
 		console.log("framesPerDirection2: " + framesPerDirection2);
 		console.log("animationSpeed: " + animationSpeed);
@@ -923,7 +970,7 @@ function load() {
 		let tempEven = new Array(4);
 		let tempOdd = new Array(5);
 		for (let acceleration = 0; acceleration <= maxAccelerationIncrease; acceleration++) {
-			let frameLengthDivisor = Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100);
+			let frameLengthDivisor = Math.floor(Math.floor(animationSpeed * limitEIAS(EIAS + acceleration) / 100));
 			let FPA = Math.ceil(256 * (framesPerDirection1 - startingFrame) / frameLengthDivisor);
 			let rollback = Math.floor(Math.floor((256 * startingFrame + frameLengthDivisor * FPA) / 256) * rollbackFactor / 100);
 			let FPA2 = Math.ceil(256 * (framesPerDirection1 - rollback) / frameLengthDivisor);
@@ -968,7 +1015,7 @@ function load() {
 		}
 
 		if (skill == STRAFE) displayBreakpoints(accelerationEvenTable);
-		if (weaponType == CROSSBOW || skill == FURY) displayBreakpoints(accelerationOddTable);
+		if (weaponType == CROSSBOW) displayBreakpoints(accelerationOddTable);
 
 		console.log(" -- end displayComplexRollbackTable -- ");
 
@@ -1059,19 +1106,25 @@ function load() {
 				//console.log("acceleration=" + accelerationNeeded + ",FPA=" + FPA + ",level=" + level);
 			}
 		} else if (tableVariable == TABLE_VARIABLE_IAS || tableVariable == TABLE_VARIABLE_PRIMARY_WEAPON_IAS || tableVariable == TABLE_VARIABLE_SECONDARY_WEAPON_IAS) {
-			variableLabel = tableVariable == TABLE_VARIABLE_IAS ? "IAS" : "WIAS";
-			let firstWasSet = false;
-			for (const [accelerationNeeded, FPA] of table) {
+			if (skill == FURY && CHECKBOX_2_4_CHANGES.checked && false) {
+				variableLabel = "EIAS";
+				newTable = table;
+			} else {
+				variableLabel = tableVariable == TABLE_VARIABLE_IAS ? "IAS" : "WIAS";
+				let firstWasSet = false;
+				for (const [accelerationNeeded, FPA] of table) {
 
-				let IAS = convertEIAStoIAS(accelerationNeeded);
-				if (wereform != HUMAN && !CHECKBOX_2_4_CHANGES.checked) IAS -= getWeaponIAS(true);
+					let IAS = convertEIAStoIAS(accelerationNeeded);
+					if (wereform != HUMAN && !CHECKBOX_2_4_CHANGES.checked) IAS -= getWeaponIAS(true);
 
-				if (IAS > 0) firstWasSet = true;
-				else if (IAS <= 0 && firstWasSet) break;
-				else if (IAS < 0) IAS = 0;
+					if (IAS > 0) firstWasSet = true;
+					else if (IAS <= 0 && firstWasSet) break;
+					else if (IAS < 0) IAS = 0;
 
-				newTable.set(IAS, FPA);
+					newTable.set(IAS, FPA);
+				}
 			}
+			
 		} else {
 			displayTableInfo("Missing functionality, probably coming soon.")
 			console.log("conversion not yet implemented");
