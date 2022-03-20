@@ -898,6 +898,7 @@ function load() {
 		let rollbackFactor = 30;
 		console.log("framesPerDirection1: " + framesPerDirection1);
 		console.log("framesPerDirection2: " + framesPerDirection2);
+		console.log("framesPerDirectionHuman: " + framesPerDirectionHuman);
 		console.log("animationSpeed: " + animationSpeed);
 		console.log("startingFrame: " + startingFrame);
 		console.log("WSM: " + WSM);
@@ -931,7 +932,7 @@ function load() {
 				} else {
 					accelerationTable.set(acceleration, FPA + "+" + FPA2 + "+(" + FPA3 + ")+" + FPA5);
 				}
-				//console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3 + ",FPA4=" + FPA4 + ",FPA5=" + FPA5);
+				console.log("acceleration=" + acceleration + ",FPA=" + FPA + ",FPA2=" + FPA2 + ",FPA3=" + FPA3 + ",FPA4=" + FPA4 + ",FPA5=" + FPA5);
 			}
 		}
 
