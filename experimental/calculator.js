@@ -63,7 +63,7 @@ function load() {
 	const SKILL_BURST_OF_SPEED = new AttackSpeedSkill(NUMBER_BURST_OF_SPEED, 15, 45, 60, TABLE_VARIABLE_BURST_OF_SPEED, () => character == ASSASSIN);
 	const SKILL_WEREWOLF = new AttackSpeedSkill(NUMBER_WEREWOLF, 10, 70, 80, TABLE_VARIABLE_WEREWOLF, () => wereform == WEREWOLF);
 	const SKILL_MAUL = new AttackSpeedSkill(NUMBER_MAUL, -1, 3, 99, TABLE_VARIABLE_MAUL, () => wereform == WEREBEAR);
-	const SKILL_FRENZY = new AttackSpeedSkill(NUMBER_FRENZY, 0, 50, 50, TABLE_VARIABLE_FRENZY, () => character == BARBARIAN);
+	const SKILL_FRENZY = new AttackSpeedSkill(NUMBER_FRENZY, 0, 50, 50, TABLE_VARIABLE_FRENZY, () => character == BARBARIAN || (CHECKBOX_2_4_CHANGES.checked && character == MERC_A5));
 	const SKILL_HOLY_FREEZE = new AttackSpeedSkill(NUMBER_HOLY_FREEZE, 25, 35, 60);
 	
 	const MAX_EIAS = 175; // for a brief period of D2R, this limit did not exist. rip bugged ias frames :(
@@ -1490,8 +1490,8 @@ const MERC_A2 = 8;
 const MERC_A5 = 9;
 
 const HUMAN = 0;
-const WEREWOLF = 1;
-const WEREBEAR = 2;
+const WEREBEAR = 1;
+const WEREWOLF = 2;
 
 const SKILLS = new Map();
 const STANDARD = add(new Skill("Standard", false));
