@@ -549,7 +549,10 @@ function load() {
 				currentSkills.push(JAB);
 				break;
 			case MERC_A5:
-				if (isDualWielding) currentSkills.push(FRENZY);
+				if (isDualWielding) {
+					currentSkills.push(FRENZY);
+					currentSkills.push(TAUNT);
+				}
 				else {
 					currentSkills.push(BASH);
 					currentSkills.push(STUN);
@@ -672,7 +675,7 @@ function load() {
 
 			let framesPerDirection1 = framesPerDirection1s[tableIndex];
 
-			let isSecondary = tableIndex === framesPerDirection1s.length - 1 && isDualWielding && (skill == STANDARD || skill == WHIRLWIND);
+			let isSecondary = tableIndex === framesPerDirection1s.length - 1 && isDualWielding && (skill == STANDARD || skill == WHIRLWIND) && isCharacterSelected();
 			if (isSecondary) {
 				WSM = getWSM(false);
 				if (skill != WHIRLWIND) EIAS = calculateEIAS(WSM, getWeaponIAS(false));
@@ -797,16 +800,16 @@ function load() {
 			if (wereform != HUMAN) {
 				if (character != DRUID) {
 					displayTableInfo("No testing has been done for Wereforms on non-Druid classes. No idea if it's right or wrong.");
-				}
-				if (skill == FERAL_RAGE || skill == RABIES || skill == HUNGER) {
-					displayTableInfo("No testing has been done for " + skill.name + " yet. No idea if it's right or wrong.");
 				} else if (skill == FURY) {
 					displayTableInfo("Fury is very likely right. Testing still needs to happen. It's possible for some breakpoints to be off by 1 EIAS (can be 1-5 gear IAS or 1 IAS from skills).");
-				}else {
+				} else {
 					displayTableInfo("No testing has been done for " + skill.name + " yet. No idea if it's right or wrong.");
 				}
+				
 			} else if (skill == IMPALE) {
 				displayTableInfo("Impale has not been modified to reflect its new attack speed buff yet.");
+			} else if (character == MERC_A5 && isDualWielding) {
+				displayTableInfo("No testing has been done for " + skill.name + " yet for the Act 5 Mercenary. No idea if it's right or wrong.");
 			}
 		}
 		if (skill == KICK) {
@@ -865,7 +868,7 @@ function load() {
 		else if (skill == FRENZY) fpds.push(9); // not sure why this is 9, its not a standard framesPerDirection and doesnt seem to be an action frame. startingFrame for frenzy would always be 0, so thats not a factor.
 		else if (skill == DRAGON_TALON || skill == STRAFE || skill == ZEAL || skill == FEND) fpds.push(calculateActionFrame(weaponType));
 		else fpds.push(calculateFramesPerDirection(weaponType));
-		if (wereform == HUMAN) {
+		if (wereform == HUMAN && isCharacterSelected()) {
 			if (skill == STANDARD) {
 				if (weaponType.hasAlternateAnimation(character)) fpds.push(weaponType.getAlternateFramesPerDirection(character));
 				if (isDualWielding) fpds.push(12); // offhands are hardcoded to 12 framesPerDirection ? TODO does this switch with wsm bugging?
@@ -1532,6 +1535,7 @@ const DRAGON_TALON = add(new Skill("Dragon Talon", false));
 const LAYING_TRAPS = add(new Skill("Laying Traps", false));
 const DOUBLE_SWING = add(new Skill("Double Swing", true));
 const FRENZY = add(new Skill("Frenzy", true));
+const TAUNT = add(new Skill("Taunt", false));
 const DOUBLE_THROW = add(new Skill("Double Throw", true));
 const WHIRLWIND = add(new Skill("Whirlwind", false));
 const CONCENTRATE = add(new Skill("Concentrate", false));

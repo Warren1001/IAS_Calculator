@@ -1,5 +1,9 @@
 ## [Experimental Calculator](https://warren1001.github.io/IAS_Calculator/experimental/)
 
+### v0.14.5
+- Fixed bug with dual wielding Act 5 Mercenary.
+- Updated some infos.
+
 ### v0.14.4
 - Fixed EIAS iteration in some instances to show accurate breakpoints possibilities.
 
