@@ -1118,24 +1118,24 @@ function load() {
 			"2.4Changes": CHECKBOX_2_4_CHANGES.checked
 		};*/
 		//let encodedData = btoa(JSON.stringify(data));
-		let data = character + "," +
-			wereform + "," +
-			primaryWeapon.name + "," +
-			NUMBER_PRIMARY_WEAPON_IAS.value + "," +
-			(CHECKBOX_IS_ONE_HANDED.checked ? 1 : 0) + "," +
-			secondaryWeapon.name + "," +
-			NUMBER_SECONDARY_WEAPON_IAS.value + "," +
-			skill.name + "," +
-			tableVariable.value + "," +
-			NUMBER_IAS.value + "," +
-			NUMBER_FANATICISM.value + "," +
-			NUMBER_BURST_OF_SPEED.value + "," +
-			NUMBER_WEREWOLF.value + "," +
-			NUMBER_MAUL.value + "," +
-			NUMBER_FRENZY.value + "," +
-			NUMBER_HOLY_FREEZE.value + "," +
-			(CHECKBOX_DECREPIFY.checked ? 1 : 0) + "," +
-			(CHECKBOX_WSM_BUGGED.checked ? 1 : 0) + "," +
+		let data = character + LINK_SEPARATOR +
+			wereform + LINK_SEPARATOR +
+			primaryWeapon.name + LINK_SEPARATOR +
+			NUMBER_PRIMARY_WEAPON_IAS.value + LINK_SEPARATOR +
+			(CHECKBOX_IS_ONE_HANDED.checked ? 1 : 0) + LINK_SEPARATOR +
+			secondaryWeapon.name + LINK_SEPARATOR +
+			NUMBER_SECONDARY_WEAPON_IAS.value + LINK_SEPARATOR +
+			skill.name + LINK_SEPARATOR +
+			tableVariable.value + LINK_SEPARATOR +
+			NUMBER_IAS.value + LINK_SEPARATOR +
+			NUMBER_FANATICISM.value + LINK_SEPARATOR +
+			NUMBER_BURST_OF_SPEED.value + LINK_SEPARATOR +
+			NUMBER_WEREWOLF.value + LINK_SEPARATOR +
+			NUMBER_MAUL.value + LINK_SEPARATOR +
+			NUMBER_FRENZY.value + LINK_SEPARATOR +
+			NUMBER_HOLY_FREEZE.value + LINK_SEPARATOR +
+			(CHECKBOX_DECREPIFY.checked ? 1 : 0) + LINK_SEPARATOR +
+			(CHECKBOX_WSM_BUGGED.checked ? 1 : 0) + LINK_SEPARATOR +
 			(CHECKBOX_2_4_CHANGES.checked ? 1 : 0);
 		let link = window.location.href;
 		if (link.includes("?data=")) link = link.substring(0, link.indexOf("?data="));
@@ -1355,6 +1355,8 @@ function addTableHeader(table, variableLabel) {
 	table.appendChild(tableRow);
 }
 
+const LINK_SEPARATOR = '%';
+
 class DataParser {
 
 	constructor(data) {
@@ -1364,7 +1366,7 @@ class DataParser {
 
 	readToken() {
 		let string = "";
-		while (this.index < this.data.length && this.data[this.index] != ',') {
+		while (this.index < this.data.length && this.data[this.index] != LINK_SEPARATOR) {
 			string += this.data[this.index++];
 		}
 		this.index++;
