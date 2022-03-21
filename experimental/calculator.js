@@ -779,26 +779,24 @@ function load() {
 		if (CHECKBOX_2_4_CHANGES.checked) {
 			if (wereform != HUMAN) {
 				if (character != DRUID) {
-					displayTableInfo("No testing has been done for Wereforms on non-Druid classes. If they work the same way as Druid they should be correct.");
+					displayTableInfo("No testing has been done for Wereforms on non-Druid classes. No idea if it's right or wrong.");
 				}
 				if (skill == FERAL_RAGE || skill == RABIES || skill == HUNGER) {
-					displayTableInfo("Feral Rage, Rabies, and Hunger have not been tested for 2.4 yet and are likely wrong.");
-				} else {
-					displayTableInfo(skill.name + " should be correct for 2.4, but only a small-medium sample size has been tested.");
+					displayTableInfo("No testing has been done for " + skill.name + " yet. No idea if it's right or wrong.");
+				} else if (skill == FURY) {
+					displayTableInfo("Fury is very likely right. Testing still needs to happen. It's possible for some breakpoints to be off by 1 EIAS (can be 1-5 gear IAS or 1 IAS from skills).");
+				}else {
+					displayTableInfo("No testing has been done for " + skill.name + " yet. No idea if it's right or wrong.");
 				}
 			} else if (skill == IMPALE) {
 				displayTableInfo("Impale has not been modified to reflect its new attack speed buff yet.");
 			}
-		} else {
-			if (skill == KICK) {
-				displayTableInfo("Kicking barrels/etc. Not tested yet, good chance of it being wrong.");
-			} else if (skill == FURY) {
-				displayTableInfo("Fury is very likely right. Testing still needs to happen. It's possible for some breakpoints to be off by 1 EIAS (can be 1-5 gear IAS or 1 IAS from skills).");
-			} else if (skill == FRENZY) {
-				displayTableInfo("Note: For Frenzy, if the first swing misses, the second swing will use the first swing's frame length.");
-			}
 		}
-
+		if (skill == KICK) {
+			displayTableInfo("Kicking barrels/etc. Not tested yet, good chance of it being wrong.");
+		} else if (skill == FRENZY) {
+			displayTableInfo("Note: For Frenzy, if the first swing misses, the second swing will use the first swing's frame length.");
+		}
 	}
 
 	function formatRollbackHitLength(hitLengths) {
