@@ -1,5 +1,8 @@
 ## [Experimental Calculator](https://warren1001.github.io/IAS_Calculator/experimental/)
 
+### v0.14.4
+- Fixed EIAS iteration in some instances to show accurate breakpoints possibilities.
+
 ### v0.14.3
 - Changed link data separator so it won't break in Twitch Chat.
 

@@ -209,7 +209,11 @@ function load() {
 		if (isCharacterSelected()) {
 
 			if (tableVariable == TABLE_VARIABLE_IAS) {
-				maxAccelerationIncrease = MAX_IAS_ACCELERATION_CHARACTER;
+				if (primaryWeapon.type.isOneHand || (character == BARBARIAN || character == MERC_A5)) {
+					maxAccelerationIncrease = MAX_IAS_ACCELERATION_CHARACTER;
+				} else {
+					maxAccelerationIncrease = MAX_IAS_ACCELERATION_CHARACTER_TWO_HANDED;
+				}
 			}
 
 			unhideElement(CONTAINER_WEREFORM);
@@ -317,6 +321,18 @@ function load() {
 	function onPrimaryWeaponChange(updateTable) {
 		primaryWeapon = WEAPONS.get(SELECT_PRIMARY_WEAPON.value);
 		let type = primaryWeapon.type;
+
+		if (tableVariable == TABLE_VARIABLE_IAS) {
+			if (isCharacterSelected()) {
+				if (type.isOneHand || (character == BARBARIAN || character == MERC_A5)) {
+					maxAccelerationIncrease = MAX_IAS_ACCELERATION_CHARACTER;
+				} else {
+					maxAccelerationIncrease = MAX_IAS_ACCELERATION_CHARACTER_TWO_HANDED;
+				}
+			} else {
+				maxAccelerationIncrease = MAX_IAS_ACCELERATION_MERCENARY;
+			}
+		}
 
 		if (character == BARBARIAN && type == TWO_HANDED_SWORD && !isDualWielding) {
 			unhideElement(CONTAINER_IS_ONE_HANDED);
@@ -668,6 +684,7 @@ function load() {
 			console.log(tableIndex, "EIAS=", EIAS);
 
 			let maxAccelerationIncreaseAdjustment = Math.max(0, EIAS - ((CHECKBOX_2_4_CHANGES.checked && wereform != HUMAN ? MAX_EIAS_WEREFORMS : MAX_EIAS) - maxAccelerationIncrease));
+			console.log(tableIndex, "maxAccelerationIncreaseAdjustment=", maxAccelerationIncreaseAdjustment);
 
 			for (let acceleration = 0; acceleration <= (maxAccelerationIncrease - maxAccelerationIncreaseAdjustment); acceleration++) {
 				
@@ -1355,7 +1372,7 @@ function addTableHeader(table, variableLabel) {
 	table.appendChild(tableRow);
 }
 
-const LINK_SEPARATOR = '%';
+const LINK_SEPARATOR = '-';
 
 class DataParser {
 
