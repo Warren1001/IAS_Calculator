@@ -6,6 +6,7 @@
 - All dual wielding skills should be correct.
 - All breakpoints where EIAS would be <0 should be correct.
 - All sequence skills (Frenzy, Double Swing, Dragon Claw, Fists of Fire, A5 Merc Normal Attack, etc) should be correct.
+- Impale should be correct.
 - Strafe bug was fixed in D2R/2.4, 2 frame attack is actually reachable.
 - Whirlwind is correct. Whirlwind does hit on the 4th and 8th frame, the hit-check bug works differently than people think it does.
 
