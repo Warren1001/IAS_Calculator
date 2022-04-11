@@ -749,10 +749,8 @@ function load() {
 		} else if (character == MERC_A5 && isDualWielding) {
 			displayTableInfo("No testing has been done for " + skill.name + " yet for the Act 5 Mercenary. No idea if it's right or wrong.");
 		} else if (skill == FRENZY) {
-			//displayTableInfo("Note: For Frenzy, if the first swing misses, the second swing will use the first swing's frame length.");
-		}
-
-		if (isDualWielding && skill == STANDARD && character != MERC_A5) {
+			displayTableInfo("With the dual wield attack speed changes, Frenzy got a minor buff.");
+		} else if (isDualWielding && skill == STANDARD && character != MERC_A5) {
 			displayTableInfo("Off hand's hit's length has not been tested, could be wrong.");
 		}
 
