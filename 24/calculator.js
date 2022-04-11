@@ -1248,6 +1248,8 @@ function addTableHeader(table, variableLabel) {
 
 	let tdFPA = document.createElement("th");
 	tdFPA.innerHTML = "FPA";
+	tdFPA.title = "Frames Per Animation (not Attack/Hit)";
+	tdFPA.className = "hoverable";
 
 	tableRow.appendChild(thVariableLabel);
 	tableRow.appendChild(tdFPA);

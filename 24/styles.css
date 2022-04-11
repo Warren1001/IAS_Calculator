@@ -31,6 +31,11 @@ p {
   max-width: 90%;
 }
 
+.hoverable {
+  color: #CC5500;
+  text-decoration: underline #CC5500;
+}
+
 table {
   margin-left: auto;
   margin-right: auto;
