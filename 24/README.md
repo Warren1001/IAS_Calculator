@@ -1,5 +1,14 @@
 ## [2.4 Calculator](https://warren1001.github.io/IAS_Calculator/24/)
 
+### v0.16.0
+- Fixed NaN for unarmed Mercenaries.
+- Tested Kick (KK) animations (Barrels, etc), they should all be correct given the information available.
+- Added Dodge animation breakpoints, 'Dodge' is the same as Avoid and Evade. Dodge is only impacted by SIAS, so Fanaticism is the only way to speed it up, and Holy Freeze, Chilled, and Slows Target is the only way to slow it down.
+- Added Slows Target modifier for PvP. Maximum is 50%.
+- Added Chilled modifier (cold damage (chill length)/freeze length (chill length)/Freezes Target (chill length) without CBF), always -50 SIAS.
+- Fixed a bug where Holy Freeze wasn't being affected by its maximum slow value (maximum slow is -50 against players).
+- Modified some infos.
+
 ### v0.15.0
 - Literally everything should be correct for 2.4, with the exception of off-hand Normal Attack for Characters (untested).
 - All wereform animations should be correct in all cases.
