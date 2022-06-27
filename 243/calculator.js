@@ -680,10 +680,14 @@ function load() {
 		console.log("speedReduction=", speedReduction);
 		console.log("offset=", offset);
 
+		let accelerationTables1 = [];
+
 		for (let tableIndex = 0; tableIndex < framesPerDirection1s.length; tableIndex++) {
 
 			let accelerationTables = [new Map()];
 			let previousFrameLengths = [0];
+
+			accelerationTables1.push(accelerationTables);
 
 			if (skill == STRAFE || skill == FEND) {
 				accelerationTables.push(new Map());
@@ -723,7 +727,7 @@ function load() {
 
 				//console.log(tableIndex, acceleration, "speedIncrease=", speedIncrease);
 
-				if (skill == WHIRLWIND) firstHitLength = calculateWhirlwindFPA(firstHitLength);
+				//if (skill == WHIRLWIND) firstHitLength = calculateWhirlwindFPA(firstHitLength);
 
 				if (skill == FURY || skill == STRAFE || skill == FEND || skill == DRAGON_TALON || skill == ZEAL) {
 
@@ -772,22 +776,86 @@ function load() {
 					previousFrameLengths[0] = firstHitLength;
 					accelerationTables[0].set(acceleration + convertIAStoEIAS(getWeaponIAS(!isSecondary)), firstHitLength.toString());
 
-					if (skill == WHIRLWIND && firstHitLength == 4) break;
+					//if (skill == WHIRLWIND && firstHitLength == 4) break;
 
 				}
 
 			}
 
-			if (skill != STRAFE || primaryWeapon.type == CROSSBOW) {
-				//console.log("accelerationTables[0]=", accelerationTables[0]);
-				displayBreakpoints(accelerationTables[0]);
-			}
-			if (accelerationTables.length > 1) {
-				displayBreakpoints(accelerationTables[1]);
-			}
-
 		}
 
+		if (skill == WHIRLWIND && isDualWielding) {
+			displayBreakpoints(mergeAccelerationTables(accelerationTables1));
+		} else {
+			for (const accelerationTables of accelerationTables1) {
+				if (skill != STRAFE || primaryWeapon.type == CROSSBOW) {
+					//console.log("accelerationTables[0]=", accelerationTables[0]);
+					displayBreakpoints(accelerationTables[0]);
+				}
+				if (accelerationTables.length > 1) {
+					displayBreakpoints(accelerationTables[1]);
+				}
+			}
+			
+		}
+
+	}
+
+	function mergeAccelerationTables(accelerationTables) {
+		//console.log("accelerationTables[0]=" + [...accelerationTables[0].entries()]);
+		//console.log("accelerationTables[1]=" + [...accelerationTables[1].entries()]);
+		let merge = [];
+		let leftLastFPA = 0;
+		let rightLastFPA = 0;
+		let averageLastFPA = 0;
+		let mergedTable = new Map();
+		for (const [acceleration, FPA] of accelerationTables[0][0]) {
+			//console.log("accelerationTables[0]: " + acceleration + "," + FPA);
+			if (leftLastFPA == 0) leftLastFPA = FPA;
+			else merge.push([0, acceleration, parseInt(FPA, 10)]);
+		}
+		for (const [acceleration, FPA] of accelerationTables[1][0]) {
+			//console.log("accelerationTables[1]: " + acceleration + "," + FPA);
+			if (rightLastFPA == 0) rightLastFPA = FPA;
+			else merge.push([1, acceleration, parseInt(FPA, 10)]);
+		}
+		averageLastFPA = averageToCeiling(leftLastFPA, rightLastFPA)
+		merge.sort((a, b) => a[1] - b[1]);
+		mergedTable.set(0, averageLastFPA);
+		for (const a of merge) {
+			//console.log("a=" + a);
+			let hand = a[0];
+			let acceleration = a[1];
+			let FPA = a[2];
+			if (hand == 0) {
+				//console.log("l " + rightLastFPA + " > " + FPA);
+				if (leftLastFPA > FPA) {
+					leftLastFPA = FPA;
+					//console.log("lFPA=" + FPA);
+					let average = averageToCeiling(FPA, rightLastFPA);
+					if (average < averageLastFPA) {
+						averageLastFPA = average;
+						mergedTable.set(acceleration, average);
+					}
+				}
+			} else if (hand == 1) {
+				//console.log("r " + rightLastFPA + " > " + FPA);
+				if (rightLastFPA > FPA) {
+					rightLastFPA = FPA;
+					//console.log("rFPA=" + FPA);
+					let average = averageToCeiling(leftLastFPA, FPA);
+					if (average < averageLastFPA) {
+						averageLastFPA = average;
+						mergedTable.set(acceleration, average);
+					}
+				}
+			}
+		}
+		return mergedTable;
+	}
+
+	function averageToCeiling(a, b) {
+		return Math.ceil((parseInt(a, 10) + parseInt(b, 10)) / 2);
 	}
 
 	function preinfo() {
@@ -901,6 +969,7 @@ function load() {
 		//console.log("SIAS: " + SIAS);
 		let IAS = wIAS;
 		if (tableVariable != TABLE_VARIABLE_IAS) IAS += parseInt(NUMBER_IAS.value);
+		if (skill == WHIRLWIND) return IAS - WSM;
 		let IAS_EIAS = convertIAStoEIAS(IAS);
 		return limitEIAS(SIAS - WSM + IAS_EIAS);
 	}
@@ -949,7 +1018,7 @@ function load() {
 		let variableLabel = undefined;
 
 		if (skill == WHIRLWIND) {
-			variableLabel = "WIAS";
+			variableLabel = "IAS";
 		} else if (isTableVariableSkill()) {
 			variableLabel = skill == DODGE ? "Fanaticism" : "Skill Level";
 			let skillData = getTableVariableSkill();
