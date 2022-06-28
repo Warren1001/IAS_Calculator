@@ -727,7 +727,7 @@ function load() {
 
 				//console.log(tableIndex, acceleration, "speedIncrease=", speedIncrease);
 
-				//if (skill == WHIRLWIND) firstHitLength = calculateWhirlwindFPA(firstHitLength);
+				if (skill == WHIRLWIND) firstHitLength = calculateWhirlwindFPA(firstHitLength);
 
 				if (skill == FURY || skill == STRAFE || skill == FEND || skill == DRAGON_TALON || skill == ZEAL) {
 
@@ -776,7 +776,7 @@ function load() {
 					previousFrameLengths[0] = firstHitLength;
 					accelerationTables[0].set(acceleration + convertIAStoEIAS(getWeaponIAS(!isSecondary)), firstHitLength.toString());
 
-					//if (skill == WHIRLWIND && firstHitLength == 4) break;
+					if (skill == WHIRLWIND && firstHitLength == 4) break;
 
 				}
 
