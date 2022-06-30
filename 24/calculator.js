@@ -545,7 +545,7 @@ function load() {
 						currentSkills.push(BASH);
 						currentSkills.push(STUN);
 					}
-					if ((type == ONE_HANDED_THRUSTING || type == THROWING) && isDualWielding && (secondaryWeapon.type == ONE_HANDED_THRUSTING || secondaryWeapon.type == THROWING)) {
+					if ((itemClass == CLASS_THROWING || itemClass == CLASS_JAVELIN) && isDualWielding && (secondaryWeapon.itemClass == CLASS_THROWING || secondaryWeapon.itemClass == CLASS_JAVELIN)) {
 						currentSkills.push(DOUBLE_THROW);
 					}
 				} else if (wereform == WEREWOLF) {
