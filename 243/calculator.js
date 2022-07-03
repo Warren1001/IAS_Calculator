@@ -92,6 +92,7 @@ function load() {
 	setSkills();
 	loadFromParams();
 	displayFrames();
+	//doTest();
 
 	function onTableVariableChange(updateTable) {
 		let newTableVariable = document.querySelector('input[name="tableVariable"]:checked');
@@ -364,42 +365,7 @@ function load() {
 		let previousSkill = skill;
 		skill = SKILLS.get(SELECT_SKILL.value);
 
-		if (skill == WHIRLWIND) {
-			hideElement(CONTAINER_TABLE_VARIABLE);
-			hideElement(CONTAINER_WEREFORM);
-			hideElement(CONTAINER_PRIMARY_WEAPON_IAS);
-			hideElement(CONTAINER_SECONDARY_WEAPON_IAS);
-			hideElement(CONTAINER_FANATICISM);
-			hideElement(CONTAINER_BURST_OF_SPEED);
-			hideElement(CONTAINER_FRENZY);
-			hideElement(CONTAINER_HOLY_FREEZE);
-			hideElement(CONTAINER_SLOWED_BY);
-			hideElement(CONTAINER_DECREPIFY);
-			hideElement(CONTAINER_CHILLED);
-		} else if (previousSkill == WHIRLWIND) {
-			unhideElement(CONTAINER_TABLE_VARIABLE);
-			if (isCharacterSelected()) unhideElement(CONTAINER_WEREFORM);
-			if (tableVariable != TABLE_VARIABLE_FANATICISM) unhideElement(CONTAINER_FANATICISM);
-			if (character == ASSASSIN && tableVariable != TABLE_VARIABLE_BURST_OF_SPEED) unhideElement(CONTAINER_BURST_OF_SPEED);
-			if (character == BARBARIAN && tableVariable != TABLE_VARIABLE_FRENZY) unhideElement(CONTAINER_FRENZY);
-			unhideElement(CONTAINER_HOLY_FREEZE);
-			unhideElement(CONTAINER_SLOWED_BY);
-			unhideElement(CONTAINER_DECREPIFY);
-			unhideElement(CONTAINER_CHILLED);
-
-			if (skill == FRENZY) {
-				unhideElement(CONTAINER_TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
-				unhideElement(CONTAINER_TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
-			} else {
-				hideElement(CONTAINER_TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
-				hideElement(CONTAINER_TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
-				if (tableVariable == TABLE_VARIABLE_PRIMARY_WEAPON_IAS || tableVariable == TABLE_VARIABLE_SECONDARY_WEAPON_IAS) {
-					TABLE_VARIABLE_IAS.checked = true;
-					onTableVariableChange(false);
-				}
-			}
-
-		} else if (skill == DODGE) {
+		if (skill == DODGE) {
 			hideElement(CONTAINER_TABLE_VARIABLE);
 			hideElement(CONTAINER_PRIMARY_WEAPON_IAS);
 			hideElement(CONTAINER_SECONDARY_WEAPON_IAS);
@@ -660,7 +626,7 @@ function load() {
 		let framesPerDirectionHuman = calculateFramesPerDirection(primaryWeapon.type);
 		let framesPerDirection1s = fpd1(primaryWeapon.type);
 		let framesPerDirection2 = fpd2(primaryWeapon.type);
-		let framesPerDirection3 = wereform == WEREWOLF ? 13 : 12;
+		let framesPerDirection3 = fpd3(primaryWeapon.type);
 		let animationSpeed = as(primaryWeapon.type);
 		let startingFrame = getStartingFrame(primaryWeapon.type);
 		let WSM = getWSM(true);
@@ -669,8 +635,10 @@ function load() {
 		let offset = skill == IMPALE || skill == JAB || skill == FISTS_OF_FIRE || skill == CLAWS_OF_THUNDER
 			|| skill == BLADES_OF_ICE || skill == DRAGON_CLAW || skill == DOUBLE_SWING
 			|| skill == DOUBLE_THROW || skill == FURY || skill == DRAGON_TALON
-			|| skill == ZEAL || skill == FEND || skill == STRAFE || skill == FRENZY ? 0 : 1;
-
+			|| skill == ZEAL || skill == FEND || skill == STRAFE || skill == FRENZY
+			//|| skill == WHIRLWIND //maybe needed?
+			? 0 : 1;
+		if (skill == WHIRLWIND) speedReduction = framesPerDirectionHuman / framesPerDirection3;
 		console.log("framesPerDirectionHuman=", framesPerDirectionHuman);
 		console.log("framesPerDirection1s=", framesPerDirection1s);
 		console.log("framesPerDirection2=", framesPerDirection2);
@@ -699,9 +667,13 @@ function load() {
 			let isSecondary = tableIndex == framesPerDirection1s.length - 1 && isDualWielding && (skill == STANDARD || skill == WHIRLWIND) && isCharacterSelected();
 			if (isSecondary) {
 				WSM = getWSM(false);
-				if (skill != WHIRLWIND) EIAS = calculateEIAS(false);
+				/*if (skill != WHIRLWIND)*/ EIAS = calculateEIAS(false);
+				framesPerDirection3 = fpd3(secondaryWeapon.type);
+				framesPerDirectionHuman = calculateFramesPerDirection(secondaryWeapon.type);
+				if (skill == WHIRLWIND) speedReduction = framesPerDirectionHuman / framesPerDirection3;
+				else speedReduction = framesPerDirection3 / framesPerDirectionHuman;
 			}
-			if (skill == WHIRLWIND) EIAS = -WSM;
+			//if (skill == WHIRLWIND) EIAS = -WSM;
 			
 			console.log(tableIndex, "framesPerDirection1=", framesPerDirection1);
 			console.log(tableIndex, "WSM=", WSM);
@@ -710,15 +682,16 @@ function load() {
 
 			let tempMaxAccelerationIncrease = maxAccelerationIncrease;
 
-			if (debug) {
-				tempMaxAccelerationIncrease = limitEIAS(Number.MAX_SAFE_INTEGER) - EIAS;
+			if (true) {
+				//tempMaxAccelerationIncrease = limitEIAS(Number.MAX_SAFE_INTEGER) - EIAS;
+				tempMaxAccelerationIncrease = limitEIAS(Number.MAX_SAFE_INTEGER);
 			}
 
 			for (let acceleration = 0; acceleration <= tempMaxAccelerationIncrease; acceleration++) {
 				
 				let accelerationModified = tableVariable == (isSecondary ? TABLE_VARIABLE_PRIMARY_WEAPON_IAS : TABLE_VARIABLE_SECONDARY_WEAPON_IAS) ? 0 : acceleration;
 				let speedIncrease;
-				if (wereform == HUMAN) {
+				if (wereform == HUMAN && skill != WHIRLWIND) {
 					speedIncrease = trun(animationSpeed * (100 + limitEIAS(EIAS + accelerationModified)) / 100);
 				} else {
 					speedIncrease = trun((animationSpeed + trun(animationSpeed * limitEIAS(EIAS + accelerationModified) / 100)) * speedReduction);
@@ -727,7 +700,7 @@ function load() {
 
 				//console.log(tableIndex, acceleration, "speedIncrease=", speedIncrease);
 
-				if (skill == WHIRLWIND) firstHitLength = calculateWhirlwindFPA(firstHitLength);
+				//if (skill == WHIRLWIND) firstHitLength = calculateWhirlwindFPA(firstHitLength);
 
 				if (skill == FURY || skill == STRAFE || skill == FEND || skill == DRAGON_TALON || skill == ZEAL) {
 
@@ -774,7 +747,8 @@ function load() {
 				} else if (frameLengthsNotEqual(previousFrameLengths[0], firstHitLength)) {
 
 					previousFrameLengths[0] = firstHitLength;
-					accelerationTables[0].set(acceleration + convertIAStoEIAS(getWeaponIAS(!isSecondary)), firstHitLength.toString());
+					accelerationTables[0].set(acceleration + convertIAStoEIAS(getWeaponIAS(!isSecondary)), firstHitLength);
+					console.log("key=" + (acceleration + convertIAStoEIAS(getWeaponIAS(!isSecondary))) + ",firstHitLength=" + firstHitLength);
 
 					if (skill == WHIRLWIND && firstHitLength == 4) break;
 
@@ -789,7 +763,7 @@ function load() {
 		} else {
 			for (const accelerationTables of accelerationTables1) {
 				if (skill != STRAFE || primaryWeapon.type == CROSSBOW) {
-					//console.log("accelerationTables[0]=", accelerationTables[0]);
+					console.log("accelerationTables[0]=", accelerationTables[0]);
 					displayBreakpoints(accelerationTables[0]);
 				}
 				if (accelerationTables.length > 1) {
@@ -798,6 +772,169 @@ function load() {
 			}
 			
 		}
+
+	}
+
+	function dTest(fpd1, fpd3) {
+
+		if (wereform != HUMAN && isDualWielding && skill == STANDARD) {
+			displayTableInfo("Using Normal Attack while dual wielding in a wereform will not let you attack after your first successful attack until you swap weapons, remorph, or enter and exit town. Currently bugged in D2R.");
+			return;
+		}
+
+		preinfo();
+
+		let primaryWeapon = WEAPONS.get("Mythical Sword");
+		let skill = WHIRLWIND;
+
+		let framesPerDirectionHuman = calculateFramesPerDirection(primaryWeapon.type);
+		let framesPerDirection1 = fpd1;
+		let framesPerDirection2 = fpd2(primaryWeapon.type);
+		let framesPerDirection3 = fpd3;
+		let animationSpeed = as(primaryWeapon.type);
+		let startingFrame = getStartingFrame(primaryWeapon.type);
+		let WSM = 0;
+		let EIAS = 0;
+		//let speedReduction = framesPerDirection3 / framesPerDirectionHuman;
+		let speedReduction = framesPerDirectionHuman / framesPerDirection3;
+		let offset = skill == IMPALE || skill == JAB || skill == FISTS_OF_FIRE || skill == CLAWS_OF_THUNDER
+			|| skill == BLADES_OF_ICE || skill == DRAGON_CLAW || skill == DOUBLE_SWING
+			|| skill == DOUBLE_THROW || skill == FURY || skill == DRAGON_TALON
+			|| skill == ZEAL || skill == FEND || skill == STRAFE || skill == FRENZY
+			//|| skill == WHIRLWIND //maybe needed?
+			? 0 : 1;
+
+		console.log("framesPerDirectionHuman=", framesPerDirectionHuman);
+		console.log("framesPerDirection1=", framesPerDirection1);
+		console.log("framesPerDirection2=", framesPerDirection2);
+		console.log("framesPerDirection3=", framesPerDirection3);
+		console.log("animationSpeed=", animationSpeed);
+		console.log("startingFrame=", startingFrame);
+		console.log("speedReduction=", speedReduction);
+		console.log("offset=", offset);
+
+		//let accelerationTables1 = [];
+
+		//for (let tableIndex = 0; tableIndex < framesPerDirection1s.length; tableIndex++) {
+
+			let accelerationTable = [];
+			let previousFrameLengths = [0];
+
+			//accelerationTables1.push(accelerationTables);
+
+			if (skill == STRAFE || skill == FEND) {
+				//accelerationTables.push(new Map());
+				previousFrameLengths.push(0);
+			}
+
+			//let framesPerDirection1 = framesPerDirection1s[tableIndex];
+			let tableIndex = 0;
+
+			/*let isSecondary = tableIndex == framesPerDirection1s.length - 1 && isDualWielding && (skill == STANDARD || skill == WHIRLWIND) && isCharacterSelected();
+			if (isSecondary) {
+				WSM = getWSM(false);
+				/*if (skill != WHIRLWIND) EIAS = calculateEIAS(false);
+				framesPerDirection3 = fpd3(secondaryWeapon.type);
+				framesPerDirectionHuman = calculateFramesPerDirection(secondaryWeapon.type);
+				speedReduction = framesPerDirection3 / framesPerDirectionHuman;
+			}*/
+			//if (skill == WHIRLWIND) EIAS = -WSM;
+			let isSecondary = false;
+			
+			console.log(tableIndex, "framesPerDirection1=", framesPerDirection1);
+			console.log(tableIndex, "WSM=", WSM);
+			console.log(tableIndex, "EIAS=", EIAS);
+			//console.log(tableIndex, "maxAccelerationIncrease=", maxAccelerationIncrease);
+
+			let tempMaxAccelerationIncrease = maxAccelerationIncrease;
+
+			if (true) {
+				//tempMaxAccelerationIncrease = limitEIAS(Number.MAX_SAFE_INTEGER) - EIAS;
+				tempMaxAccelerationIncrease = limitEIAS(Number.MAX_SAFE_INTEGER);
+			}
+
+			for (let acceleration = -30; acceleration <= tempMaxAccelerationIncrease; acceleration++) {
+				
+				let accelerationModified = tableVariable == (isSecondary ? TABLE_VARIABLE_PRIMARY_WEAPON_IAS : TABLE_VARIABLE_SECONDARY_WEAPON_IAS) ? 0 : acceleration;
+				let speedIncrease;
+				if (wereform == HUMAN && skill != WHIRLWIND) {
+					speedIncrease = trun(animationSpeed * (100 + limitEIAS(EIAS + accelerationModified)) / 100);
+				} else {
+					if (skill == WHIRLWIND) {
+						speedIncrease = trun(trun(animationSpeed * (100 + limitEIAS(EIAS + accelerationModified)) / 100) * speedReduction);
+						//speedIncrease = trun((animationSpeed + trun(animationSpeed * limitEIAS(EIAS + accelerationModified) / 100)) * speedReduction);
+					} else {
+						speedIncrease = trun((animationSpeed + trun(animationSpeed * limitEIAS(EIAS + accelerationModified) / 100)) * speedReduction);
+					}
+				}
+				let firstHitLength = Math.ceil(256 * (framesPerDirection1 - startingFrame) / speedIncrease) - offset;
+
+				//console.log(tableIndex, acceleration, "speedIncrease=", speedIncrease);
+
+				//if (skill == WHIRLWIND) firstHitLength = calculateWhirlwindFPA(firstHitLength);
+
+				/*if (skill == FURY || skill == STRAFE || skill == FEND || skill == DRAGON_TALON || skill == ZEAL) {
+
+					let hitLengths = [firstHitLength];
+					let rollbackFactor = rbf();
+
+					let rollbacks = [startingFrame];
+					let hits = rhits();
+
+					for (let hit = 0; hit < hits; hit++) {
+
+						let rollback = parseInt(parseInt((256 * rollbacks[hit] + speedIncrease * hitLengths[hit]) / 256) * (100 - rollbackFactor) / 100);
+						let nextHitLength = Math.ceil(256 * (framesPerDirection1 - rollback) / speedIncrease);
+
+						rollbacks.push(rollback);
+						hitLengths.push(nextHitLength);
+
+						if ((skill == STRAFE || skill == FEND) && hit == hits - 2) {
+
+							let oscillatingOddHitLengths = [...hitLengths];
+
+							let lastHitLength = Math.ceil(256 * (framesPerDirection2 - rollbacks[rollbacks.length - 1]) / speedIncrease) - 1;
+							oscillatingOddHitLengths.push(lastHitLength);
+
+							if (frameLengthsNotEqual(previousFrameLengths[1], oscillatingOddHitLengths)) {
+								previousFrameLengths[1] = oscillatingOddHitLengths;
+								accelerationTables[1].set(acceleration, formatRollbackHitLength(oscillatingOddHitLengths));
+							}
+								
+						}
+
+					}
+
+					let lastHitLength = Math.ceil(256 * (framesPerDirection2 - rollbacks[rollbacks.length - 1]) / speedIncrease) - 1;
+					hitLengths.push(lastHitLength);
+
+					if (frameLengthsNotEqual(previousFrameLengths[0], hitLengths)) {
+						previousFrameLengths[0] = hitLengths;
+						console.log("acceleration=", acceleration);
+						console.log("hitLengths=", hitLengths);
+						accelerationTables[0].set(acceleration, formatRollbackHitLength(hitLengths));
+					}
+
+				} else*/ if (frameLengthsNotEqual(previousFrameLengths[0], firstHitLength)) {
+
+					previousFrameLengths[0] = firstHitLength;
+					//accelerationTables[0].set(acceleration + convertIAStoEIAS(getWeaponIAS(!isSecondary)), firstHitLength);
+					accelerationTable.push([acceleration + EIAS, firstHitLength]);
+					//if (skill == WHIRLWIND && firstHitLength == 4) break;
+
+				}
+
+			}
+
+			return accelerationTable;
+
+		//}
+
+		//if (skill == WHIRLWIND && isDualWielding) {
+		//	return mergeAccelerationTables(accelerationTables1);
+		//} else {
+		//	return accelerationTables1;
+		//}
 
 	}
 
@@ -810,12 +947,12 @@ function load() {
 		let averageLastFPA = 0;
 		let mergedTable = new Map();
 		for (const [acceleration, FPA] of accelerationTables[0][0]) {
-			//console.log("accelerationTables[0]: " + acceleration + "," + FPA);
+			console.log("accelerationTables[0]: " + acceleration + "," + FPA);
 			if (leftLastFPA == 0) leftLastFPA = FPA;
 			else merge.push([0, acceleration, parseInt(FPA, 10)]);
 		}
 		for (const [acceleration, FPA] of accelerationTables[1][0]) {
-			//console.log("accelerationTables[1]: " + acceleration + "," + FPA);
+			console.log("accelerationTables[1]: " + acceleration + "," + FPA);
 			if (rightLastFPA == 0) rightLastFPA = FPA;
 			else merge.push([1, acceleration, parseInt(FPA, 10)]);
 		}
@@ -823,15 +960,15 @@ function load() {
 		merge.sort((a, b) => a[1] - b[1]);
 		mergedTable.set(0, averageLastFPA);
 		for (const a of merge) {
-			//console.log("a=" + a);
+			console.log("a=" + a);
 			let hand = a[0];
 			let acceleration = a[1];
 			let FPA = a[2];
 			if (hand == 0) {
-				//console.log("l " + rightLastFPA + " > " + FPA);
+				console.log("l " + rightLastFPA + " > " + FPA);
 				if (leftLastFPA > FPA) {
 					leftLastFPA = FPA;
-					//console.log("lFPA=" + FPA);
+					console.log("lFPA=" + FPA);
 					let average = averageToCeiling(FPA, rightLastFPA);
 					if (average < averageLastFPA) {
 						averageLastFPA = average;
@@ -839,10 +976,10 @@ function load() {
 					}
 				}
 			} else if (hand == 1) {
-				//console.log("r " + rightLastFPA + " > " + FPA);
+				console.log("r " + rightLastFPA + " > " + FPA);
 				if (rightLastFPA > FPA) {
 					rightLastFPA = FPA;
-					//console.log("rFPA=" + FPA);
+					console.log("rFPA=" + FPA);
 					let average = averageToCeiling(leftLastFPA, FPA);
 					if (average < averageLastFPA) {
 						averageLastFPA = average;
@@ -932,6 +1069,7 @@ function load() {
 				if (isDualWielding) fpds.push(12); // off hand normal attack swings are 12 FPD across the board
 			} else if (skill == WHIRLWIND && isDualWielding) {
 				fpds.push(calculateFramesPerDirection(secondaryWeapon.type));
+				//fpds.push(8);
 			}
 		}
 		return fpds;
@@ -942,6 +1080,78 @@ function load() {
 		if (wereform == WEREWOLF) return 9;
 		if (wereform == WEREBEAR) return 10;
 		return calculateFramesPerDirection(weaponType);
+	}
+
+	function fpd3(weaponType) {
+		if (skill == WHIRLWIND) return weaponType == ONE_HANDED_SWINGING || weaponType == ONE_HANDED_THRUSTING || weaponType == TWO_HANDED_SWORD ? 7 : 9;
+		else if (wereform == WEREWOLF) return 13;
+		else return 12;
+	}
+
+	/*function doTest() {
+		let comp = [[-100, 11], [-17, 10], [-9, 9], [1, 8], [13, 7], [29, 6], [51, 5]];
+		let lastDiff = 10000;
+		let results = [];
+		for (let i = 4; i < 50; i++) {
+			for (let j = 4; j < 100; j++) {
+				let table = dTest(i, j);
+				let currentDiff = 0;
+				let cancel = false;
+				for (let x = 1; x < 7; x++) {
+					if (table.length != 7 || comp[x][1] != table[x][1]) {
+						cancel = true;
+						break;
+					}
+					currentDiff += Math.abs(comp[x][0] - table[x][0])
+				}
+				if (!cancel) {
+					if (currentDiff <= lastDiff) {
+						lastDiff = currentDiff;
+						results.push([lastDiff, i, j, table]);
+					}
+				}
+			}
+		}
+		console.log(results);
+	}*/
+
+	/*function doTest() {
+		let expected = [-17, 9, 1, 13, 29, 51];
+		let fpd = -1;
+		let highest = 0;
+		for (let i = 5; i < 12; i++) {
+			let table = dTest(i, 1);
+			let curr = compare(table, expected);
+			if (curr > highest) {
+				fpd = i;
+				highest = curr;
+			}
+			console.log(i + ":" + table);
+		}
+		console.log("best match: " + fpd);
+	}*/
+
+	/*function doTest() {
+		for (let i = 8; i < 12; i++) {
+			console.log(dTest(calculateFramesPerDirection(WEAPONS.get("Spetum").type), i));
+		}
+	}*/
+
+	function doTest() {
+		console.log(dTest(calculateFramesPerDirection(WEAPONS.get("Mythical Sword").type), 7));
+	}
+
+	function compare(a, b) {
+		let matches = 0;
+		for (let j = 0; j < b.length; j++) {
+			for (let i = 0; i < a.length; i++) {
+				if (a[i][0] === b[j]) {
+					matches++;
+					break;
+				}
+			}
+		}
+		return matches;
 	}
 
 	function as(weaponType) {
@@ -969,7 +1179,7 @@ function load() {
 		//console.log("SIAS: " + SIAS);
 		let IAS = wIAS;
 		if (tableVariable != TABLE_VARIABLE_IAS) IAS += parseInt(NUMBER_IAS.value);
-		if (skill == WHIRLWIND) return IAS - WSM;
+		//if (skill == WHIRLWIND) return IAS - WSM;
 		let IAS_EIAS = convertIAStoEIAS(IAS);
 		return limitEIAS(SIAS - WSM + IAS_EIAS);
 	}
@@ -1013,13 +1223,13 @@ function load() {
 
 	function displayBreakpoints(table, tableName) {
 
-		let newTable = skill == WHIRLWIND ? table : new Map();
+		let newTable = new Map();
 
 		let variableLabel = undefined;
 
-		if (skill == WHIRLWIND) {
+		/*if (skill == WHIRLWIND) {
 			variableLabel = "IAS";
-		} else if (isTableVariableSkill()) {
+		} else */if (isTableVariableSkill()) {
 			variableLabel = skill == DODGE ? "Fanaticism" : "Skill Level";
 			let skillData = getTableVariableSkill();
 			for (const [accelerationNeeded, FPA] of table) {
@@ -1036,6 +1246,7 @@ function load() {
 				let firstWasSet = false;
 				for (const [accelerationNeeded, FPA] of table) {
 					let IAS = convertEIAStoIAS(accelerationNeeded);
+					console.log("accelerationNeeded=" + accelerationNeeded + ",FPA=" + FPA + ",IAS=" + IAS);
 					//if (wereform != HUMAN && !CHECKBOX_2_4_CHANGES.checked) IAS -= getWeaponIAS(true);
 
 					if (IAS > 0) firstWasSet = true;
@@ -1118,7 +1329,9 @@ function load() {
 			SIAS -= 40;
 		} else if ((/*skill == IMPALE || */skill == JAB || skill == FISTS_OF_FIRE ||
 			skill == CLAWS_OF_THUNDER || skill == BLADES_OF_ICE || skill == DRAGON_CLAW ||
-			skill == FRENZY || skill == DOUBLE_THROW) && isCharacterSelected()) { // TODO ?
+			skill == FRENZY || skill == DOUBLE_THROW
+			//|| skill == WHIRLWIND //maybe needed?
+			) && isCharacterSelected()) { // TODO ?
 			SIAS -= 30;
 		}
 
