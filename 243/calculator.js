@@ -1083,7 +1083,7 @@ function load() {
 	}
 
 	function fpd3(weaponType) {
-		if (skill == WHIRLWIND) return weaponType == ONE_HANDED_SWINGING || weaponType == ONE_HANDED_THRUSTING || weaponType == TWO_HANDED_SWORD ? 7 : 9;
+		if (skill == WHIRLWIND) return weaponType == TWO_HANDED || weaponType == TWO_HANDED_THRUSTING || weaponType == BOW || weaponType == CROSSBOW ? 9 : 7;
 		else if (wereform == WEREWOLF) return 13;
 		else return 12;
 	}
