@@ -1,11 +1,11 @@
-## [2.4 Calculator](https://warren1001.github.io/IAS_Calculator/24/)
+## [IAS Calculator](https://warren1001.github.io/IAS_Calculator/)
 
-### v0.18.0
+### v1.0.0
 - Restructured a lot of the code.
 - Redesigned how the UI functions, inputs work top down. Examples:
   - Setting skill to Whirlwind for Barbarian will only let you choose one-handable weapons.
   - Choosing Werebear on any non-Druid class only allows Standard and Kick skills.
-- Fixed a lot of bugs, still a few more to go before full release.
+- Whirlwind is fully updated.
 - Updated info messages again.
 - Added favicon :) (little icon in the tab)
 
