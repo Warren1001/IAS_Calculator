@@ -1,5 +1,17 @@
 ## [2.4 Calculator](https://warren1001.github.io/IAS_Calculator/24/)
 
+### v0.18.0
+- Restructured a lot of the code.
+- Redesigned how the UI functions, inputs work top down. Examples:
+  - Setting skill to Whirlwind for Barbarian will only let you choose one-handable weapons.
+  - Choosing Werebear on any non-Druid class only allows Standard and Kick skills.
+- Fixed a lot of bugs, still a few more to go before full release.
+- Updated info messages again.
+- Added favicon :) (little icon in the tab)
+
+### v0.17.0
+- Updated Whirlwind for Barbarian single-handed after D2R 2.4.3, a bug fix or two.
+
 ### v0.16.0
 - Fixed NaN for unarmed Mercenaries.
 - Tested Kick (KK) animations (Barrels, etc), they should all be correct given the information available.

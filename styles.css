@@ -12,6 +12,30 @@
   float: left;
 }
 
+h2 {
+  margin: 10px 0;
+}
+
+p {
+  margin: 5px 0;
+  margin-top: 0px;
+  word-break: normal;
+  white-space: normal;
+}
+
+.halfWindow {
+  max-width: 45%;
+}
+
+.tablesDesc {
+  max-width: 90%;
+}
+
+.hoverable {
+  color: #CC5500;
+  text-decoration: underline #CC5500;
+}
+
 table {
   margin-left: auto;
   margin-right: auto;
@@ -50,5 +74,5 @@ th, td {
 }
 
 input[type='number'] {
-    width: 40px;
+  width: 40px;
 }

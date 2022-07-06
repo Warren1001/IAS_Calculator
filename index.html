@@ -3,88 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <script defer type="text/javascript" src="calculator.js"></script>
+  <script defer type="module" src="calculator.js"></script>
   <link href="styles.css" rel="stylesheet" type="text/css">
   <title>D2 IAS Calculator</title>
 </head>
 <body>
-  <h2>Public Release - v0.1</h2>
-  <p>If you come across any issues, please message me on Discord (Warren#2433) or <a href="https://github.com/Warren1001/IAS_Calculator/issues">create an issue on the GitHub</a>.</p>
-  <p>If you want to help with testing, I regularly update <a href="https://warren1001.github.io/IAS_Calculator/experimental/">an experimental version</a> when I add or change things.</p>
-  <p>As a note, there are a handful of missing features I still need to add, as well as additional features. Also plan to add more sections for information for those that don't have PhD's in Diablo 2's attack speed system.</p>
-  <div id="calculator">
-    <div id="tableVariableContainer">
-      <input type="radio" id="tableVariableIAS" name="tableVariable" value="IAS" checked>
-      <label for="tableVariableIAS">IAS</label>
-      <div id="tableVariablePrimaryWeaponIASContainer" style="display: none">
-        <input type="radio" id="tableVariablePrimaryWeaponIAS" name="tableVariable" value="Primary Weapon IAS">
-        <label for="tableVariablePrimaryWeaponIAS">Primary Weapon IAS</label>
-      </div>
-      <div id="tableVariableSecondaryWeaponIASContainer" style="display: none">
-        <input type="radio" id="tableVariableSecondaryWeaponIAS" name="tableVariable" value="Secondary Weapon IAS">
-        <label for="tableVariableSecondaryWeaponIAS">Secondary Weapon IAS</label>
-      </div>
-      <input type="radio" id="tableVariableFanaticism" name="tableVariable" value="Fanaticism">
-      <label for="tableVariableFanaticism">Fanaticism</label>
-      <div id="tableVariableBurstOfSpeedContainer" style="display: none">
-        <input type="radio" id="tableVariableBurstOfSpeed" name="tableVariable" value="Burst of Speed">
-        <label for="tableVariableBurstOfSpeed">Burst of Speed</label>
-      </div>
-      <div id="tableVariableWerewolfContainer" style="display: none">
-        <input type="radio" id="tableVariableWerewolf" name="tableVariable" value="Werewolf">
-        <label for="tableVariableWerewolf">Werewolf</label>
-      </div>
-      <div id="tableVariableFrenzyContainer" style="display: none">
-        <input type="radio" id="tableVariableFrenzy" name="tableVariable" value="Frenzy">
-        <label for="tableVariableFrenzy">Frenzy</label>
-      </div>
-      <br>
-    </div>
+  <h2>Work In Progress - v0.18.0</h2>
+  <p>Primarily developed by Warren1001 from Llama's community. You can contact me <a href="https://discord.gg/mrllamasc">on his Discord server</a> or DM me directly on Discord (Warren#2433).</p>
+  <p><a href="https://github.com/Warren1001/IAS_Calculator/tree/master/24">This calculator is open source</a>. <a href="https://github.com/Warren1001/IAS_Calculator/issues">Report a bug if you find one</a>. <a href="https://github.com/Warren1001/IAS_Calculator/blob/master/24/README.md">Changelog</a></p>
+  <p>Every time you visit this page for the first time, or you see mention of me updating this version, please full refresh with CTRL + F5.</p>
+  <br>
+  <div id="calculator" class="halfWindow">
     <label for="characterSelect">Character:</label>
     <select id="characterSelect">
-      <option value=0>Amazon</option>
+      <option value=0 selected>Amazon</option>
       <option value=1>Assassin</option>
       <option value=2>Barbarian</option>
       <option value=3>Druid</option>
       <option value=4>Necromancer</option>
-      <option value=5 selected>Paladin</option>
+      <option value=5>Paladin</option>
       <option value=6>Sorceress</option>
-      <option value=7>Mercenary - A1</option>
-      <option value=8>Mercenary - A2</option>
-      <option value=9>Mercenary - A5</option>
+      <option disabled>───────────</option>
+      <option value=7>Rogue Scout</option>
+      <option value=8>Desert Mercenary</option>
+      <option value=9>Bash Barbarian</option>
+      <option value=10>Frenzy Barbarian</option>
     </select>
+    <br>
     <div id="wereformContainer" style="display: initial">
-      <label for="wereformSelect">Form:</label>
+      <label for="wereformSelect">Wereform:</label>
       <select id="wereformSelect">
-        <option value="None" selected>None</option>
-        <option value="Werebear">Werebear</option>
-        <option style="display: none" value="Werewolf">Werewolf</option>
+        <option value=0 selected>None</option>
+        <option value=1>Werebear</option>
+        <option value=2 style="display: none">Werewolf</option>
       </select>
+      <br>
     </div>
+    <label for="skillSelect">Skill:</label>
+    <select id="skillSelect"></select>
     <br>
-    <label for="primaryWeaponSelect">Primary Weapon:</label>
-    <select id="primaryWeaponSelect"></select>
-    <br>
+    <div id="tableVariableContainer">
+      <label for="tableVariableSelect">Table:</label>
+      <select id="tableVariableSelect">
+        <option value=0>EIAS</option>
+        <option value=1 selected>IAS</option>
+        <option value=2>Fanaticism</option>
+        <option value=3 style="display: none">Primary Weapon IAS</option>
+        <option value=4 style="display: none">Secondary Weapon IAS</option>
+        <option value=5 style="display: none">Burst of Speed</option>
+        <option value=6 style="display: none">Werewolf</option>
+        <option value=7 style="display: none">Frenzy</option>
+        <option value=8 style="display: none">Maul</option>
+      </select>
+      <br>
+    </div>
+    <div id="primaryWeaponContainer" style="display: initial">
+      <label for="primaryWeaponSelect" title="Primary Weapon, Gloves-side" class="hoverable">P Weapon:</label>
+      <select id="primaryWeaponSelect"></select>
+      <br>
+    </div>
     <div id="isOneHandedContainer" style="display: none">
       <input type="checkbox" id="isOneHanded">Is One-Handed
       <br>
     </div>
     <div id="primaryWeaponIASContainer" style="display: none">
-      <label for="primaryWeaponIAS">Weapon IAS:</label>
+      <label for="primaryWeaponIAS">Primary WIAS:</label>
       <input type="number" id="primaryWeaponIAS" value="0" min="0" max="120">
       <br>
     </div>
     <div id="secondaryWeaponContainer" style="display: none">
-      <label for="secondaryWeaponSelect">Secondary Weapon:</label>
+      <label for="secondaryWeaponSelect" title="Secondary Weapon, Boots-side" class="hoverable">S Weapon:</label>
       <select id="secondaryWeaponSelect"></select>
       <br>
-      <div id="wsmBuggedContainer" style="display: none">
-        <input type="checkbox" id="wsmBugged">WSM Bugged
-        <br>
-      </div>
     </div>
     <div id="secondaryWeaponIASContainer" style="display: none">
-      <label for="secondaryWeaponIAS">Weapon IAS:</label>
+      <label for="secondaryWeaponIAS">Secondary WIAS:</label>
       <input type="number" id="secondaryWeaponIAS" value="0" min="0" max="120">
       <br>
     </div>
@@ -93,9 +86,6 @@
       <input type="number" id="IAS" value="0" min="0">
       <br>
     </div>
-    <label for="skillSelect">Skill:</label>
-    <select id="skillSelect"></select>
-    <br>
     <div id="fanaticismContainer">
       <label for="fanaticismLevel">Fanaticism:</label>
       <input type="number" id="fanaticismLevel" value="0" min="0" max="60">
@@ -111,6 +101,11 @@
       <input type="number" id="werewolfLevel" value="0" min="0" max="60">
       <br>
     </div>
+    <div id="maulContainer" style="display: none">
+      <label for="maulLevel">Maul:</label>
+      <input type="number" id="maulLevel" value="0" min="0" max="60">
+      <br>
+    </div>
     <div id="frenzyContainer" style="display: none">
       <label for="frenzyLevel">Frenzy:</label>
       <input type="number" id="frenzyLevel" value="0" min="0" max="60">
@@ -119,9 +114,23 @@
     <div id="holyFreezeContainer">
       <label for="holyFreezeLevel">Holy Freeze:</label>
       <input type="number" id="holyFreezeLevel" value="0" min="0" max="60">
-      <input type="checkbox" id="decrepify">Decrepify</td>
+      <br>
     </div>
+    <div id="slowedByContainer">
+      <label for="slowedByLevel" title="Slows Target % in PvP" class="hoverable">Slowed By:</label>
+      <input type="number" id="slowedByLevel" value="0" min="0" max="50">
+      <br>
+    </div>
+    <div id="decrepifyContainer">
+      <input type="checkbox" id="decrepify">Decrepify
+      <br>
+    </div>
+    <div id="chilledContainer">
+      <input type="checkbox" id="chilled">Chilled
+      <br>
+    </div>
+    <button type="button" id="generateLink">Copy Link</button>
   </div>
-  <div id="tableContainer"></div>
-  </body>
+  <div id="tableContainer" class="halfWindow"></div>
+</body>
 </html>
