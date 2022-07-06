@@ -445,16 +445,24 @@ function load() {
 					currentSkills.push(skills.DRAGON_CLAW);
 				}
 				break;
-			case char.BARBARIAN:
-				if (wereform == wf.HUMAN) {
-					currentSkills.push(skills.FRENZY);
-					currentSkills.push(skills.DOUBLE_SWING);
-					currentSkills.push(skills.WHIRLWIND);
-					currentSkills.push(skills.CONCENTRATE);
-					currentSkills.push(skills.BERSERK);
-					currentSkills.push(skills.BASH);
-					currentSkills.push(skills.STUN);
-					currentSkills.push(skills.DOUBLE_THROW);
+			case BARBARIAN:
+				if (wereform == HUMAN) {
+					if (type.isMelee) {
+						if (isDualWielding) {
+							currentSkills.push(FRENZY);
+							currentSkills.push(DOUBLE_SWING);
+						}
+						currentSkills.push(WHIRLWIND);
+						currentSkills.push(CONCENTRATE);
+						currentSkills.push(BERSERK);
+						currentSkills.push(BASH);
+						currentSkills.push(STUN);
+					}
+					if ((itemClass == CLASS_THROWING || itemClass == CLASS_JAVELIN) && isDualWielding && (secondaryWeapon.itemClass == CLASS_THROWING || secondaryWeapon.itemClass == CLASS_JAVELIN)) {
+						currentSkills.push(DOUBLE_THROW);
+					}
+				} else if (wereform == WEREWOLF) {
+					currentSkills.push(FERAL_RAGE);
 				}
 				break;
 			case char.DRUID:
