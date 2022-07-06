@@ -1,5 +1,5 @@
 
-const debug = true;
+const debug = false;
 
 const container = {
     TABLE_VARIABLE: document.getElementById("tableVariableContainer"),
