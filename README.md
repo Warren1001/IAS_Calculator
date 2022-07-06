@@ -3,7 +3,7 @@
 ### v1.0.0
 - Restructured a lot of the code.
 - Redesigned how the UI functions, inputs work top down. Examples:
-  - Setting skill to Whirlwind for Barbarian will only let you choose one-handable weapons.
+  - Setting skill to Double Swing for Barbarian will only let you choose one-handable weapons.
   - Choosing Werebear on any non-Druid class only allows Standard and Kick skills.
 - Whirlwind is fully updated.
 - Updated info messages again.
