@@ -435,10 +435,10 @@ function load() {
 				}
 			}
 		} else if (character == ASSASSIN) {
-			SELECT_SECONDARY_WEAPON.add(createOption("None"));
+			SELECT_SECONDARY_WEAPON.add(createOption("None [0]"));
 			for (const weapon of WEAPONS.values()) {
 				if (weapon.type == CLAW) {
-					SELECT_SECONDARY_WEAPON.add(createOption(weapon.name));
+					SELECT_SECONDARY_WEAPON.add(createOption(weapon.name + " [" + weapon.WSM + "]"));
 					if (previousValueName == weapon.name) reselect = true;
 				}
 			}
@@ -1083,7 +1083,10 @@ function load() {
 	}
 
 	function fpd3(weaponType) {
-		if (skill == WHIRLWIND) return weaponType == TWO_HANDED || weaponType == TWO_HANDED_THRUSTING || weaponType == BOW || weaponType == CROSSBOW ? 9 : 7;
+		if (skill == WHIRLWIND) {
+			if (weaponType == TWO_HANDED_SWORD) weaponType = ONE_HANDED_SWINGING;
+			return weaponType.getActionFrame(character);
+		}
 		else if (wereform == WEREWOLF) return 13;
 		else return 12;
 	}
@@ -1196,7 +1199,7 @@ function load() {
 		console.log("WIAS1=", WIAS1);
 		let EIAS1 = SIAS - WSM1 + convertIAStoEIAS(IAS + WIAS1);
 		console.log("EIAS1=", EIAS1);
-		if (isDualWielding && (skill != STANDARD || character == MERC_A5)) {
+		if (isDualWielding && skill != WHIRLWIND && (skill != STANDARD || character == MERC_A5)) {
 			let WSM2 = getWSM(!isPrimary);
 			console.log("WSM2=", WSM2);
 			let WIAS2 = getWeaponIAS(!isPrimary);
@@ -1797,7 +1800,7 @@ const UNARMED = new WeaponType(true, true, [
 	[MERC_A2, 16], // assumed
 	[MERC_A5, 16]  // assumed
 ]);
-const CLAW = new WeaponType(true, true, [[ASSASSIN, [11, 12, 0]]]);
+const CLAW = new WeaponType(true, true, [[ASSASSIN, [11, 12, 6]]]);
 const ONE_HANDED_SWINGING = new WeaponType(true, true, [
 	[AMAZON, [16, 10]],
 	[ASSASSIN, [15, 7]],
