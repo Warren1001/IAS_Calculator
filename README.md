@@ -4,6 +4,14 @@ Credits to ChthonVII and ubeogesh for helping with the calculator.
 Credits to The Amazon Basin (mostly TitanSeal, onderduiker, and Hammerman) for information.
 Credits to Phrozen Keep for information.
 
+### v1.0.1
+- Fixed multihitting skills last hit, breakpoints are correct now
+- Fixed "is one handed" checkbox appearing for Whirlwind when it doesn't change the breakpoints at all
+- Fixed the one-off Whirlwind bugs (might have fixed it in the last update, don't remember)
+
+- There's still one minor bug when using WIAS inputs when you are 1 WIAS away from the breakpoint, the table won't update and still shows 2 IAS. Otherwise, the two-handed sequence skills are difficult to show contextual numbers for, so certain configurations may appear weird but are actually correct. I'm still thinking on the best way to present the information in a less confusing way.
+- I plan to work on the Assassin claws attack speed "fixes" from the 2.5 PTR next.
+
 ### v1.0.0
 - Restructured a lot of the code.
 - Redesigned how the UI functions, inputs work top down. Examples:

@@ -1,5 +1,5 @@
 
-const debug = false;
+const debug = true;
 
 const container = {
     TABLE_VARIABLE: document.getElementById("tableVariableContainer"),
@@ -779,69 +779,13 @@ export function setupUpdateTableInputElements(eventListener) {
 }
 
 export function convertIAStoEIAS(IAS) {
-	return parseInt(120 * IAS / (120 + IAS));
+	let a = parseInt(120 * IAS / (120 + IAS));
+	//console.log("convertIAStoEIAS: ", IAS, "->", a);
+	return a;
 }
 
 export function convertEIAStoIAS(EIAS) {
-	return Math.ceil(120 * EIAS / (120 - EIAS));
-}
-
-export class Breakpoint {
-
-	constructor(existingIAS, neededEIAS, FPA) {
-		this.existingIAS = existingIAS;
-		this.neededEIAS = neededEIAS;
-		this.FPA = FPA;
-	}
-
-	convertEIAStoVariable(variable) {
-		/*if (isTableVariableSkill(variable)) {
-			variableLabel = skill == skills.DODGE ? "Fanaticism" : "Skill Level";
-			let skillData = getTableVariableSkill();
-			for (const [accelerationNeeded, FPA] of table) {
-				let level = skillData.getLevelFromEIAS(accelerationNeeded);
-				newTable.set(level, FPA);
-				//log("acceleration=%s,FPA=%s,level=%s", accelerationNeeded, FPA, level);
-			}
-		} else if (tableVariable == tv.IAS || tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
-			if (debug) {
-				variableLabel = "EIAS";
-				newTable = table;
-			} else {
-				variableLabel = tableVariable == tv.IAS ? "IAS" : "WIAS";
-				let firstWasSet = false;
-				for (const [accelerationNeeded, FPA] of table) {
-					let IAS = convertEIAStoIAS(accelerationNeeded);
-					//if (wereform != wf.HUMAN && !constants.checkbox.2_4_CHANGES.checked) IAS -= getWeaponIAS(true);
-
-					if (IAS > 0) firstWasSet = true;
-					else if (IAS <= 0 && firstWasSet) break;
-					else if (IAS < 0) IAS = 0;
-
-					newTable.set(IAS, FPA);
-				}
-			}
-			
-		} else {
-			displayTableInfo("Missing functionality, probably coming soon.");
-		}*/
-		switch (variable) {
-			case tv.EIAS:
-				return this.neededEIAS;
-			case tv.PRIMARY_WEAPON_IAS:
-			case tv.SECONDARY_WEAPON_IAS:
-			case tv.IAS:
-				return Math.max(0, convertEIAStoIAS(this.neededEIAS + convertIAStoEIAS(this.existingIAS)) - this.existingIAS); // take needed eias, add existing ias's eias to it, convert to ias, subtract existing ias from it
-			case tv.FANATICISM:
-			case tv.BURST_OF_SPEED:
-			case tv.WEREWOLF:
-			case tv.MAUL:
-			case tv.FRENZY:
-				return getTableVariableSkill(variable).getLevelFromEIAS(this.neededEIAS);
-			default:
-				console.error("Variable " + variable + " doesn't exist");
-				return -1;
-		}
-	}
-
+	let a = Math.ceil(120 * EIAS / (120 - EIAS));
+	//console.log("convertEIAStoIAS: ", EIAS, "->", a);
+	return a;
 }

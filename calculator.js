@@ -242,7 +242,7 @@ function load() {
 			}
 		}
 
-		if (character == char.BARBARIAN && type == wt.TWO_HANDED_SWORD && !isDualWieldedSequenceSkill()) {
+		if (character == char.BARBARIAN && type == wt.TWO_HANDED_SWORD && !isDualWieldedSequenceSkill() && skill != skills.WHIRLWIND) {
 			unhideElement(container.IS_ONE_HANDED);
 		} else {
 			hideElement(container.IS_ONE_HANDED);
@@ -277,7 +277,7 @@ function load() {
 			}
 		} else {
 			if (character != char.BARBARIAN && character != char.FRENZY_BARBARIAN) hideElement(container.FRENZY);
-			if (character == char.BARBARIAN && primaryWeapon.type == wt.TWO_HANDED_SWORD) {
+			if (character == char.BARBARIAN && primaryWeapon.type == wt.TWO_HANDED_SWORD && skill != skills.WHIRLWIND) {
 				unhideElement(container.IS_ONE_HANDED);
 			} else {
 				hideElement(container.IS_ONE_HANDED);
@@ -602,7 +602,7 @@ function load() {
 		addTableHeader(table, variableLabel);
 
 		for (const bp of breakpoints) {
-			addTableRow(table, bp.convertEIAStoVariable(tableVariable), bp.FPA);
+			addTableRow(table, convertEIAStoVariable(bp[0]), bp[1]);
 		}
 
 		tableDiv.appendChild(table);
@@ -636,7 +636,7 @@ function load() {
 
 		let framesPerDirectionHuman = calculateFramesPerDirection(weaponType);
 		let framesPerDirection1 = fpd1;
-		let framesPerDirection2 = fpd2();
+		let framesPerDirection2 = fpd2(weaponType);
 		let framesPerDirection3 = fpd3(weaponType);
 		let animationSpeed = as(weaponType);
 		let startingFrame = getStartingFrame(weaponType);
@@ -646,7 +646,7 @@ function load() {
 		let offset = skill == skills.IMPALE || skill == skills.JAB || skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER
 			|| skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW || skill == skills.DOUBLE_SWING
 			|| skill == skills.DOUBLE_THROW || skill == skills.FURY || skill == skills.DRAGON_TALON
-			|| skill == skills.ZEAL || skill == skills.FEND || skill == skills.STRAFE || skill == skills.FRENZY ? 0 : 1;
+			|| skill == skills.ZEAL || skill == skills.FEND || skill == skills.STRAFE || skill == skills.FRENZY || skill == skills.WHIRLWIND ? 0 : 1;
 		let startingAcceleration = tableVariable == tv.EIAS ? other.MIN_EIAS : 0;
 		let trueMaxAccelerationIncrease = tableVariable == tv.EIAS ? other.MAX_EIAS : maxAccelerationIncrease;//Math.max(maxAccelerationIncrease, other.MAX_EIAS - EIAS);
 
@@ -675,14 +675,15 @@ function load() {
 				
 			let accelerationModified = tableVariable == (isPrimary ? tv.SECONDARY_WEAPON_IAS : tv.PRIMARY_WEAPON_IAS) ? 0 : acceleration;
 			let speedIncrease;
-			if (wereform == wf.HUMAN && skill != skills.WHIRLWIND) {
+			if (wereform == wf.HUMAN) {
 				speedIncrease = trun(animationSpeed * (100 + limitEIAS(EIAS + accelerationModified)) / 100);
 			} else {
 				speedIncrease = trun((animationSpeed + trun(animationSpeed * limitEIAS(EIAS + accelerationModified) / 100)) * speedReduction);
 			}
 
-			let firstHitLength = Math.ceil(256 * (framesPerDirection1 - startingFrame) / speedIncrease) - offset;
-			if (skill == skills.WHIRLWIND) firstHitLength = Math.max(firstHitLength, 4); // whirlwind cannot be less than 4 frames
+			let firstHitLength = 256 * (framesPerDirection1 - startingFrame) / speedIncrease;
+			if (skill == skills.WHIRLWIND) firstHitLength = trun(firstHitLength);
+			else firstHitLength = Math.ceil(firstHitLength) - offset;
 
 			if (skill == skills.FURY || skill == skills.STRAFE || skill == skills.FEND || skill == skills.DRAGON_TALON || skill == skills.ZEAL) {
 
@@ -694,8 +695,10 @@ function load() {
 
 				for (let hit = 0; hit < hits; hit++) {
 
-					let rollback = parseInt(parseInt((256 * rollbacks[hit] + speedIncrease * hitLengths[hit]) / 256) * (100 - rollbackFactor) / 100);
+					let rollback = trun(trun((256 * rollbacks[hit] + speedIncrease * hitLengths[hit]) / 256) * (100 - rollbackFactor) / 100);
+					//log("rollback: %s", rollback);
 					let nextHitLength = Math.ceil(256 * (framesPerDirection1 - rollback) / speedIncrease);
+					//log("nextHitLength: %s", rollback);
 
 					rollbacks.push(rollback);
 					hitLengths.push(nextHitLength);
@@ -705,11 +708,12 @@ function load() {
 						let oscillatingOddHitLengths = [...hitLengths];
 
 						let lastHitLength = Math.ceil(256 * (framesPerDirection2 - rollbacks[rollbacks.length - 1]) / speedIncrease) - 1;
+						//log("lastHitLength: %s", lastHitLength);
 						oscillatingOddHitLengths.push(lastHitLength);
 
 						if (frameLengthsNotEqual(previousFrameLengths[1], oscillatingOddHitLengths)) {
 							previousFrameLengths[1] = oscillatingOddHitLengths;
-							accelerationTables[1].push(new constants.Breakpoint(totalIAS, acceleration, formatRollbackHitLength(oscillatingOddHitLengths)));
+							accelerationTables[1].push([acceleration, formatRollbackHitLength(oscillatingOddHitLengths)]);
 						}
 								
 					}
@@ -721,17 +725,17 @@ function load() {
 
 				if (frameLengthsNotEqual(previousFrameLengths[0], hitLengths)) {
 					previousFrameLengths[0] = hitLengths;
-					accelerationTables[0].push(new constants.Breakpoint(totalIAS, acceleration, formatRollbackHitLength(hitLengths)));
+					accelerationTables[0].push([acceleration, formatRollbackHitLength(hitLengths)]);
 				}
 
 			} else if (frameLengthsNotEqual(previousFrameLengths[0], firstHitLength)) {
 
 				previousFrameLengths[0] = firstHitLength;
-				accelerationTables[0].push(new constants.Breakpoint(totalIAS, acceleration, firstHitLength));
+				accelerationTables[0].push([acceleration, firstHitLength]);
 
 				log("acceleration=%s,firstHitLength=%s", acceleration, firstHitLength);
 
-				if (skill == skills.WHIRLWIND && firstHitLength == 4) break;
+				//if (skill == skills.WHIRLWIND && firstHitLength == 4) break;
 
 			}
 
@@ -747,50 +751,45 @@ function load() {
 		let leftLastBreakpoint = null;
 		let rightLastBreakpoint = null;
 		let averageLastFPA = 0;
-		let existingIAS = 0;
 		let merged = [];
 		for (const bp of accelerationTables[0][0]) {
-			log("accelerationTables[0]: %s,%s", bp.neededEIAS, bp.FPA);
-			if (leftLastBreakpoint == null) {
-				leftLastBreakpoint = bp;
-				existingIAS = bp.existingIAS;
-			} else merge.push([0, bp]);
+			log("accelerationTables[0]: %s,%s", bp[0], bp[1]);
+			if (leftLastBreakpoint == null) leftLastBreakpoint = bp;
+			else merge.push([0, bp]);
 		}
 		for (const bp of accelerationTables[1][0]) {
-			log("accelerationTables[1]: %s,%s",  bp.neededEIAS, bp.FPA);
-			if (rightLastBreakpoint == null) {
-				rightLastBreakpoint = bp;
-				existingIAS = Math.max(existingIAS, bp.existingIAS);
-			} else merge.push([1, bp]);
+			log("accelerationTables[1]: %s,%s",  bp[0], bp[1]);
+			if (rightLastBreakpoint == null) rightLastBreakpoint = bp;
+			else merge.push([1, bp]);
 		}
-		averageLastFPA = averageToCeiling(leftLastBreakpoint.FPA, rightLastBreakpoint.FPA)
-		merge.sort((a, b) => a[1].neededEIAS - b[1].neededEIAS);
-		merged.push(new constants.Breakpoint(existingIAS, Math.min(leftLastBreakpoint.neededEIAS, rightLastBreakpoint.neededEIAS), averageLastFPA));
+		averageLastFPA = averageToCeiling(leftLastBreakpoint[1], rightLastBreakpoint[1])
+		merge.sort((a, b) => a[1][0] - b[1][0]);
+		merged.push([Math.min(leftLastBreakpoint[0], rightLastBreakpoint[0]), averageLastFPA]);
 		for (const a of merge) {
 			log("a=%s", a);
 			let hand = a[0];
-			let acceleration = a[1].neededEIAS;
-			let FPA = a[1].FPA;
+			let acceleration = a[1][0];
+			let FPA = a[1][1];
 			if (hand == 0) {
-				log("l %s > %s", leftLastBreakpoint.FPA, FPA);
-				if (leftLastBreakpoint.FPA > FPA) {
+				log("l %s > %s", leftLastBreakpoint[1], FPA);
+				if (leftLastBreakpoint[1] > FPA) {
 					leftLastBreakpoint = a[1];
 					log("lFPA=%s", FPA);
-					let average = averageToCeiling(FPA, rightLastBreakpoint.FPA);
+					let average = averageToCeiling(FPA, rightLastBreakpoint[1]);
 					if (average < averageLastFPA) {
 						averageLastFPA = average;
-						merged.push(new constants.Breakpoint(a[1].existingIAS, acceleration, average));
+						merged.push([acceleration, average]);
 					}
 				}
 			} else if (hand == 1) {
-				log("r %s > %s", rightLastBreakpoint.FPA, FPA);
-				if (rightLastBreakpoint.FPA > FPA) {
+				log("r %s > %s", rightLastBreakpoint[1], FPA);
+				if (rightLastBreakpoint[1] > FPA) {
 					rightLastBreakpoint = a[1];
 					log("rFPA=%s", FPA);
-					let average = averageToCeiling(leftLastBreakpoint.FPA, FPA);
+					let average = averageToCeiling(leftLastBreakpoint[1], FPA);
 					if (average < averageLastFPA) {
 						averageLastFPA = average;
-						merged.push(new constants.Breakpoint(a[1].existingIAS, acceleration, average));
+						merged.push([acceleration, average]);
 					}
 				}
 			}
@@ -870,21 +869,21 @@ function load() {
 			if (skill == skills.HUNGER || skill == skills.RABIES) return 10;
 			if (wereform == wf.WEREWOLF) return 13;
 			if (wereform == wf.WEREBEAR) return 12;
-			if (skill == skills.DRAGON_TALON || skill == skills.STRAFE || skill == skills.ZEAL || skill == skills.FEND) return calculateActionFrame(weaponType);
+			if (skill == skills.DRAGON_TALON || skill == skills.STRAFE || skill == skills.ZEAL || skill == skills.FEND || skill == skills.WHIRLWIND) return calculateActionFrame(weaponType);
 			return calculateFramesPerDirection(weaponType);
 		}
 		return 12; // off hand normal attack swings are 12 FPD across the board
 	}
 
-	function fpd2() {
+	function fpd2(weaponType) {
 		if (skill == skills.FURY) return 13;
 		if (wereform == wf.WEREWOLF) return 9;
 		if (wereform == wf.WEREBEAR) return 10;
-		return -1;
+		return calculateFramesPerDirection(weaponType);
 	}
 
 	function fpd3(weaponType) {
-		if (skill == skills.WHIRLWIND) return calculateActionFrame(weaponType);
+		//if (skill == skills.WHIRLWIND) return calculateActionFrame(weaponType);
 		if (wereform == wf.WEREWOLF) return 13;
 		if (wereform == wf.WEREBEAR) return 12;
 		return -1;
@@ -947,46 +946,6 @@ function load() {
 	function getWSM(isPrimary) {
 		return (isPrimary ? primaryWeapon : secondaryWeapon).WSM;
 	}
-
-	/*function displayBreakpoints(table, tableName) {
-
-		let newTable = new Map();
-
-		let variableLabel = undefined;
-
-		if (constants.isTableVariableSkill(tableVariable)) {
-			variableLabel = skill == skills.DODGE ? "Fanaticism" : "Skill Level";
-			let skillData = getTableVariableSkill();
-			for (const [accelerationNeeded, FPA] of table) {
-				let level = skillData.getLevelFromEIAS(accelerationNeeded);
-				newTable.set(level, FPA);
-				//log("acceleration=%s,FPA=%s,level=%s", accelerationNeeded, FPA, level);
-			}
-		} else if (tableVariable == tv.IAS || tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
-			if (debug) {
-				variableLabel = "EIAS";
-				newTable = table;
-			} else {
-				variableLabel = tableVariable == tv.IAS ? "IAS" : "WIAS";
-				let firstWasSet = false;
-				for (const [accelerationNeeded, FPA] of table) {
-					let IAS = convertEIAStoIAS(accelerationNeeded);
-					//if (wereform != wf.HUMAN && !constants.checkbox.2_4_CHANGES.checked) IAS -= getWeaponIAS(true);
-
-					if (IAS > 0) firstWasSet = true;
-					else if (IAS <= 0 && firstWasSet) break;
-					else if (IAS < 0) IAS = 0;
-
-					newTable.set(IAS, FPA);
-				}
-			}
-			
-		} else {
-			displayTableInfo("Missing functionality, probably coming soon.");
-		}
-
-		displayTable(newTable, variableLabel, tableName);
-	}*/
 
 	function isCharacterSelected() {
 		return character == char.AMAZON || character == char.ASSASSIN || character == char.BARBARIAN
@@ -1256,6 +1215,27 @@ function load() {
 		constants.setupInputElement(select.SECONDARY_WEAPON, () => onSecondaryWeaponChange(true));
 		constants.setupInputElement(button.GENERATE_LINK, generateLink);
 		constants.setupUpdateTableInputElements(displayFrames);
+	}
+
+	function convertEIAStoVariable(neededEIAS) {
+		switch (tableVariable) {
+			case tv.EIAS:
+				return neededEIAS;
+			case tv.PRIMARY_WEAPON_IAS:
+			case tv.SECONDARY_WEAPON_IAS:
+			case tv.IAS:
+				//console.log("convertEIAStoVariable: ", neededEIAS);
+				return Math.max(0, constants.convertEIAStoIAS(neededEIAS)); // take needed eias, add existing ias's eias to it, convert to ias, subtract existing ias from it
+			case tv.FANATICISM:
+			case tv.BURST_OF_SPEED:
+			case tv.WEREWOLF:
+			case tv.MAUL:
+			case tv.FRENZY:
+				return constants.getTableVariableSkill(tableVariable).getLevelFromEIAS(neededEIAS);
+			default:
+				console.error("Variable " + tableVariable + " doesn't exist");
+				return -1;
+		}
 	}
 
 }
