@@ -1003,8 +1003,8 @@ function load() {
 			animationSpeed = 128;
 		} else if (weaponType == wt.CLAW && !(skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER ||
 				skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW || skill == skills.DRAGON_TAIL || skill == skills.DRAGON_TALON)) {
-			if (fpd1 == 11) animationSpeed = 208;
-			else animationSpeed = 227; // fpd1 == 12 - patch 2.5 (PTR v1) changed AIA2HT1 and AIA2HT1's AnimationSpeed to 227 from 208.
+			if (fpd1 == 12) animationSpeed = 227; // fpd1 == 12 - patch 2.5 (PTR v1) changed AIA2HT1 and AIA2HT1's AnimationSpeed to 227 from 208.
+			else animationSpeed = 208;
 		}
 		return animationSpeed;
 	}
