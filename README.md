@@ -1,7 +1,7 @@
 ## [IAS Calculator](https://warren1001.github.io/IAS_Calculator/)
 
 Credits to ChthonVII and ubeogesh for helping with the calculator.
-Credits to The Amazon Basin (mostly TitanSeal, onderduiker, and Hammerman) for information.
+Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 Credits to Phrozen Keep for information.
 
 ### v1.0.2
