@@ -4,6 +4,9 @@ Credits to ChthonVII and ubeogesh for helping with the calculator.
 Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 Credits to Phrozen Keep for information.
 
+### v1.0.3
+- Fixed Assassin claw speeds showing tables for skills that wasn't possible.
+
 ### v1.0.2
 - Fixed Paladin's basic attack for two handed weapons and two handed swords. The two handed sword animation has two different animation lengths, but I mistakenly had the two handed weapon animation with two different animation lengths.
 - Updated the Assassin's basic attack with the claws change from the 2.5 PTR v1.
