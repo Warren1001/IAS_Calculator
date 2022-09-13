@@ -371,7 +371,7 @@ const wt = { // weapon types
         [char.BARBARIAN, [18, 8]],
         [char.DRUID, [21, 10]],
         [char.NECROMANCER, [23, 11]],
-        [char.PALADIN, [19, 8]],
+        [char.PALADIN, [18, 19, 8]],
         [char.SORCERESS, [24, 14]],
         [char.BASH_BARBARIAN, 16],
         [char.FRENZY_BARBARIAN, 16]
@@ -393,7 +393,7 @@ const wt = { // weapon types
         [char.BARBARIAN, [19, 9]],
         [char.DRUID, [17, 9]],
         [char.NECROMANCER, [20, 11]],
-        [char.PALADIN, [18, 19, 9]],
+        [char.PALADIN, [18, 9]],
         [char.SORCERESS, [18, 11]],
         [char.DESERT_MERCENARY, 16]
     ]),

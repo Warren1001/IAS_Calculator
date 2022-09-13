@@ -638,7 +638,7 @@ function load() {
 		let framesPerDirection1 = fpd1;
 		let framesPerDirection2 = fpd2(weaponType);
 		let framesPerDirection3 = fpd3(weaponType);
-		let animationSpeed = as(weaponType);
+		let animationSpeed = as(weaponType, fpd1);
 		let startingFrame = getStartingFrame(weaponType);
 		let EIAS = tableVariable == tv.EIAS ? 0 : calculateEIAS(isPrimary);
 		let totalIAS = tableVariable == tv.EIAS ? 0 : getTotalIAS(isPrimary);
@@ -889,9 +889,9 @@ function load() {
 		return -1;
 	}
 
-	function as(weaponType) {
+	function as(weaponType, fpd1) {
 		if (character == char.DRUID && skill == skills.KICK && (primaryWeapon.type == wt.ONE_HANDED_SWINGING || primaryWeapon.type == wt.TWO_HANDED_SWORD)) return 224;
-		return calculateAnimationSpeed(weaponType);
+		return calculateAnimationSpeed(weaponType, fpd1);
 	}
 
 	function rbf() {
@@ -997,13 +997,14 @@ function load() {
 		return framesPerDirection;
 	}
 
-	function calculateAnimationSpeed(weaponType) {
+	function calculateAnimationSpeed(weaponType, fpd1) {
 		let animationSpeed = 256;
 		if (skill == skills.LAYING_TRAPS) {
 			animationSpeed = 128;
 		} else if (weaponType == wt.CLAW && !(skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER ||
 				skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW || skill == skills.DRAGON_TAIL || skill == skills.DRAGON_TALON)) {
-			animationSpeed = 208;
+			if (fpd1 == 11) animationSpeed = 208;
+			else animationSpeed = 227; // fpd1 == 12 - patch 2.5 (PTR v1) changed AIA2HT1 and AIA2HT1's AnimationSpeed to 227 from 208.
 		}
 		return animationSpeed;
 	}
