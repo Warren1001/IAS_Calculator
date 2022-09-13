@@ -582,17 +582,6 @@ function load() {
 
 	}
 
-	function checkTablesNotEqual(table1, table2) {
-		log("check 1");
-		if (table1.length != table2.length) return true;
-		log("check 2");
-		for (let i = 0; i < table1.length; i++) {
-			if (table1[i][0] != table2[i][0] || table1[i][1] != table2[i][1]) return true;
-		}
-		log("check 3");
-		return false;
-	}
-
 	function displayTable(breakpoints, tableName) {
 
 		let variableLabel = getTableVariableName(tableVariable);
@@ -1248,6 +1237,14 @@ function load() {
 				console.error("Variable " + tableVariable + " doesn't exist");
 				return -1;
 		}
+	}
+
+	function checkTablesNotEqual(table1, table2) {
+		if (table1.length != table2.length) return true;
+		for (let i = 0; i < table1.length; i++) {
+			if (table1[i][0] != table2[i][0] || table1[i][1] != table2[i][1]) return true;
+		}
+		return false;
 	}
 
 }
