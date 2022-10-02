@@ -153,7 +153,7 @@ function load() {
 			//hideElement(container.BURST_OF_SPEED);
 			hideElement(option.TABLE_VARIABLE_BURST_OF_SPEED);
 			if (tableVariable == tv.BURST_OF_SPEED) {
-				tv.IAS.checked = true;
+				select.TABLE_VARIABLE.value = tv.IAS;
 				onTableVariableChange(false);
 			}
 		}
@@ -167,13 +167,12 @@ function load() {
 			//hideElement(container.FRENZY);
 			hideElement(option.TABLE_VARIABLE_FRENZY);
 			if (tableVariable == tv.FRENZY) {
-				tv.IAS.checked = true;
+				select.TABLE_VARIABLE.value = tv.IAS;
 				onTableVariableChange(false);
 			}
 		}
 
 		if (character != char.BARBARIAN && character != char.ASSASSIN && character != char.FRENZY_BARBARIAN) {
-			console.log("c1");
 			hideElement(container.SECONDARY_WEAPON);
 			hideElement(container.SECONDARY_WEAPON_IAS);
 		}
@@ -182,7 +181,6 @@ function load() {
 		if ((character == char.ASSASSIN && primaryWeaponType == wt.CLAW && skill.canDualWield) ||
 				((character == char.BARBARIAN || character == char.FRENZY_BARBARIAN) && skill.canDualWield &&
 				(primaryWeaponType == wt.ONE_HANDED_SWINGING || primaryWeaponType == wt.ONE_HANDED_THRUSTING || primaryWeaponType == wt.TWO_HANDED_SWORD))) {
-			console.log("c2");
 			unhideElement(container.SECONDARY_WEAPON);
 			setSecondaryWeapons();
 		} else {
@@ -215,7 +213,7 @@ function load() {
 			hideElement(container.MAUL);
 			hideElement(option.TABLE_VARIABLE_MAUL);
 			if (tableVariable == tv.WEREWOLF || tableVariable == tv.MAUL) {
-				tv.IAS.checked = true;
+				select.TABLE_VARIABLE.value = tv.IAS;
 				onTableVariableChange(false);
 			}
 		}
@@ -270,13 +268,17 @@ function load() {
 
 		if (secondaryWeapon.type != wt.UNARMED) {
 			hideElement(container.IS_ONE_HANDED);
-			if (character == char.FRENZY_BARBARIAN) unhideElement(container.FRENZY);
+			if (character == char.FRENZY_BARBARIAN) unhideElement(container.FRENZY); // TODO show anyway?
 			if (skill.canDualWield && !skill.isDualWieldOnly) {
 				unhideElement(container.PRIMARY_WEAPON_IAS);
 				unhideElement(container.SECONDARY_WEAPON_IAS);
+				if (tableVariable == tv.IAS) select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
+				unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+				unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
+				hideElement(option.TABLE_VARIABLE_IAS);
 			}
 		} else {
-			if (character != char.BARBARIAN && character != char.FRENZY_BARBARIAN) hideElement(container.FRENZY);
+			if (character != char.BARBARIAN && character != char.FRENZY_BARBARIAN) hideElement(container.FRENZY); // TODO show anyway? may not apply here
 			if (character == char.BARBARIAN && primaryWeapon.type == wt.TWO_HANDED_SWORD && skill != skills.WHIRLWIND) {
 				unhideElement(container.IS_ONE_HANDED);
 			} else {
@@ -285,6 +287,10 @@ function load() {
 			if (skill.canDualWield && !skill.isDualWieldOnly) {
 				hideElement(container.PRIMARY_WEAPON_IAS);
 				hideElement(container.SECONDARY_WEAPON_IAS);
+				if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) select.TABLE_VARIABLE.value = tv.IAS;
+				hideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+				hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
+				unhideElement(option.TABLE_VARIABLE_IAS);
 			}
 			// TODO hide primary and secondary wias (on conditions)
 		}
@@ -328,7 +334,7 @@ function load() {
 				hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 				hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 				if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
-					tv.IAS.checked = true;
+					select.TABLE_VARIABLE.value = tv.IAS;
 					onTableVariableChange(false);
 				}
 			}
@@ -340,6 +346,13 @@ function load() {
 			unhideElement(container.SECONDARY_WEAPON);
 			unhideElement(container.PRIMARY_WEAPON_IAS);
 			unhideElement(container.SECONDARY_WEAPON_IAS);
+			unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+			unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
+			if (tableVariable == tv.IAS) {
+				select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
+				onTableVariableChange(updateTable);
+			}
+			hideElement(option.TABLE_VARIABLE_IAS);
 			setSecondaryWeapons();
 		} else if (skill.canDualWield && (character == char.BARBARIAN || character == char.ASSASSIN || character == char.FRENZY_BARBARIAN)) {
 			let primaryWeaponType = primaryWeapon.type;
@@ -351,14 +364,35 @@ function load() {
 			if (isSecondWeaponSet()) {
 				unhideElement(container.PRIMARY_WEAPON_IAS);
 				unhideElement(container.SECONDARY_WEAPON_IAS);
+				unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+				unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
+				if (tableVariable == tv.IAS) {
+					select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
+					onTableVariableChange(updateTable);
+				}
+				hideElement(option.TABLE_VARIABLE_IAS);
 			} else {
+				unhideElement(option.TABLE_VARIABLE_IAS);
 				hideElement(container.PRIMARY_WEAPON_IAS);
 				hideElement(container.SECONDARY_WEAPON_IAS);
+				if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
+					select.TABLE_VARIABLE.value = tv.IAS;
+					onTableVariableChange(updateTable);
+				}
+				hideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+				hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 			}
 		} else {
+			unhideElement(option.TABLE_VARIABLE_IAS);
 			hideElement(container.SECONDARY_WEAPON);
 			hideElement(container.PRIMARY_WEAPON_IAS);
 			hideElement(container.SECONDARY_WEAPON_IAS);
+			if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
+				select.TABLE_VARIABLE.value = tv.IAS;
+				onTableVariableChange(updateTable);
+			}
+			hideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+			hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 		}
 
 		if (updateTable) displayFrames();
@@ -567,8 +601,11 @@ function load() {
 			let table2 = d(secondaryWeapon, fpd1(secondaryWeapon.type, false, false), false);
 			log("----------- end secondary table ------------");
 			log("----------- start ww merge table ------------");
-			displayTable(mergeAccelerationTables([table1, table2]));
+			let merge = mergeAccelerationTables([table1[0], table2[0]]);
 			log("----------- end ww merge table ------------");
+			displayTable(table1[0]);
+			displayTable(table2[0]);
+			displayTable(merge);
 		} else {
 			if (skill != skills.STRAFE || primaryWeapon.type == wt.CROSSBOW) {
 				displayTable(table1[0]);
@@ -601,8 +638,13 @@ function load() {
 
 		addTableHeader(table, variableLabel);
 
-		for (const bp of breakpoints) {
-			addTableRow(table, convertEIAStoVariable(bp[0]), bp[1]);
+		let isFirstBp = true;
+		for (const bp of breakpoints.table) {
+			let v = convertEIAStoVariable(bp[0], breakpoints.EIASvalues);
+			if (isFirstBp && v < 0) v = 0;
+			else if ((tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) && v > other.MAX_IAS_WEAPON) break;
+			addTableRow(table, v, bp[1]);
+			isFirstBp = false;
 		}
 
 		tableDiv.appendChild(table);
@@ -637,11 +679,14 @@ function load() {
 		let framesPerDirectionHuman = calculateFramesPerDirection(weaponType);
 		let framesPerDirection1 = fpd1;
 		let framesPerDirection2 = fpd2(weaponType);
-		let framesPerDirection3 = fpd3(weaponType);
+		let framesPerDirection3 = fpd3();
 		let animationSpeed = as(weaponType, fpd1);
 		let startingFrame = getStartingFrame(weaponType);
-		let EIAS = tableVariable == tv.EIAS ? 0 : calculateEIAS(isPrimary);
-		let totalIAS = tableVariable == tv.EIAS ? 0 : getTotalIAS(isPrimary);
+		// [EIAS, SIAS, WSM, IEIAS, GIAS, IAS1, IAS2]
+		let EIASvalues = calculateEIAS(isPrimary);
+		let EIAS = tableVariable == tv.EIAS ? 0 : EIASvalues[0];
+		let totalIAS = tableVariable == tv.EIAS ? 0 : EIASvalues[4] + (isPrimary ? EIASvalues[5] : EIASvalues[6]);
+		let nonIASEIAS = EIASvalues[1] - EIASvalues[2];
 		let speedReduction = skill == skills.WHIRLWIND ? framesPerDirectionHuman / framesPerDirection3 : framesPerDirection3 / framesPerDirectionHuman;
 		let offset = skill == skills.IMPALE || skill == skills.JAB || skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER
 			|| skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW || skill == skills.DOUBLE_SWING
@@ -656,19 +701,21 @@ function load() {
 		log("framesPerDirection3=%s", framesPerDirection3);
 		log("animationSpeed=%s", animationSpeed);
 		log("startingFrame=%s", startingFrame);
+		log("EIASvalues=%s", EIASvalues);
 		log("EIAS=%s", EIAS);
 		log("totalIAS=%s", totalIAS);
+		log("nonIASEIAS=%s", nonIASEIAS);
 		log("speedReduction=%s", speedReduction);
 		log("offset=%s", offset);
 		log("startingAcceleration=%s", startingAcceleration);
 		log("trueMaxAccelerationIncrease=%s", trueMaxAccelerationIncrease);
 
-		let accelerationTables = [[]];
+		let accelerationTables = [new BreakpointTable(EIASvalues)];
 		let previousFrameLengths = [0];
 
 		if (skill == skills.STRAFE || skill == skills.FEND) {
 			accelerationTables.push([]);
-			previousFrameLengths.push(0);
+			previousFrameLengths.push(new BreakpointTable(EIASvalues));
 		}
 
 		for (let acceleration = startingAcceleration; acceleration <= trueMaxAccelerationIncrease; acceleration++) {
@@ -713,7 +760,7 @@ function load() {
 
 						if (frameLengthsNotEqual(previousFrameLengths[1], oscillatingOddHitLengths)) {
 							previousFrameLengths[1] = oscillatingOddHitLengths;
-							accelerationTables[1].push([acceleration, formatRollbackHitLength(oscillatingOddHitLengths)]);
+							accelerationTables[1].addBreakpoint(acceleration + EIAS, formatRollbackHitLength(oscillatingOddHitLengths));
 						}
 								
 					}
@@ -725,17 +772,15 @@ function load() {
 
 				if (frameLengthsNotEqual(previousFrameLengths[0], hitLengths)) {
 					previousFrameLengths[0] = hitLengths;
-					accelerationTables[0].push([acceleration, formatRollbackHitLength(hitLengths)]);
+					accelerationTables[0].addBreakpoint(acceleration + EIAS, formatRollbackHitLength(hitLengths));
 				}
 
 			} else if (frameLengthsNotEqual(previousFrameLengths[0], firstHitLength)) {
 
 				previousFrameLengths[0] = firstHitLength;
-				accelerationTables[0].push([acceleration, firstHitLength]);
+				accelerationTables[0].addBreakpoint(acceleration + EIAS, firstHitLength);
 
-				log("acceleration=%s,firstHitLength=%s", acceleration, firstHitLength);
-
-				//if (skill == skills.WHIRLWIND && firstHitLength == 4) break;
+				log("acceleration=%s,firstHitLength=%s", acceleration + EIAS, firstHitLength);
 
 			}
 
@@ -752,12 +797,12 @@ function load() {
 		let rightLastBreakpoint = null;
 		let averageLastFPA = 0;
 		let merged = [];
-		for (const bp of accelerationTables[0][0]) {
+		for (const bp of accelerationTables[0].table) {
 			log("accelerationTables[0]: %s,%s", bp[0], bp[1]);
 			if (leftLastBreakpoint == null) leftLastBreakpoint = bp;
 			else merge.push([0, bp]);
 		}
-		for (const bp of accelerationTables[1][0]) {
+		for (const bp of accelerationTables[1].table) {
 			log("accelerationTables[1]: %s,%s",  bp[0], bp[1]);
 			if (rightLastBreakpoint == null) rightLastBreakpoint = bp;
 			else merge.push([1, bp]);
@@ -794,7 +839,12 @@ function load() {
 				}
 			}
 		}
-		return merged;
+		let slowerTable = accelerationTables[0].EIASvalues[0] > accelerationTables[1].EIASvalues[0] ? accelerationTables[1] : accelerationTables[0];
+		let mergedTable = new BreakpointTable(slowerTable.EIASvalues);
+		for (const bp of merged) {
+			mergedTable.addBreakpoint(bp[0], bp[1]);
+		}
+		return mergedTable;
 	}
 
 	function averageToCeiling(a, b) {
@@ -882,8 +932,7 @@ function load() {
 		return calculateFramesPerDirection(weaponType);
 	}
 
-	function fpd3(weaponType) {
-		//if (skill == skills.WHIRLWIND) return calculateActionFrame(weaponType);
+	function fpd3() {
 		if (wereform == wf.WEREWOLF) return 13;
 		if (wereform == wf.WEREBEAR) return 12;
 		return -1;
@@ -914,32 +963,34 @@ function load() {
 
 	function calculateEIAS(isPrimary) {
 		let SIAS = calculateSIAS();
-		if (skill == skills.DODGE) return SIAS;
+		if (skill == skills.DODGE) return [SIAS, SIAS, -1, -1, -1, -1, -1, -1];
 		log("SIAS=%s", SIAS);
-		let IAS = tableVariable != tv.IAS ? parseInt(number.IAS.value) : 0;
-		log("IAS=%s", IAS);
-		if ((isDualWieldedSequenceSkill() && (character == char.BARBARIAN || character == char.ASSASSIN)) || (character == char.FRENZY_BARBARIAN && isSecondWeaponSet())) {
+		let GIAS = tableVariable != tv.IAS ? parseInt(number.IAS.value) : 0;
+		log("GIAS=%s", GIAS);
+		if ((isDualWieldedSequenceSkill() && (character == char.BARBARIAN || character == char.ASSASSIN)) || (character == char.FRENZY_BARBARIAN && isSecondWeaponSet())) { // TODO act 5 merc?
 			let WSM1 = getWSM(isPrimary);
 			log("WSM1=%s", WSM1);
-			let WIAS1 = getWeaponIAS(isPrimary);
-			log("WIAS1=%s", WIAS1);
-			let EIAS1 = SIAS - WSM1 + constants.convertIAStoEIAS(IAS + WIAS1);
-			log("EIAS1=%s", EIAS1);
 			let WSM2 = getWSM(!isPrimary);
 			log("WSM2=%s", WSM2);
-			let WIAS2 = getWeaponIAS(!isPrimary);
-			log("WIAS2=%s", WIAS2);
-			let EIAS2 = SIAS - WSM2 + constants.convertIAStoEIAS(IAS + WIAS2);
-			log("EIAS2=%s", EIAS2);
-			return limitEIAS(trun((EIAS1 + EIAS2) / 2));
+			let WSM = (WSM1 + WSM2) / 2;
+			let IAS1 = getWeaponIAS(isPrimary);
+			log("IAS1=%s", IAS1);
+			let IAS2 = getWeaponIAS(!isPrimary);
+			log("IAS2=%s", IAS2);
+			let IEIAS = (constants.convertIAStoEIAS(GIAS + IAS1) + constants.convertIAStoEIAS(GIAS + IAS2)) / 2;
+			log("IEIAS=%s", IEIAS);
+			let EIAS = trun(SIAS - WSM + IEIAS);
+			log("EIAS=%s", EIAS);
+			return [EIAS, SIAS, WSM1, WSM2, IEIAS, GIAS, IAS1, IAS2];
 		} else {
 			let WSM = getWSM(isPrimary);
 			log("WSM=%s", WSM);
-			let WIAS = getWeaponIAS(isPrimary);
-			log("WIAS=%s", WIAS);
-			let EIAS = SIAS - WSM + constants.convertIAStoEIAS(IAS + WIAS);
+			let IAS = getWeaponIAS(isPrimary);
+			log("IAS=%s", IAS);
+			let IEIAS = constants.convertIAStoEIAS(GIAS + IAS);
+			let EIAS = SIAS - WSM + IEIAS;
 			log("EIAS=%s", EIAS);
-			return limitEIAS(EIAS);
+			return [EIAS, SIAS, WSM, -1, IEIAS, GIAS, IAS, -1];
 		}
 	}
 
@@ -1218,21 +1269,25 @@ function load() {
 		constants.setupUpdateTableInputElements(displayFrames);
 	}
 
-	function convertEIAStoVariable(neededEIAS) {
+	// [EIAS, SIAS, WSM1, WSM2, IEIAS, GIAS, IAS1, IAS2]
+	function convertEIAStoVariable(neededEIAS, EIASvalues) {
+		let remainingEIAS = neededEIAS - EIASvalues[1] + EIASvalues[2]; // doesn't contain ias values
 		switch (tableVariable) {
 			case tv.EIAS:
 				return neededEIAS;
 			case tv.PRIMARY_WEAPON_IAS:
 			case tv.SECONDARY_WEAPON_IAS:
+				return constants.convertEIAStoIAS(2 * neededEIAS - 2 * EIASvalues[1] + EIASvalues[2] + EIASvalues[3]
+					- constants.convertIAStoEIAS(EIASvalues[5] + (tableVariable == tv.SECONDARY_WEAPON_IAS ? EIASvalues[6] : EIASvalues[7]))) - EIASvalues[5];
 			case tv.IAS:
 				//console.log("convertEIAStoVariable: ", neededEIAS);
-				return Math.max(0, constants.convertEIAStoIAS(neededEIAS)); // take needed eias, add existing ias's eias to it, convert to ias, subtract existing ias from it
+				return Math.max(0, constants.convertEIAStoIAS(remainingEIAS) - EIASvalues[5] - EIASvalues[6]);
 			case tv.FANATICISM:
 			case tv.BURST_OF_SPEED:
 			case tv.WEREWOLF:
 			case tv.MAUL:
 			case tv.FRENZY:
-				return constants.getTableVariableSkill(tableVariable).getLevelFromEIAS(neededEIAS);
+				return constants.getTableVariableSkill(tableVariable).getLevelFromEIAS(neededEIAS - startingEIAS);
 			default:
 				console.error("Variable " + tableVariable + " doesn't exist");
 				return -1;
@@ -1245,6 +1300,19 @@ function load() {
 			if (table1[i][0] != table2[i][0] || table1[i][1] != table2[i][1]) return true;
 		}
 		return false;
+	}
+
+}
+
+class BreakpointTable {
+
+	constructor(EIASvalues) {
+		this.EIASvalues = EIASvalues;
+		this.table = [];
+	}
+
+	addBreakpoint(EIAS, frameLength) {
+		this.table.push([EIAS, frameLength]);
 	}
 
 }

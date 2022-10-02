@@ -4,7 +4,10 @@ Credits to ChthonVII and ubeogesh for helping with the calculator.
 Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 Credits to Phrozen Keep for information.
 
-### v1.0.3
+### v1.0.5
+- Fixed dual-wielded tables using WIAS, hopefully it all works now?
+
+### v1.0.4
 - Fixed Assassin claw speeds showing tables for skills that wasn't possible.
 
 ### v1.0.2
