@@ -382,6 +382,7 @@ function load() {
 				hideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
 				hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 			}
+			setSecondaryWeapons();
 		} else {
 			unhideElement(option.TABLE_VARIABLE_IAS);
 			hideElement(container.SECONDARY_WEAPON);

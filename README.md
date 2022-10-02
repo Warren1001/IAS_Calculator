@@ -6,6 +6,7 @@ Credits to Phrozen Keep for information.
 
 ### v1.0.5
 - Fixed dual-wielded tables using WIAS, hopefully it all works now?
+- Fixed being unable to unequip the second weapon when swapping from a skill that required two weapons to a skill that could use two weapons but wasn't required to.
 
 ### v1.0.4
 - Fixed Assassin claw speeds showing tables for skills that wasn't possible.
