@@ -270,12 +270,17 @@ function load() {
 			hideElement(container.IS_ONE_HANDED);
 			if (character == char.FRENZY_BARBARIAN) unhideElement(container.FRENZY); // TODO show anyway?
 			if (skill.canDualWield && !skill.isDualWieldOnly) {
-				unhideElement(container.PRIMARY_WEAPON_IAS);
-				unhideElement(container.SECONDARY_WEAPON_IAS);
-				if (tableVariable == tv.IAS) select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
-				unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
-				unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
-				hideElement(option.TABLE_VARIABLE_IAS);
+				if (tableVariable != tv.PRIMARY_WEAPON_IAS) unhideElement(container.PRIMARY_WEAPON_IAS);
+				if (tableVariable != tv.SECONDARY_WEAPON_IAS) unhideElement(container.SECONDARY_WEAPON_IAS);
+				if (skill != skills.WHIRLWIND) {
+					if (tableVariable == tv.IAS) {
+						select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
+						onTableVariableChange(false);
+					}
+					unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+					unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
+					hideElement(option.TABLE_VARIABLE_IAS);
+				}
 			}
 		} else {
 			if (character != char.BARBARIAN && character != char.FRENZY_BARBARIAN) hideElement(container.FRENZY); // TODO show anyway? may not apply here
@@ -285,9 +290,12 @@ function load() {
 				hideElement(container.IS_ONE_HANDED);
 			}
 			if (skill.canDualWield && !skill.isDualWieldOnly) {
+				if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
+					select.TABLE_VARIABLE.value = tv.IAS;
+					onTableVariableChange(false);
+				}
 				hideElement(container.PRIMARY_WEAPON_IAS);
 				hideElement(container.SECONDARY_WEAPON_IAS);
-				if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) select.TABLE_VARIABLE.value = tv.IAS;
 				hideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
 				hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 				unhideElement(option.TABLE_VARIABLE_IAS);
@@ -295,10 +303,7 @@ function load() {
 			// TODO hide primary and secondary wias (on conditions)
 		}
 
-		if (updateTable) {
-			console.log("updateTable (secondary)");
-			displayFrames();
-		}
+		if (updateTable) displayFrames();
 	}
 
 	function onSkillChange(updateTable) {
@@ -350,7 +355,7 @@ function load() {
 			unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 			if (tableVariable == tv.IAS) {
 				select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
-				onTableVariableChange(updateTable);
+				onTableVariableChange(false);
 			}
 			hideElement(option.TABLE_VARIABLE_IAS);
 			setSecondaryWeapons();
@@ -364,20 +369,22 @@ function load() {
 			if (isSecondWeaponSet()) {
 				unhideElement(container.PRIMARY_WEAPON_IAS);
 				unhideElement(container.SECONDARY_WEAPON_IAS);
-				unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
-				unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
-				if (tableVariable == tv.IAS) {
-					select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
-					onTableVariableChange(updateTable);
+				if (skill != skills.WHIRLWIND) {
+					unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+					unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
+					if (tableVariable == tv.IAS) {
+						select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
+						onTableVariableChange(false);
+					}
+					hideElement(option.TABLE_VARIABLE_IAS);
 				}
-				hideElement(option.TABLE_VARIABLE_IAS);
 			} else {
 				unhideElement(option.TABLE_VARIABLE_IAS);
 				hideElement(container.PRIMARY_WEAPON_IAS);
 				hideElement(container.SECONDARY_WEAPON_IAS);
 				if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
 					select.TABLE_VARIABLE.value = tv.IAS;
-					onTableVariableChange(updateTable);
+					onTableVariableChange(false);
 				}
 				hideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
 				hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
@@ -390,7 +397,7 @@ function load() {
 			hideElement(container.SECONDARY_WEAPON_IAS);
 			if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
 				select.TABLE_VARIABLE.value = tv.IAS;
-				onTableVariableChange(updateTable);
+				onTableVariableChange(false);
 			}
 			hideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
 			hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
