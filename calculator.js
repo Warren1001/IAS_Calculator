@@ -872,7 +872,7 @@ function load() {
 		} else if (skill == skills.DODGE) {
 			displayTableInfo("Dodge/Avoid/Evade. Tested, should be correct based on given information.");
 		} else if (skill == skills.WHIRLWIND) {
-			displayTableInfo("Whirlwind is correct in all tested scenarios.");
+			displayTableInfo("Whirlwind is correct in all tested scenarios. The third table is the table that both weapons swing at ingame, it's a combination of the first two tables.");
 		} else if (skill == skills.FRENZY) {
 			displayTableInfo("With the dual wield attack speed changes in 2.4, Frenzy got an unintentional minor buff.");
 		} else if (skill == skills.IMPALE) {
