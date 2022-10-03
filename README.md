@@ -4,6 +4,9 @@ Credits to ChthonVII and ubeogesh for helping with the calculator.
 Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 Credits to Phrozen Keep for information.
 
+### v1.0.6
+- Fixed Strafe tables not displaying properly.
+
 ### v1.0.5
 - Fixed dual-wielded tables using WIAS, hopefully it all works now?
 - Fixed being unable to unequip the second weapon when swapping from a skill that required two weapons to a skill that could use two weapons but wasn't required to.

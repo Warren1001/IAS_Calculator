@@ -690,7 +690,7 @@ function load() {
 		let framesPerDirection3 = fpd3();
 		let animationSpeed = as(weaponType, fpd1);
 		let startingFrame = getStartingFrame(weaponType);
-		// [EIAS, SIAS, WSM, IEIAS, GIAS, IAS1, IAS2]
+		// [EIAS, SIAS, WSM1, WSM2, IEIAS, GIAS, WIAS1, WIAS2]
 		let EIASvalues = calculateEIAS(isPrimary);
 		let EIAS = tableVariable == tv.EIAS ? 0 : EIASvalues[0];
 		let totalIAS = tableVariable == tv.EIAS ? 0 : EIASvalues[4] + (isPrimary ? EIASvalues[5] : EIASvalues[6]);
@@ -722,8 +722,8 @@ function load() {
 		let previousFrameLengths = [0];
 
 		if (skill == skills.STRAFE || skill == skills.FEND) {
-			accelerationTables.push([]);
-			previousFrameLengths.push(new BreakpointTable(EIASvalues));
+			accelerationTables.push(new BreakpointTable(EIASvalues));
+			previousFrameLengths.push([0]);
 		}
 
 		for (let acceleration = startingAcceleration; acceleration <= trueMaxAccelerationIncrease; acceleration++) {
@@ -1281,7 +1281,7 @@ function load() {
 		constants.setupUpdateTableInputElements(displayFrames);
 	}
 
-	// [EIAS, SIAS, WSM1, WSM2, IEIAS, GIAS, IAS1, IAS2]
+	// [EIAS, SIAS, WSM1, WSM2, IEIAS, GIAS, WIAS1, WIAS2]
 	function convertEIAStoVariable(neededEIAS, EIASvalues) {
 		let remainingEIAS = neededEIAS - EIASvalues[1] + EIASvalues[2]; // doesn't contain ias values
 		switch (tableVariable) {
