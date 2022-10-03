@@ -881,6 +881,8 @@ function load() {
 			displayTableInfo("With the dual wield attack speed changes in 2.4, Frenzy got an unintentional minor buff.");
 		} else if (skill == skills.IMPALE) {
 			displayTableInfo("Impale should be correct based on modifications in the files. No testing was made, though.");
+		} else if (skill == skills.STRAFE && primaryWeapon.type == wt.CROSSBOW) {
+			displayTableInfo("The first table is Strafing an even amount of arrows with a Crossbow, the second table is Strafing an odd amount of arrows with a Crossbow.");
 		}
 
 	}
