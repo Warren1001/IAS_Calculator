@@ -1301,7 +1301,7 @@ function load() {
 			case tv.WEREWOLF:
 			case tv.MAUL:
 			case tv.FRENZY:
-				return constants.getTableVariableSkill(tableVariable).getLevelFromEIAS(neededEIAS - startingEIAS);
+				return constants.getTableVariableSkill(tableVariable).getLevelFromEIAS(neededEIAS - EIASvalues[0]);
 			default:
 				console.error("Variable " + tableVariable + " doesn't exist");
 				return -1;
