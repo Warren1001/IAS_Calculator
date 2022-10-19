@@ -4,6 +4,9 @@ Credits to ChthonVII and ubeogesh for helping with the calculator.
 Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 Credits to Phrozen Keep for information.
 
+### v1.0.7
+- Bug fix for skill IAS tables
+
 ### v1.0.6
 - Fixed Strafe tables not displaying properly.
 
