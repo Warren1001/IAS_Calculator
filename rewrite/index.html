@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script type="text/javascript" src="./calculator.js"></script>
+    <link href="styles.css" rel="stylesheet" type="text/css">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <title>IAS Calculator</title>
+</head>
+<body>
+    <div id="input" class="input">
+        <select id="characterSelect">
+            <option value=0 selected>Amazon</option>
+            <option value=1>Assassin</option>
+            <option value=2>Barbarian</option>
+            <option value=3>Druid</option>
+            <option value=4>Necromancer</option>
+            <option value=5>Paladin</option>
+            <option value=6>Sorceress</option>
+            <option disabled>───────────</option>
+            <option value=7>Rogue Scout</option>
+            <option value=8>Desert Mercenary</option>
+            <option value=9>Bash Barbarian</option>
+            <option value=10>Frenzy Barbarian</option>
+        </select>
+        <br>
+        <select id="wereformSelect">
+            <option value=0 selected>Human</option>
+            <option value=1>Werebear</option>
+            <option value=2>Werewolf</option>
+        </select>
+        <br>
+        <select id="skillSelect"></select>
+        <br>
+        <label for="primaryWeaponSelect" title="Primary Weapon, Gloves-side" class="hoverable">P Weapon:</label>
+        <select id="primaryWeaponSelect"></select>
+        <div id="isOneHandedContainer" style="display: none">
+            <input type="checkbox" id="isOneHanded">1H
+        </div>
+        <label for="primaryWeaponIAS" title="IAS on this weapon only" class="hoverable">IAS:</label>
+        <input type="number" id="primaryWeaponIAS" value="0" min="0" max="120" title="IAS on this weapon only">
+        <br>
+        <div id="secondaryWeaponContainer" style="display: none">
+            <label for="secondaryWeaponSelect" title="Secondary Weapon, Boots-side" class="hoverable">S Weapon:</label>
+            <select id="secondaryWeaponSelect"></select>
+            <label for="secondaryWeaponIAS" title="IAS on this weapon only" class="hoverable">IAS:</label>
+            <input type="number" id="secondaryWeaponIAS" value="0" min="0" max="120" title="IAS on this weapon only">
+            <br>
+        </div>
+        <label for="IAS" title="Gear (non-weapon) IAS" class="hoverable">GIAS:</label>
+        <input type="number" id="IAS" value="0" min="0" title="Gear (non-weapon) IAS">
+        <br>
+        <label for="fanaticismLevel">Fanaticism:</label>
+        <input type="number" id="fanaticismLevel" value="0" min="0" max="60">
+        <br>
+        <div id="burstOfSpeedContainer" style="display: none">
+            <label for="burstOfSpeedLevel">Burst of Speed:</label>
+            <input type="number" id="burstOfSpeedLevel" value="0" min="0" max="60">
+            <br>
+        </div>
+        <div id="werewolfContainer" style="display: none">
+            <label for="werewolfLevel">Werewolf:</label>
+            <input type="number" id="werewolfLevel" value="0" min="0" max="60">
+            <br>
+        </div>
+        <div id="maulContainer" style="display: none">
+            <label for="maulLevel">Maul:</label>
+            <input type="number" id="maulLevel" value="0" min="0" max="60">
+            <br>
+        </div>
+        <div id="frenzyContainer" style="display: none">
+            <label for="frenzyLevel">Frenzy:</label>
+            <input type="number" id="frenzyLevel" value="0" min="0" max="60">
+            <br>
+        </div>
+        <label for="holyFreezeLevel">Holy Freeze:</label>
+        <input type="number" id="holyFreezeLevel" value="0" min="0" max="60">
+        <br>
+        <label for="slowedByLevel" title="Slows Target % in PvP" class="hoverable">Slowed By:</label>
+        <input type="number" id="slowedByLevel" value="0" min="0" max="50" title="Slows Target % in PvP">
+        <br>
+        <input type="checkbox" id="decrepify">Decrepify
+        <input type="checkbox" id="chilled">Chilled
+    </div>
+    <div id="output" class="output"></div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+
+:root {
+  color-scheme: dark light;
+}
+
+input[type='number'] {
+  width: 40px;
+}
+
+.hoverable {
+  color: #CC5500;
+  text-decoration: underline #CC5500;
+}
+
+.input {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.output {
+  display: inline-block;
+  vertical-align: top;
+}
+
+th {
+  text-align: center;
+  border: 2px solid;
+  border-color: rgb(55, 55, 55);
+  min-width: 30px;
+  padding: 0px 2px;
+}
+
+.cellFull {
+  border: 2px solid;
+}
+
+.cellTop {
+  border-top: 2px solid;
+  border-right: 2px solid;
+  border-left: 2px solid;
+}
+
+.cellMiddle {
+  border-right: 2px solid;
+  border-left: 2px solid;
+}
+
+.cellBottom {
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+  border-left: 2px solid;
+}
+
+.cellFull, .cellTop, .cellMiddle, .cellBottom {
+  text-align: center;
+  border-color: rgb(55, 55, 55);
+  min-width: 30px;
+  padding: 0px 2px;
+}
+
+.cellColorDefault {
+  background-color: rgb(15, 15, 15);
+}
+
+.cellColorRed {
+  background-color: rgb(162, 11, 11);
+}
