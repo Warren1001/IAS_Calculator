@@ -34,17 +34,17 @@ function load() {
             previousBreakpoint = table[index - 1];
             if (previousBreakpoint[2][0] == actionFrame) {
                 let className = previousBreakpoint[3].className;
-                if (className.startsWith("cellFull")) previousBreakpoint[3].className = "cellTop cellColorDefault";
-                else if (className.startsWith("cellBottom")) previousBreakpoint[3].className  = "cellMiddle cellColorDefault";
+                if (className.startsWith("cellFull")) previousBreakpoint[3].className = "cellTop";
+                else if (className.startsWith("cellBottom")) previousBreakpoint[3].className  = "cellMiddle";
                 actionFrameCell.innerHTML = "";
-                actionFrameCell.className = "cellBottom cellColorDefault";
+                actionFrameCell.className = "cellBottom";
             } else {
                 actionFrameCell.innerHTML = actionFrame;
-                actionFrameCell.className = "cellFull cellColorDefault";
+                actionFrameCell.className = "cellFull";
             }
         } else {
             actionFrameCell.innerHTML = actionFrame;
-            actionFrameCell.className = "cellFull cellColorDefault";
+            actionFrameCell.className = "cellFull";
         }
     
         let lengthCell = document.createElement("td");
@@ -53,27 +53,27 @@ function load() {
             previousBreakpoint = table[index - 1];
             if (previousBreakpoint[1] == length) {
                 let className = previousBreakpoint[4].className;
-                if (className.startsWith("cellFull")) previousBreakpoint[4].className = "cellTop cellColorDefault";
-                else if (className.startsWith("cellBottom")) previousBreakpoint[4].className  = "cellMiddle cellColorDefault";
+                if (className.startsWith("cellFull")) previousBreakpoint[4].className = "cellTop";
+                else if (className.startsWith("cellBottom")) previousBreakpoint[4].className  = "cellMiddle";
                 lengthCell.innerHTML = "";
-                lengthCell.className = "cellBottom cellColorDefault";
+                lengthCell.className = "cellBottom";
             } else {
                 lengthCell.innerHTML = length;
-                lengthCell.className = "cellFull cellColorDefault";
+                lengthCell.className = "cellFull";
             }
         } else {
             lengthCell.innerHTML = length;
-            lengthCell.className = "cellFull cellColorDefault";
+            lengthCell.className = "cellFull";
         }
 
         let eiasCell = document.createElement("td");
         eiasCell.innerHTML = breakpoint[0];
-        eiasCell.className = "cellFull cellColorDefault";
+        eiasCell.className = "cellFull";
 
         let iasCell = document.createElement("td");
         let ias = convertEIAStoIAS(breakpoint[0]);
         iasCell.innerHTML = ias < 0 ? "" : ias;
-        iasCell.className = "cellFull cellColorDefault";
+        iasCell.className = "cellFull";
 
         breakpoint.push(actionFrameCell);
         breakpoint.push(lengthCell);

@@ -58,10 +58,6 @@ th {
   padding: 0px 2px;
 }
 
-.cellColorDefault {
-  background-color: rgb(15, 15, 15);
-}
-
 .cellColorRed {
   background-color: rgb(162, 11, 11);
 }
