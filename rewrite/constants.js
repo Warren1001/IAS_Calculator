@@ -78,7 +78,7 @@ const MORPH = {
 };
 
 const OPTION = {
-	WEREFORM_WEREWOLF: getOption(SELECT.WEREFORM, WF.WEREWOLF)
+	WEREFORM_WEREWOLF: getOption(SELECT.WEREFORM, MORPH.WEREWOLF)
 };
 
 function getOption(select, value) {
