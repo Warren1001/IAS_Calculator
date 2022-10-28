@@ -1,4 +1,4 @@
-import { OUTPUT, CONTAINER, SELECT, NUMBER, CHECKBOX, CHAR, WF, OPTION, BUTTON, OTHER, AS_SKILL, ANIM_DATA, SKILLS } from './constants.js'
+import { OUTPUT, CONTAINER, SELECT, NUMBER, CHECKBOX, CHAR, MORPH, OPTION, BUTTON, OTHER, AS_SKILL, ANIM_DATA, SKILLS } from './constants.js'
 
 window.addEventListener("load", load, false);
 
