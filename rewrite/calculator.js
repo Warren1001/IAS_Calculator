@@ -1,3 +1,5 @@
+import { OUTPUT, CONTAINER, SELECT, NUMBER, CHECKBOX, CHAR, WF, OPTION, BUTTON, OTHER, AS_SKILL, ANIM_DATA, SKILLS } from './constants.js'
+
 window.addEventListener("load", load, false);
 
 //load();
@@ -31,7 +33,7 @@ function load() {
         let actionFrameCell = document.createElement("td");
         let actionFrame = breakpoint[2][0];
         if (index > 0) {
-            previousBreakpoint = table[index - 1];
+            let previousBreakpoint = table[index - 1];
             if (previousBreakpoint[2][0] == actionFrame) {
                 let className = previousBreakpoint[3].className;
                 if (className.startsWith("cellFull")) previousBreakpoint[3].className = "cellTop";
@@ -50,7 +52,7 @@ function load() {
         let lengthCell = document.createElement("td");
         let length = breakpoint[1];
         if (index > 0) {
-            previousBreakpoint = table[index - 1];
+            let previousBreakpoint = table[index - 1];
             if (previousBreakpoint[1] == length) {
                 let className = previousBreakpoint[4].className;
                 if (className.startsWith("cellFull")) previousBreakpoint[4].className = "cellTop";
