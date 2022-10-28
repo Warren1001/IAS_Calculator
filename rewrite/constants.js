@@ -48,24 +48,26 @@ class Character {
 
 }
 
-const CHAR_MAP = 
+const CHAR_MAP = new Map();
 const CHAR = {
-    AMAZON: "AM",
-    ASSASSIN: "AI",
-    BARBARIAN: "BA",
-    DRUID: "DZ",
-    NECROMANCER: "NE",
-    PALADIN: "PA",
-    SORCERESS: "SO",
+    AMAZON: addCharacter(new Character("Amazon", "AM", true)),
+    ASSASSIN: addCharacter(new Character("Assassin", "AI", true)),
+    BARBARIAN: addCharacter(new Character("Barbarian", "BA", true)),
+    DRUID: addCharacter(new Character("Druid", "DZ", true)),
+    NECROMANCER: addCharacter(new Character("Necromancer", "NE", true)),
+    PALADIN: addCharacter(new Character("Paladin", "PA", true)),
+    SORCERESS: addCharacter(new Character("Sorceress", "SO", true)),
 	// mercs
-    ROGUE_SCOUT: "RG",
-    TOWN_GUARD: "GU",
-	IRON_WOLF: "IW",
-    BARBARIAN_MERCENARY: "0A",
+    ROGUE_SCOUT: addCharacter(new Character("Rogue Scout", "RG", false)),
+    TOWN_GUARD: addCharacter(new Character("Town Guard", "GU", false)),
+	IRON_WOLF: addCharacter(new Character("Iron Wolf", "IW", false)),
+    BARBARIAN_MERCENARY: addCharacter(new Character("Barbarian", "0A", false)),
 	// code utility only
 	PLAYER: "P",
 	ALL: true
 };
+function addCharacter(char) { CHAR_MAP.set(char.name, char); }
+export function getCharacter(token) { return CHAR_MAP.get(token); }
 
 const MORPH = {
     HUMAN: "H",
