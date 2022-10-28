@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <script type="text/javascript" src="./calculator.js"></script>
+    <script defer type="module" src="calculator.js"></script>
     <link href="styles.css" rel="stylesheet" type="text/css">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <title>IAS Calculator</title>
@@ -11,25 +11,27 @@
 <body>
     <div id="input" class="input">
         <select id="characterSelect">
-            <option value=0 selected>Amazon</option>
-            <option value=1>Assassin</option>
-            <option value=2>Barbarian</option>
-            <option value=3>Druid</option>
-            <option value=4>Necromancer</option>
-            <option value=5>Paladin</option>
-            <option value=6>Sorceress</option>
-            <option disabled>───────────</option>
-            <option value=7>Rogue Scout</option>
-            <option value=8>Desert Mercenary</option>
-            <option value=9>Bash Barbarian</option>
-            <option value=10>Frenzy Barbarian</option>
+            <option value="AM" selected>Amazon</option>
+            <option value="AI">Assassin</option>
+            <option value="BA">Barbarian</option>
+            <option value="DZ">Druid</option>
+            <option value="NE">Necromancer</option>
+            <option value="PA">Paladin</option>
+            <option value="SO">Sorceress</option>
+            <option disabled>─ Mercenaries ─</option>
+            <option value="RG">A1</option>
+            <option value="GU">A2</option>
+            <option value="IW">A3</option>
+            <option value="0A">A5</option>
         </select>
         <br>
-        <select id="wereformSelect">
-            <option value=0 selected>Human</option>
-            <option value=1>Werebear</option>
-            <option value=2>Werewolf</option>
-        </select>
+        <div id="wereformContainer">
+            <select id="wereformSelect">
+                <option value="H" selected>Human</option>
+                <option value="TG">Werebear</option>
+                <option value="40" style="display: none">Werewolf</option>
+            </select>
+        </div>
         <br>
         <select id="skillSelect"></select>
         <br>
