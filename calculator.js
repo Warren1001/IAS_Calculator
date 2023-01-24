@@ -87,7 +87,7 @@ function load() {
 			if (tableVariable != tv.FANATICISM) {
 				unhideElement(container.FANATICISM);
 			}
-			if (tableVariable != tv.BURST_OF_SPEED && character == char.ASSASSIN) {
+			if (tableVariable != tv.BURST_OF_SPEED/* && character == char.ASSASSIN*/) {
 				unhideElement(container.BURST_OF_SPEED);
 			}
 			if (tableVariable != tv.WEREWOLF && wereform == wf.WEREWOLF) {
@@ -147,11 +147,9 @@ function load() {
 		}
 
 		if (character == char.ASSASSIN) {
-			unhideElement(container.BURST_OF_SPEED);
 			//unhideElement(container.BURST_OF_SPEED);
 			unhideElement(option.TABLE_VARIABLE_BURST_OF_SPEED);
 		} else {
-			hideElement(container.BURST_OF_SPEED);
 			//hideElement(container.BURST_OF_SPEED);
 			hideElement(option.TABLE_VARIABLE_BURST_OF_SPEED);
 			if (tableVariable == tv.BURST_OF_SPEED) {
@@ -330,7 +328,7 @@ function load() {
 			if (isCharacterSelected()) unhideElement(container.WEREFORM);
 			unhideElement(container.PRIMARY_WEAPON);
 			if (tableVariable != tv.FANATICISM) unhideElement(container.FANATICISM);
-			if (character == char.ASSASSIN && tableVariable != tv.BURST_OF_SPEED) unhideElement(container.BURST_OF_SPEED);
+			if (/*character == char.ASSASSIN && */tableVariable != tv.BURST_OF_SPEED) unhideElement(container.BURST_OF_SPEED);
 			if (character == char.BARBARIAN && tableVariable != tv.FRENZY) unhideElement(container.FRENZY);
 			unhideElement(container.DECREPIFY);
 
