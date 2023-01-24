@@ -15,6 +15,7 @@ const container = {
 	WEREWOLF: document.getElementById("werewolfContainer"),
 	MAUL: document.getElementById("maulContainer"),
 	FRENZY: document.getElementById("frenzyContainer"),
+	MARK_OF_BEAR: document.getElementById("markOfBearContainer"),
 	HOLY_FREEZE: document.getElementById("holyFreezeContainer"),
 	SLOWED_BY: document.getElementById("slowedByContainer"),
 	DECREPIFY: document.getElementById("decrepifyContainer"),
@@ -46,6 +47,7 @@ const number = {
 
 const checkbox = {
     IS_ONE_HANDED: document.getElementById("isOneHanded"),
+	MARK_OF_BEAR: document.getElementById("markOfBear"),
 	DECREPIFY: document.getElementById("decrepify"),
 	CHILLED: document.getElementById("chilled")
 };
@@ -272,7 +274,7 @@ class AttackSpeedSkill {
 
 const skill = {
     FANATICISM: new AttackSpeedSkill(number.FANATICISM, 10, 30, 40, tv.FANATICISM),
-	BURST_OF_SPEED: new AttackSpeedSkill(number.BURST_OF_SPEED, 15, 45, 60, tv.BURST_OF_SPEED, (character, _wereform) => character == char.ASSASSIN),
+	BURST_OF_SPEED: new AttackSpeedSkill(number.BURST_OF_SPEED, 15, 45, 60, tv.BURST_OF_SPEED/*, (character, _wereform) => character == char.ASSASSIN*/),
 	WEREWOLF: new AttackSpeedSkill(number.WEREWOLF, 10, 70, 80, tv.WEREWOLF, (_character, wereform) => wereform == wf.WEREWOLF),
 	MAUL: new AttackSpeedSkill(number.MAUL, -1, 3, 99, tv.MAUL, (_character, wereform) => wereform == wf.WEREBEAR),
 	FRENZY: new AttackSpeedSkill(number.FRENZY, 0, 50, 50, tv.FRENZY, (character, _wereform) => character == char.BARBARIAN || character == char.BASH_BARBARIAN),
@@ -776,6 +778,7 @@ export function setupUpdateTableInputElements(eventListener) {
 	setupInputElement(number.SLOWED_BY, eventListener);
     
 	setupInputElement(checkbox.IS_ONE_HANDED, eventListener);
+	setupInputElement(checkbox.MARK_OF_BEAR, eventListener);
 	setupInputElement(checkbox.DECREPIFY, eventListener);
 	setupInputElement(checkbox.CHILLED, eventListener);
 }

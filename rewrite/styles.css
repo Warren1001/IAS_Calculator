@@ -61,3 +61,11 @@ th {
 .cellColorRed {
   background-color: rgb(102, 2, 2);
 }
+
+.indent {
+  margin-left: 20px;
+}
+
+.hidden {
+  display: none;
+}

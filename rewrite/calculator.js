@@ -1,4 +1,4 @@
-import { OUTPUT, CONTAINER, SELECT, NUMBER, CHECKBOX, CHAR, MORPH, OPTION, BUTTON, OTHER, AS_SKILL, ANIM_DATA, SKILLS } from './constants.js'
+import { OUTPUT, CONTAINER, SELECT, NUMBER, CHECKBOX, CHAR, MORPH, OPTION, BUTTON, OTHER, AS_SKILL, ANIM_DATA, SKILL, getCharacter, getSkill, forEachSkill, getWeapon, forEachWeapon, Skill, SequenceSkill, RollbackSkill } from './constants.js'
 
 window.addEventListener("load", load, false);
 
@@ -13,15 +13,152 @@ function load() {
 
     // notes, wereforms do not use druid's A1 FPD,AF for A1 animations, they use their own A1, however they use human A1 AS. idk what the identifier for it is in animdata, chthonvii has this data in his wereform calculator
 
-    let table = generateNormalBreakpointTable(12, [7], 0, 256, false, false, 12 / 19);
-    displayNormalBreakpointTable(table);
+    let rows = [];
 
-    function displayNormalBreakpointTable(table) {
-        const output = document.getElementById("output");
-        addTableHeader(output);
-        for (let i = 0; i < table.length; i++) {
-            addTableRow(output, table, i);
+    class Cell {
+
+        constructor(startingId)
+
+    }
+
+    class Row {
+
+        constructor(tr, eiasNeeded) {
+            this.cells = tr.cells;
+            this.size = this.cells.size;
+            this.eiasNeeded = eiasNeeded;
         }
+
+        resize(size, addMore) {
+            this.size = size;
+            if (this.cells.size < size) {
+                addMore(tr);
+                this.cells = tr.cells;
+            }
+            for (let i = 0; i < this.cells.size; i++) {
+                if (i < size) {
+                    showElement(this.cells[i]);
+                } else {
+                    hideElement(this.cells[i]);
+                }
+            }
+        }
+
+        size() {
+            return this.size;
+        }
+
+        getCell(index) {
+            return this.cells[index];
+        }
+
+        forEach(action) {
+            this.cells.forEach(action);
+        }
+
+        setColor(color) {
+            this.forEach(cell => {/* TODO */});
+        }
+
+    }
+
+    let character = CHAR.AMAZON;
+    let morph = MORPH.HUMAN;
+    let skill = SKILL.ATTACK;
+    let pweapon = getWeapon("None");
+
+    updateSkills();
+    updateWeapons();
+
+    generateFirstTable();
+
+    function generateFirstTable() {
+        let animData = getAnimData();
+        let table = generateNormalBreakpointTable(animData[0], [animData[1]], animData[2], animData[3], false, false, 1);
+        generateFirstTable(table);
+    }
+
+    function updateTable() {
+
+    }
+
+    function getAnimData() {
+        let token = character.token;
+        let weaponClass = pweapon.weaponClass;
+        let mode = "A1";
+        if (skill instanceof RollbackSkill) {
+
+        } else if (skill instanceof SequenceSkill) {
+
+        } else {
+            mode = skill.animationMode;
+            if (Array.isArray(mode)) mode = mode[0];
+        }
+        return ANIM_DATA[token + mode + weaponClass];
+    }
+
+    function updateSkills() {
+        clear(SELECT.SKILL);
+        let hasSameSkill = false;
+        forEachSkill(s => {
+            if (s.canBeUsedBy(character, morph)) {
+                SELECT.SKILL.add(createOption(s.name, s.name))
+                if (skill == s) hasSameSkill = true;
+            }
+        });
+        if (hasSameSkill) {
+            SELECT.SKILL.value = skill.name;
+        } else {
+            // TODO
+        }
+    }
+
+    function updateWeapons() {
+        clear(SELECT.PRIMARY_WEAPON);
+        let hasSameWeapon = false;
+        forEachWeapon(weapon => {
+            if (weapon.canBeUsedBy(character)) {
+                SELECT.PRIMARY_WEAPON.add(createOption(weapon.name, weapon.name + " [" + weapon.WSM + "]"));
+                if (pweapon == weapon) hasSameWeapon = true;
+            }
+        });
+        if (hasSameWeapon) {
+            SELECT.PRIMARY_WEAPON.value = pweapon.name;
+        } else {
+            // TODO
+        }
+    }
+
+    function clear(select) {
+        for (let i = select.options.length - 1; i >= 0; i--) {
+            select.remove(i);
+        }
+    }
+
+    function createOption(value, text) {
+        let option = document.createElement("option");
+        if (value == "divider") option.disabled = true;
+        else option.setAttribute("value", value);
+        option.text = text;
+        return option;
+    }
+
+    function generateFirstTable(table) {
+        addTableHeader(OUTPUT);
+        for (let i = 0; i < table.length; i++) {
+            addTableRow(OUTPUT, table, i);
+        }
+    }
+
+    function hideElement(element) {
+        let className = element.className;
+        if (!className.includes("hidden")) {
+            element.className = className + " hidden";
+        }
+    }
+
+    function showElement(element) {
+        element.className = element.className.replace(" hidden", "").replace("hidden ", "");
     }
 
     function addTableRow(output, table, index) {
@@ -74,18 +211,27 @@ function load() {
 
         let iasCell = document.createElement("td");
         let ias = convertEIAStoIAS(breakpoint[0]);
-        iasCell.innerHTML = ias < 0 ? "" : ias;
+        iasCell.innerHTML = ias <= 0 ? "" : ias;
         iasCell.className = "cellFull";
+
+        let fanaticismCell = document.createElement("td");
+        let skillLevel = AS_SKILL.FANATICISM.getLevelFromEIAS(breakpoint[0]);
+        fanaticismCell.innerHTML = skillLevel <= 0 ? "" : (skillLevel > 60 ? "∞" : skillLevel);
+        fanaticismCell.className = "cellFull";
 
         breakpoint.push(actionFrameCell);
         breakpoint.push(lengthCell);
         breakpoint.push(eiasCell);
         breakpoint.push(iasCell);
+        breakpoint.push(fanaticismCell);
     
         tableRow.appendChild(actionFrameCell);
         tableRow.appendChild(lengthCell);
         tableRow.appendChild(eiasCell);
         tableRow.appendChild(iasCell);
+        tableRow.appendChild(fanaticismCell);
+        
+        rows.push(new Row(tableRow));
     
         output.appendChild(tableRow);
     }
@@ -107,13 +253,21 @@ function load() {
 
         let iasHeader = document.createElement("th");
         iasHeader.innerHTML = "IAS";
-        iasHeader.title = "Total Increased Attack Speed needed for this breakpoint";
+        iasHeader.title = "Additional Increased Attack Speed needed for this breakpoint";
         iasHeader.className = "hoverable";
+
+        let fanaticismHeader = document.createElement("th");
+        fanaticismHeader.innerHTML = "Fan";
+        fanaticismHeader.title = "Additional Fanaticism skill levels needed for this breakpoint";
+        fanaticismHeader.className = "hoverable";
     
         tableRow.appendChild(actionFrameHeader);
         tableRow.appendChild(lengthHeader);
         tableRow.appendChild(eiasHeader);
         tableRow.appendChild(iasHeader);
+        tableRow.appendChild(fanaticismHeader);
+
+        rows.push(new Row(tableRow));
     
         output.appendChild(tableRow);
     }
@@ -154,7 +308,7 @@ function load() {
         }
 
         table = table.reverse();
-        console.log(table);
+        //console.log(table);
         return table;
 
     }

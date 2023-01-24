@@ -18,7 +18,7 @@
             <option value="NE">Necromancer</option>
             <option value="PA">Paladin</option>
             <option value="SO">Sorceress</option>
-            <option disabled>─ Mercenaries ─</option>
+            <option disabled>Mercenaries</option>
             <option value="RG">A1</option>
             <option value="GU">A2</option>
             <option value="IW">A3</option>
@@ -32,16 +32,15 @@
                 <option value="40" style="display: none">Werewolf</option>
             </select>
         </div>
-        <br>
         <select id="skillSelect"></select>
         <br>
-        <label for="primaryWeaponSelect" title="Primary Weapon, Gloves-side" class="hoverable">P Weapon:</label>
         <select id="primaryWeaponSelect"></select>
         <div id="isOneHandedContainer" style="display: none">
             <input type="checkbox" id="isOneHanded">1H
         </div>
-        <label for="primaryWeaponIAS" title="IAS on this weapon only" class="hoverable">IAS:</label>
-        <input type="number" id="primaryWeaponIAS" value="0" min="0" max="120" title="IAS on this weapon only">
+        <br>
+        <input type="number" id="primaryWeaponIAS" value="0" min="0" max="120" title="IAS on this weapon only" class="indent">
+        <label for="primaryWeaponIAS" title="IAS on this weapon only" class="hoverable">WIAS</label>
         <br>
         <div id="secondaryWeaponContainer" style="display: none">
             <label for="secondaryWeaponSelect" title="Secondary Weapon, Boots-side" class="hoverable">S Weapon:</label>
@@ -50,11 +49,11 @@
             <input type="number" id="secondaryWeaponIAS" value="0" min="0" max="120" title="IAS on this weapon only">
             <br>
         </div>
-        <label for="IAS" title="Gear (non-weapon) IAS" class="hoverable">GIAS:</label>
         <input type="number" id="IAS" value="0" min="0" title="Gear (non-weapon) IAS">
+        <label for="IAS" title="Gear (non-weapon) IAS" class="hoverable">GIAS</label>
         <br>
-        <label for="fanaticismLevel">Fanaticism:</label>
         <input type="number" id="fanaticismLevel" value="0" min="0" max="60">
+        <label for="fanaticismLevel">Fanaticism</label>
         <br>
         <div id="burstOfSpeedContainer" style="display: none">
             <label for="burstOfSpeedLevel">Burst of Speed:</label>
@@ -76,11 +75,11 @@
             <input type="number" id="frenzyLevel" value="0" min="0" max="60">
             <br>
         </div>
-        <label for="holyFreezeLevel">Holy Freeze:</label>
         <input type="number" id="holyFreezeLevel" value="0" min="0" max="60">
+        <label for="holyFreezeLevel">Holy Freeze</label>
         <br>
-        <label for="slowedByLevel" title="Slows Target % in PvP" class="hoverable">Slowed By:</label>
         <input type="number" id="slowedByLevel" value="0" min="0" max="50" title="Slows Target % in PvP">
+        <label for="slowedByLevel" title="Slows Target % in PvP" class="hoverable">Slowed By</label>
         <br>
         <input type="checkbox" id="decrepify">Decrepify
         <input type="checkbox" id="chilled">Chilled

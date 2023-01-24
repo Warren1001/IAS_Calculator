@@ -121,6 +121,7 @@ function load() {
 			}
 
 			unhideElement(container.WEREFORM);
+			unhideElement(container.MARK_OF_BEAR);
 
 		} else {
 
@@ -129,6 +130,7 @@ function load() {
 			}
 
 			hideElement(container.WEREFORM);
+			hideElement(container.MARK_OF_BEAR);
 			if (wereform != wf.HUMAN) {
 				select.WEREFORM.value = wf.HUMAN;
 				onWereformChange(false);
@@ -272,13 +274,13 @@ function load() {
 			if (skill.canDualWield && !skill.isDualWieldOnly) {
 				if (tableVariable != tv.PRIMARY_WEAPON_IAS) unhideElement(container.PRIMARY_WEAPON_IAS);
 				if (tableVariable != tv.SECONDARY_WEAPON_IAS) unhideElement(container.SECONDARY_WEAPON_IAS);
-				if (skill != skills.WHIRLWIND) {
+				if (skill != skills.WHIRLWIND && skill != skills.STANDARD) {
+					unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+					unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 					if (tableVariable == tv.IAS) {
 						select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
 						onTableVariableChange(false);
 					}
-					unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
-					unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 					hideElement(option.TABLE_VARIABLE_IAS);
 				}
 			}
@@ -290,6 +292,7 @@ function load() {
 				hideElement(container.IS_ONE_HANDED);
 			}
 			if (skill.canDualWield && !skill.isDualWieldOnly) {
+				unhideElement(option.TABLE_VARIABLE_IAS);
 				if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
 					select.TABLE_VARIABLE.value = tv.IAS;
 					onTableVariableChange(false);
@@ -298,7 +301,6 @@ function load() {
 				hideElement(container.SECONDARY_WEAPON_IAS);
 				hideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
 				hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
-				unhideElement(option.TABLE_VARIABLE_IAS);
 			}
 			// TODO hide primary and secondary wias (on conditions)
 		}
@@ -349,14 +351,14 @@ function load() {
 
 		if (skill.isDualWieldOnly) {
 			unhideElement(container.SECONDARY_WEAPON);
-			unhideElement(container.PRIMARY_WEAPON_IAS);
-			unhideElement(container.SECONDARY_WEAPON_IAS);
 			unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
 			unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 			if (tableVariable == tv.IAS) {
 				select.TABLE_VARIABLE.value = tv.PRIMARY_WEAPON_IAS;
 				onTableVariableChange(false);
 			}
+			if (tableVariable != tv.PRIMARY_WEAPON_IAS) unhideElement(container.PRIMARY_WEAPON_IAS);
+			if (tableVariable != tv.SECONDARY_WEAPON_IAS) unhideElement(container.SECONDARY_WEAPON_IAS);
 			hideElement(option.TABLE_VARIABLE_IAS);
 			setSecondaryWeapons();
 		} else if (skill.canDualWield && (character == char.BARBARIAN || character == char.ASSASSIN || character == char.FRENZY_BARBARIAN)) {
@@ -367,9 +369,7 @@ function load() {
 				unhideElement(container.SECONDARY_WEAPON);
 			}
 			if (isSecondWeaponSet()) {
-				unhideElement(container.PRIMARY_WEAPON_IAS);
-				unhideElement(container.SECONDARY_WEAPON_IAS);
-				if (skill != skills.WHIRLWIND) {
+				if (skill != skills.WHIRLWIND && skill != skills.STANDARD) {
 					unhideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
 					unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 					if (tableVariable == tv.IAS) {
@@ -378,6 +378,8 @@ function load() {
 					}
 					hideElement(option.TABLE_VARIABLE_IAS);
 				}
+				if (tableVariable != tv.PRIMARY_WEAPON_IAS) unhideElement(container.PRIMARY_WEAPON_IAS);
+				if (tableVariable != tv.SECONDARY_WEAPON_IAS) unhideElement(container.SECONDARY_WEAPON_IAS);
 			} else {
 				unhideElement(option.TABLE_VARIABLE_IAS);
 				hideElement(container.PRIMARY_WEAPON_IAS);
@@ -693,9 +695,9 @@ function load() {
 		// [EIAS, SIAS, WSM1, WSM2, IEIAS, GIAS, WIAS1, WIAS2]
 		let EIASvalues = calculateEIAS(isPrimary);
 		let EIAS = tableVariable == tv.EIAS ? 0 : EIASvalues[0];
-		let totalIAS = tableVariable == tv.EIAS ? 0 : EIASvalues[4] + (isPrimary ? EIASvalues[5] : EIASvalues[6]);
+		//let totalIAS = tableVariable == tv.EIAS ? 0 : EIASvalues[4] + (isPrimary ? EIASvalues[5] : EIASvalues[6]);
 		let nonIASEIAS = EIASvalues[1] - EIASvalues[2];
-		let speedReduction = skill == skills.WHIRLWIND ? framesPerDirectionHuman / framesPerDirection3 : framesPerDirection3 / framesPerDirectionHuman;
+		let speedReduction = framesPerDirection3 / framesPerDirectionHuman;
 		let offset = skill == skills.IMPALE || skill == skills.JAB || skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER
 			|| skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW || skill == skills.DOUBLE_SWING
 			|| skill == skills.DOUBLE_THROW || skill == skills.FURY || skill == skills.DRAGON_TALON
@@ -711,7 +713,7 @@ function load() {
 		log("startingFrame=%s", startingFrame);
 		log("EIASvalues=%s", EIASvalues);
 		log("EIAS=%s", EIAS);
-		log("totalIAS=%s", totalIAS);
+		//log("totalIAS=%s", totalIAS);
 		log("nonIASEIAS=%s", nonIASEIAS);
 		log("speedReduction=%s", speedReduction);
 		log("offset=%s", offset);
@@ -1068,7 +1070,7 @@ function load() {
 			animationSpeed = 128;
 		} else if (weaponType == wt.CLAW && !(skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER ||
 				skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW || skill == skills.DRAGON_TAIL || skill == skills.DRAGON_TALON)) {
-			if (fpd1 == 12) animationSpeed = 227; // fpd1 == 12 - patch 2.5 (PTR v1) changed AIA2HT1 and AIA2HT1's AnimationSpeed to 227 from 208.
+			if (fpd1 == 12) animationSpeed = 227; // fpd1 == 12 - patch 2.5 (PTR v1) changed AIA2HT1 and AIA2HT2's AnimationSpeed to 227 from 208.
 			else animationSpeed = 208;
 		}
 		return animationSpeed;
@@ -1082,6 +1084,7 @@ function load() {
 
 		if (skill != skills.DODGE && constants.checkbox.DECREPIFY.checked) SIAS -= 50;
 		if (constants.checkbox.CHILLED.checked) SIAS -= 50;
+		if (!isElementHidden(container.MARK_OF_BEAR) && constants.checkbox.MARK_OF_BEAR.checked) SIAS += 25;
 
 		SIAS -= number.SLOWED_BY.value;
 
@@ -1186,6 +1189,7 @@ function load() {
 			number.WEREWOLF.value + constants.LINK_SEPARATOR +
 			number.MAUL.value + constants.LINK_SEPARATOR +
 			number.FRENZY.value + constants.LINK_SEPARATOR +
+			(constants.checkbox.MARK_OF_BEAR.checked ? 1 : 0) + constants.LINK_SEPARATOR +
 			number.HOLY_FREEZE.value + constants.LINK_SEPARATOR +
 			number.SLOWED_BY.value + constants.LINK_SEPARATOR +
 			(constants.checkbox.DECREPIFY.checked ? 1 : 0) + constants.LINK_SEPARATOR +
@@ -1215,6 +1219,7 @@ function load() {
 		let werewolf = parser.readInt();
 		let maul = parser.readInt();
 		let frenzy = parser.readInt();
+		let markOfBear = parser.readBoolean();
 		let holyFreeze = parser.readInt();
 		let slowedBy = parser.readInt();
 		let decrepify = parser.readBoolean();
@@ -1255,6 +1260,7 @@ function load() {
 		number.WEREWOLF.value = werewolf;
 		number.MAUL.value = maul;
 		number.FRENZY.value = frenzy;
+		checkbox.MARK_OF_BEAR.checked = markOfBear;
 		number.HOLY_FREEZE.value = holyFreeze;
 		number.SLOWED_BY.value = slowedBy;
 		checkbox.DECREPIFY.checked = decrepify;
@@ -1285,14 +1291,24 @@ function load() {
 
 	// [EIAS, SIAS, WSM1, WSM2, IEIAS, GIAS, WIAS1, WIAS2]
 	function convertEIAStoVariable(neededEIAS, EIASvalues) {
+		console.log("neededEIAS=%s", neededEIAS);
 		let remainingEIAS = neededEIAS - EIASvalues[1] + EIASvalues[2]; // doesn't contain ias values
 		switch (tableVariable) {
 			case tv.EIAS:
 				return neededEIAS;
 			case tv.PRIMARY_WEAPON_IAS:
 			case tv.SECONDARY_WEAPON_IAS:
-				return constants.convertEIAStoIAS(2 * neededEIAS - 2 * EIASvalues[1] + EIASvalues[2] + EIASvalues[3]
-					- constants.convertIAStoEIAS(EIASvalues[5] + (tableVariable == tv.SECONDARY_WEAPON_IAS ? EIASvalues[6] : EIASvalues[7]))) - EIASvalues[5];
+				let ca = 2 * neededEIAS;
+				let cb = 2 * EIASvalues[1];
+				let cc = constants.convertIAStoEIAS(EIASvalues[5] + (tableVariable == tv.SECONDARY_WEAPON_IAS ? EIASvalues[6] : EIASvalues[7]));
+				let ce = ca - cb + EIASvalues[2] + EIASvalues[3] - cc;
+				let cd = constants.convertEIAStoIAS(ce);
+				log("ca=%s", ca);
+				log("cb=%s", cb);
+				log("cc=%s", cc);
+				log("ce=%s", ce);
+				log("cd=%s", cd);
+				return cd - EIASvalues[5];
 			case tv.IAS:
 				//console.log("convertEIAStoVariable: ", neededEIAS);
 				return Math.max(0, constants.convertEIAStoIAS(remainingEIAS) - EIASvalues[5] - EIASvalues[6]);
