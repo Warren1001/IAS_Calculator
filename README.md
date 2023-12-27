@@ -4,6 +4,9 @@ Credits to ChthonVII and ubeogesh for helping with the calculator.
 Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 Credits to Phrozen Keep for information.
 
+### v1.1.1
+- Added the ability to select Werewolf and Werewolf skills to all player classes. This will be removed once the event is over.
+
 ### v1.1.0
 - Added Burst of Speed for all classes (Hustle).
 - Added Mark of the Bear for all character classes (Metamorphosis).

@@ -137,7 +137,10 @@ function load() {
 			}
 		}
 
-		if (character == char.BARBARIAN || character == char.DRUID) unhideElement(option.WEREFORM_WEREWOLF);
+		//if (character == char.BARBARIAN || character == char.DRUID) unhideElement(option.WEREFORM_WEREWOLF); TODO holiday event
+		if (isCharacterSelected()) {
+			unhideElement(option.WEREFORM_WEREWOLF);
+		}
 		else {
 			hideElement(option.WEREFORM_WEREWOLF);
 			if (select.WEREFORM.value == wf.WEREWOLF) {
@@ -471,7 +474,14 @@ function load() {
 					currentSkills.push(skills.IMPALE);
 					currentSkills.push(skills.FEND);
 					currentSkills.push(skills.DODGE);
-				}
+				} else if (wereform == wf.WEREWOLF) {
+					currentSkills.push(skills.FURY);
+					currentSkills.push(skills.RABIES);
+					currentSkills.push(skills.FERAL_RAGE);
+					currentSkills.push(skills.HUNGER);
+				} /*else if (wereform == wf.WEREBEAR) {
+					currentSkills.push(skills.HUNGER);
+				}*/
 				break;
 			case char.ASSASSIN:
 				if (wereform == wf.HUMAN) {
@@ -485,7 +495,14 @@ function load() {
 					currentSkills.push(skills.BLADES_OF_ICE);
 					currentSkills.push(skills.DRAGON_TAIL);
 					currentSkills.push(skills.DRAGON_CLAW);
-				}
+				} else if (wereform == wf.WEREWOLF) {
+					currentSkills.push(skills.FURY);
+					currentSkills.push(skills.RABIES);
+					currentSkills.push(skills.FERAL_RAGE);
+					currentSkills.push(skills.HUNGER);
+				} /*else if (wereform == wf.WEREBEAR) {
+					currentSkills.push(skills.HUNGER);
+				}*/
 				break;
 			case char.BARBARIAN:
 				if (wereform == wf.HUMAN) {
@@ -497,7 +514,14 @@ function load() {
 					currentSkills.push(skills.BASH);
 					currentSkills.push(skills.STUN);
 					currentSkills.push(skills.DOUBLE_THROW);
-				}
+				} else if (wereform == wf.WEREWOLF) {
+					currentSkills.push(skills.FURY);
+					currentSkills.push(skills.RABIES);
+					currentSkills.push(skills.FERAL_RAGE);
+					currentSkills.push(skills.HUNGER);
+				} /*else if (wereform == wf.WEREBEAR) {
+					currentSkills.push(skills.HUNGER);
+				}*/
 				break;
 			case char.DRUID:
 				if (wereform == wf.WEREWOLF) {
@@ -516,7 +540,14 @@ function load() {
 					currentSkills.push(skills.SACRIFICE);
 					currentSkills.push(skills.VENGEANCE);
 					currentSkills.push(skills.CONVERSION);
-				}
+				} else if (wereform == wf.WEREWOLF) {
+					currentSkills.push(skills.FURY);
+					currentSkills.push(skills.RABIES);
+					currentSkills.push(skills.FERAL_RAGE);
+					currentSkills.push(skills.HUNGER);
+				} /*else if (wereform == wf.WEREBEAR) {
+					currentSkills.push(skills.HUNGER);
+				}*/
 				break;
 			case char.DESERT_MERCENARY:
 				currentSkills.push(skills.JAB);
