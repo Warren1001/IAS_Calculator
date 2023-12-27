@@ -549,6 +549,26 @@ function load() {
 					currentSkills.push(skills.HUNGER);
 				}*/
 				break;
+			case char.NECROMANCER:
+				if (wereform == wf.WEREWOLF) {
+					currentSkills.push(skills.FURY);
+					currentSkills.push(skills.RABIES);
+					currentSkills.push(skills.FERAL_RAGE);
+					currentSkills.push(skills.HUNGER);
+				} /*else if (wereform == wf.WEREBEAR) {
+					currentSkills.push(skills.HUNGER);
+				}*/
+				break;
+			case char.SORCERESS:
+				if (wereform == wf.WEREWOLF) {
+					currentSkills.push(skills.FURY);
+					currentSkills.push(skills.RABIES);
+					currentSkills.push(skills.FERAL_RAGE);
+					currentSkills.push(skills.HUNGER);
+				} /*else if (wereform == wf.WEREBEAR) {
+					currentSkills.push(skills.HUNGER);
+				}*/
+				break;
 			case char.DESERT_MERCENARY:
 				currentSkills.push(skills.JAB);
 				break;
