@@ -327,7 +327,7 @@ if (ENVIRONMENT_IS_PTHREAD) {
  } else {
   wasmMemory = new WebAssembly.Memory({
    "initial": INITIAL_MEMORY / 65536,
-   "maximum": 2147483648 / 65536,
+   "maximum": 268435456 / 65536,
    "shared": true
   });
   if (!(wasmMemory.buffer instanceof SharedArrayBuffer)) {
