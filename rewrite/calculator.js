@@ -15,11 +15,11 @@ function load() {
 
     let rows = [];
 
-    class Cell {
+    /*class Cell {
 
         constructor(startingId)
 
-    }
+    }*/
 
     class Row {
 
@@ -70,7 +70,10 @@ function load() {
     updateSkills();
     updateWeapons();
 
-    generateFirstTable();
+    //generateFirstTable();
+
+    let dclawAnim = [16, [6, 10], 0, 256];
+    console.log(generateNormalBreakpointTable(dclawAnim[0], dclawAnim[1], dclawAnim[2], dclawAnim[3], true, false, 1));
 
     function generateFirstTable() {
         let animData = getAnimData();
