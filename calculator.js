@@ -1201,7 +1201,7 @@ function load() {
 			name == "Maiden Spear" || name == "Maiden Pike" || name == "Ceremonial Spear" || name == "Ceremonial Pike" || name == "Matriarchal Spear" || name == "Matriarchal Pike"
 			)) return false;
 		if (character != char.SORCERESS && itemClass == ic.ORB) return false;
-		if (character != char.PALADIN && skill == skills.ZEAL && !(weaponType.isMelee && weapon.maxSockets >= 4)) return false;
+		if (character != char.PALADIN && skill == skills.ZEAL && !weaponType.isMelee) return false;
 		if (skill == skills.THROW && !weapon.canBeThrown()) return false;
 		if (isSecondary && character == char.ASSASSIN && !(weaponType == wt.UNARMED || weaponType == wt.CLAW)) return false;
 		if (isSecondary && character == char.BARBARIAN && !(weaponType == wt.UNARMED || weaponType.isOneHand || weaponType == wt.TWO_HANDED_SWORD)) return false;
