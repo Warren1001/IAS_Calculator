@@ -924,7 +924,7 @@ function load() {
 			displayTableInfo("Dodge/Avoid/Evade. Tested, should be correct based on given information.");
 		} else if (skill == skills.WHIRLWIND) {
 			if (isSecondWeaponSet()) {
-				displayTableInfo("Whirlwind is correct in all tested scenarios. The third table is the table that both weapons swing at ingame, it's a combination of the first two tables.");
+				displayTableInfo("Whirlwind is correct in all tested scenarios. The third table is the table that both weapons swing at ingame, it's a combination of the first two tables. This table is calculated too simply and doesn't consider combinations of frames more than 1 frame apart (ie 4 + 6) so you'll need to combine manually in those cases.");
 			} else {
 				displayTableInfo("Whirlwind is correct in all tested scenarios.");
 			}
@@ -1496,3 +1496,4 @@ function addTableHeader(table, variableLabel) {
 
 	table.appendChild(tableRow);
 }
+
