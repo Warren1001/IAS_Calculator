@@ -4,6 +4,9 @@ Credits to ChthonVII and ubeogesh for helping with the calculator.
 Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 Credits to Phrozen Keep for information.
 
+### v1.1.2
+- Allowed non-Paladins to select any melee weapon when using Zeal, since Zeal charges exist.
+
 ### v1.1.1
 - Added the ability to select Werewolf and Werewolf skills to all player classes. This will be removed once the event is over.
 
