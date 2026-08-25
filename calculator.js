@@ -1466,7 +1466,7 @@ function load() {
 
 	// [EIAS, SIAS, WSM1, WSM2, IEIAS, GIAS, WIAS1, WIAS2]
 	function convertEIAStoVariable(neededEIAS, EIASvalues) {
-		console.log("neededEIAS=%s", neededEIAS);
+		//console.log("neededEIAS=%s", neededEIAS);
 		let remainingEIAS = neededEIAS - EIASvalues[1] + EIASvalues[2]; // doesn't contain ias values
 		switch (tableVariable) {
 			case tv.EIAS:
