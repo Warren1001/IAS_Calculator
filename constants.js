@@ -282,7 +282,7 @@ const skill = {
 	BURST_OF_SPEED: new AttackSpeedSkill(number.BURST_OF_SPEED, skillCalcDiminishing.bind(null, 15, 60, 0, -1), tv.BURST_OF_SPEED),
 	WEREWOLF: new AttackSpeedSkill(number.WEREWOLF, skillCalcDiminishing.bind(null, 10, 80, 0, -1), tv.WEREWOLF, (_character, wereform, _skill) => wereform == wf.WEREWOLF),
 	MAUL: new AttackSpeedSkill(number.MAUL, maulCalc.bind(null), tv.MAUL, (_character, wereform, _skill) => wereform == wf.WEREBEAR),
-	FRENZY: new AttackSpeedSkill(number.FRENZY, skillCalcDiminishing.bind(null, 0, 50, 0, -1), tv.FRENZY, (character, _wereform, _skill) => character == char.BARBARIAN || character == char.BASH_BARBARIAN),
+	FRENZY: new AttackSpeedSkill(number.FRENZY, skillCalcDiminishing.bind(null, 0, 50, 0, -1), tv.FRENZY, (character, _wereform, _skill) => character == char.BARBARIAN || character == char.FRENZY_BARBARIAN),
 	HOLY_FREEZE: new AttackSpeedSkill(number.HOLY_FREEZE, skillCalcDiminishing.bind(null, 25, 60, 0, 50)), // -50 cap cuz chill effectiveness
 	PURGE: new AttackSpeedSkill(number.PURGE, skillCalcLinear.bind(null, 10, 1, 0, 30)),
 	CLEAVE: new AttackSpeedSkill(number.CLEAVE, skillCalcDiminishing.bind(null, 10, 30, 0, -1), null, (_character, _wereform, skill) => skill == skills.CLEAVE),
