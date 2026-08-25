@@ -35,6 +35,7 @@ function load() {
 				hideElement(container.WEREWOLF);
 				hideElement(container.MAUL);
 				hideElement(container.MARK_OF_BEAR);
+				hideElement(container.PURGE);
 				hideElement(container.CLEAVE);
 				hideElement(container.MIRRORED_BLADES);
 				hideElement(container.DECREPIFY);
@@ -104,6 +105,10 @@ function load() {
 			}
 			if (tableVariable != tv.FRENZY && (character == char.BARBARIAN || character == char.FRENZY_BARBARIAN)) {
 				unhideElement(container.FRENZY);
+			}
+
+			if (character == char.WARLOCK) {
+				unhideElement(container.PURGE);
 			}
 
 			if (skill == skills.CLEAVE) {
@@ -187,6 +192,12 @@ function load() {
 				select.TABLE_VARIABLE.value = tv.IAS;
 				onTableVariableChange(false);
 			}
+		}
+
+		if (character == char.WARLOCK) {
+			unhideElement(container.PURGE);
+		} else {
+			hideElement(container.PURGE);
 		}
 
 		if (character != char.BARBARIAN && character != char.ASSASSIN && character != char.FRENZY_BARBARIAN) {
@@ -783,10 +794,7 @@ function load() {
 		//let totalIAS = tableVariable == tv.EIAS ? 0 : EIASvalues[4] + (isPrimary ? EIASvalues[5] : EIASvalues[6]);
 		let nonIASEIAS = EIASvalues[1] - EIASvalues[2];
 		let speedReduction = framesPerDirection3 / framesPerDirectionHuman;
-		let offset = skill == skills.IMPALE || skill == skills.JAB || skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER
-			|| skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW || skill == skills.DOUBLE_SWING
-			|| skill == skills.DOUBLE_THROW || skill == skills.FURY || skill == skills.DRAGON_TALON
-			|| skill == skills.ZEAL || skill == skills.FEND || skill == skills.STRAFE || skill == skills.FRENZY || skill == skills.WHIRLWIND ? 0 : 1;
+		let offset = skill.isSequence || skill.isRollback || skill == skills.WHIRLWIND ? 0 : 1;
 		let startingAcceleration = tableVariable == tv.EIAS ? other.MIN_EIAS : 0;
 		let trueMaxAccelerationIncrease = tableVariable == tv.EIAS ? other.MAX_EIAS : maxAccelerationIncrease;//Math.max(maxAccelerationIncrease, other.MAX_EIAS - EIAS);
 
@@ -1156,21 +1164,27 @@ function load() {
 
 	function calculateSIAS() {
 
-		let SIAS = speed.FANATICISM.calculate(tableVariable, character, wereform, skill) + speed.BURST_OF_SPEED.calculate(tableVariable, character, wereform, skill)
-			+ speed.WEREWOLF.calculate(tableVariable, character, wereform, skill) + speed.FRENZY.calculate(tableVariable, character, wereform, skill) + speed.MAUL.calculate(tableVariable, character, wereform, skill)
-			- speed.HOLY_FREEZE.calculate(tableVariable, character, wereform, skill);
+		let SIAS = 0;
 
+		if (!isElementHidden(container.FANATICISM)) SIAS += speed.FANATICISM.calculate(tableVariable, character, wereform, skill);
+		if (!isElementHidden(container.BURST_OF_SPEED)) SIAS += speed.BURST_OF_SPEED.calculate(tableVariable, character, wereform, skill);
+		if (!isElementHidden(container.WEREWOLF)) SIAS += speed.WEREWOLF.calculate(tableVariable, character, wereform, skill);
+		if (!isElementHidden(container.FRENZY)) SIAS += speed.FRENZY.calculate(tableVariable, character, wereform, skill);
+		if (!isElementHidden(container.MAUL)) SIAS += speed.MAUL.calculate(tableVariable, character, wereform, skill);
+		if (!isElementHidden(container.PURGE)) SIAS += speed.PURGE.calculate(tableVariable, character, wereform, skill);
 		if (!isElementHidden(container.CLEAVE)) SIAS += speed.CLEAVE.calculate(tableVariable, character, wereform, skill);
 		if (!isElementHidden(container.MIRRORED_BLADES)) SIAS += speed.MIRRORED_BLADES.calculate(tableVariable, character, wereform, skill);
 
-		if (skill != skills.DODGE && constants.checkbox.DECREPIFY.checked) SIAS -= 50;
-		if (constants.checkbox.CHILLED.checked) SIAS -= 50;
+		if (!isElementHidden(container.HOLY_FREEZE)) SIAS -= speed.HOLY_FREEZE.calculate(tableVariable, character, wereform, skill);
+
 		if (!isElementHidden(container.MARK_OF_BEAR) && constants.checkbox.MARK_OF_BEAR.checked) SIAS += 25;
-		if (!isElementHidden(container.LETHARGY) && constants.checkbox.LETHARGY.checked) SIAS -= 50;
 
 		SIAS -= number.SLOWED_BY.value;
+		if (skill != skills.DODGE && constants.checkbox.DECREPIFY.checked) SIAS -= 50;
+		if (constants.checkbox.CHILLED.checked) SIAS -= 50;
+		if (!isElementHidden(container.LETHARGY) && constants.checkbox.LETHARGY.checked) SIAS -= 50;
 
-		if (isCharacterSelected()) {
+		if (isCharacterSelected()) { // does sequence debuff apply to mercs?
 			if (skill.isSequence) SIAS -= 30; // sequence skills get a -30 EIAS debuff except whirlwind.
 
 			if (skill == skills.DOUBLE_SWING) {
@@ -1200,7 +1214,7 @@ function load() {
 			if (weaponType == wt.ONE_HANDED_THRUSTING) return 19;
 			if (weaponType == wt.TWO_HANDED_THRUSTING) return 21;
 			if (weaponType == wt.UNARMED) {
-				log("Reached HTH sequence table for Jab but this is not used in vanilla. A bug likely occurred.")
+				log("Reached HTH sequence table for Jab but this is not used in vanilla. A bug likely occurred.");
 				return 13; // not used in live game, can't jab without weapon
 			}
 			log("Jab sequence not found for weapon type: %s", weaponType.name);
@@ -1210,7 +1224,7 @@ function load() {
 			if (weaponType == wt.ONE_HANDED_THRUSTING) return 21;
 			if (weaponType == wt.TWO_HANDED_THRUSTING) return 24;
 			if (weaponType == wt.UNARMED) {
-				log("Reached HTH sequence table for Impale but this is not used in vanilla. A bug likely occurred.")
+				log("Reached HTH sequence table for Impale but this is not used in vanilla. A bug likely occurred.");
 				return 13; // not used in live game, can't impale without weapon
 			}
 			log("Impale sequence not found for weapon type: %s", weaponType.name);
@@ -1220,22 +1234,28 @@ function load() {
 		if (skill == skills.DOUBLE_THROW) return 12;
 		if (skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER || skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW) {
 			if (isSecondWeaponSet()) return 16; // HT2
-			log("Reached HTH/HT1 sequence table for Assassin sequence skills but these are not used in vanilla. A bug likely occurred.")
-			return 12; // not used in live game, can't use these skills without having two claws
+			if (skill == skills.DRAGON_CLAW) {
+				log("Reached HTH/HT1 sequence table for Dragon Claw but these are not used in vanilla. A bug likely occurred.");
+			} else if (weaponType == wt.UNARMED) {
+				log("Reached HTH sequence table for Assassin sequence skills but these are not used in vanilla. A bug likely occurred.")
+			}
+			return 12; // HTH, HT1
 		}
 		if (skill == skills.CLEAVE) {
-			if (weaponType == wt.ONE_HANDED_SWINGING || weaponType == wt.ONE_HANDED_THRUSTING) return 16;
-			if (weaponType == wt.TWO_HANDED_THRUSTING) return 20;
+			if (weaponType == wt.ONE_HANDED_SWINGING) return 16;
+			if (weaponType == wt.ONE_HANDED_THRUSTING) return 16;
 			if (weaponType == wt.TWO_HANDED_SWORD) return 18;
+			if (weaponType == wt.TWO_HANDED_THRUSTING) return 20;
 			if (weaponType == wt.TWO_HANDED) return 22;
 			log("Cleave sequence not found for weapon type: %s", weaponType.name);
 			return -1;
 		}
 		if (skill == skills.MIRRORED_BLADES) {
 			if (weaponType == wt.UNARMED) return 17;
-			if (weaponType == wt.ONE_HANDED_SWINGING || weaponType == wt.ONE_HANDED_THRUSTING) return 16;
-			if (weaponType == wt.TWO_HANDED_THRUSTING) return 21;
+			if (weaponType == wt.ONE_HANDED_SWINGING) return 16;
+			if (weaponType == wt.ONE_HANDED_THRUSTING) return 16;
 			if (weaponType == wt.TWO_HANDED_SWORD) return 19;
+			if (weaponType == wt.TWO_HANDED_THRUSTING) return 21;
 			if (weaponType == wt.BOW || weaponType == wt.CROSSBOW) return 18;
 			if (weaponType == wt.TWO_HANDED) return 17;
 			log("Mirrored Blades sequence not found for weapon type: %s", weaponType.name);
@@ -1316,6 +1336,7 @@ function load() {
 			number.MAUL.value + constants.LINK_SEPARATOR +
 			number.FRENZY.value + constants.LINK_SEPARATOR +
 			(constants.checkbox.MARK_OF_BEAR.checked ? 1 : 0) + constants.LINK_SEPARATOR +
+			number.PURGE.value + constants.LINK_SEPARATOR +
 			number.CLEAVE.value + constants.LINK_SEPARATOR +
 			number.MIRRORED_BLADES.value + constants.LINK_SEPARATOR +
 			number.HOLY_FREEZE.value + constants.LINK_SEPARATOR +
@@ -1349,6 +1370,7 @@ function load() {
 		let maul = parser.readInt();
 		let frenzy = parser.readInt();
 		let markOfBear = parser.readBoolean();
+		let purge = parser.readInt();
 		let cleave = parser.readInt();
 		let mirroredBlades = parser.readInt();
 		let holyFreeze = parser.readInt();
@@ -1374,15 +1396,15 @@ function load() {
 		onTableVariableChange(false);
 
 		primaryWeapon = constants.getWeapon(primaryWeaponName);
-		select.PRIMARY_WEAPON.value = primaryWeapon.name + " [" + primaryWeapon.WSM + "]";
+		select.PRIMARY_WEAPON.value = primaryWeapon.name;
 		onPrimaryWeaponChange(false);
 
 		number.PRIMARY_WEAPON_IAS.value = primaryWIAS;
 		constants.checkbox.IS_ONE_HANDED.checked = oneHanded;
 
 		secondaryWeapon = constants.getWeapon(secondaryWeaponName);
-		select.SECONDARY_WEAPON.value = secondaryWeapon.name + " [" + secondaryWeapon.WSM + "]";
-		if (secondaryWeaponName != "None") onSecondaryWeaponChange(false);
+		select.SECONDARY_WEAPON.value = secondaryWeapon.name;
+		if (secondaryWeapon != weapons.NONE) onSecondaryWeaponChange(false);
 
 		number.SECONDARY_WEAPON_IAS.value = secondaryWIAS;
 
@@ -1393,6 +1415,7 @@ function load() {
 		number.MAUL.value = maul;
 		number.FRENZY.value = frenzy;
 		checkbox.MARK_OF_BEAR.checked = markOfBear;
+		number.PURGE.value = purge;
 		number.CLEAVE.value = cleave;
 		number.MIRRORED_BLADES.value = mirroredBlades;
 		number.HOLY_FREEZE.value = holyFreeze;

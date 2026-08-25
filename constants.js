@@ -16,6 +16,7 @@ const container = {
 	MAUL: document.getElementById("maulContainer"),
 	FRENZY: document.getElementById("frenzyContainer"),
 	MARK_OF_BEAR: document.getElementById("markOfBearContainer"),
+	PURGE: document.getElementById("purgeContainer"),
 	CLEAVE: document.getElementById("cleaveContainer"),
 	MIRRORED_BLADES: document.getElementById("mirroredBladesContainer"),
 	HOLY_FREEZE: document.getElementById("holyFreezeContainer"),
@@ -44,6 +45,7 @@ const number = {
 	WEREWOLF: document.getElementById("werewolfLevel"),
 	MAUL: document.getElementById("maulLevel"),
 	FRENZY: document.getElementById("frenzyLevel"),
+	PURGE: document.getElementById("purgeLevel"),
 	CLEAVE: document.getElementById("cleaveLevel"),
 	MIRRORED_BLADES: document.getElementById("mirroredBladesLevel"),
 	HOLY_FREEZE: document.getElementById("holyFreezeLevel"),
@@ -242,11 +244,9 @@ class Skill {
 
 class AttackSpeedSkill {
 
-	constructor(input, min, factor, max, tableVariable, predicate) {
+	constructor(input, calcFunction, tableVariable, predicate) {
 		this.input = input;
-		this.min = min;
-		this.factor = factor;
-		this.max = max;
+		this.calcFunction = calcFunction;
 		this.tableVariable = tableVariable;
 		this.predicate = predicate;
 		this.reverse = new Map();
@@ -255,20 +255,18 @@ class AttackSpeedSkill {
 		}
 	}
 
+	getEIASFromLevel(level) {
+		if (level == 0) return 0;
+		return this.calcFunction(level);
+	}
+
 	calculate(tableVariable, character, wereform, skill) {
 		if (this.tableVariable == tableVariable || (this.predicate != null && !this.predicate(character, wereform, skill))) return 0;
 		let level = parseInt(this.input.value);
-		if (this.min == -1) return level == 0 ? 0 : this.factor * (parseInt(level / 2) + 3); 
-		return level == 0 ? 0 : Math.min(this.min + parseInt(this.factor * parseInt((110 * level) / (level + 6)) / 100), this.max);
+		return this.getEIASFromLevel(level);
 	}
 
-	getEIASFromLevel(level) {
-		if (this.min == -1) return level == 0 ? 0 : this.factor * (parseInt(level / 2) + 3); // hardcoded specifically for maul
-		if (level == 0) return 0;
-		return Math.min(this.min + parseInt(this.factor * parseInt((110 * level) / (level + 6)) / 100), this.max);
-	}
-
-	getLevelFromEIAS(EIAS) { // this probably doesn't work for holy freeze, but the interface never uses this with holy freeze
+	getLevelFromEIAS(EIAS) {
 		let lastLevel = 60;
 		for (const [levelEIAS, level] of this.reverse) {
 			if (EIAS > levelEIAS) return lastLevel;
@@ -280,15 +278,35 @@ class AttackSpeedSkill {
 }
 
 const skill = {
-    FANATICISM: new AttackSpeedSkill(number.FANATICISM, 10, 30, 40, tv.FANATICISM),
-	BURST_OF_SPEED: new AttackSpeedSkill(number.BURST_OF_SPEED, 15, 45, 60, tv.BURST_OF_SPEED/*, (character, _wereform) => character == char.ASSASSIN*/),
-	WEREWOLF: new AttackSpeedSkill(number.WEREWOLF, 10, 70, 80, tv.WEREWOLF, (_character, wereform) => wereform == wf.WEREWOLF),
-	MAUL: new AttackSpeedSkill(number.MAUL, -1, 3, 99, tv.MAUL, (_character, wereform) => wereform == wf.WEREBEAR),
-	FRENZY: new AttackSpeedSkill(number.FRENZY, 0, 50, 50, tv.FRENZY, (character, _wereform) => character == char.BARBARIAN || character == char.BASH_BARBARIAN),
-	HOLY_FREEZE: new AttackSpeedSkill(number.HOLY_FREEZE, 25, 35, 50), // -50 cap cuz chill effectiveness
-	CLEAVE: new AttackSpeedSkill(number.CLEAVE, 10, 20, 30, null, (_character, _wereform, skill) => skill == skills.CLEAVE),
-	MIRRORED_BLADES: new AttackSpeedSkill(number.MIRRORED_BLADES, 10, 20, 30, null, (_character, _wereform, skill) => skill == skills.MIRRORED_BLADES)
+    FANATICISM: new AttackSpeedSkill(number.FANATICISM, skillCalcDiminishing.bind(null, 10, 40, 0, -1), tv.FANATICISM),
+	BURST_OF_SPEED: new AttackSpeedSkill(number.BURST_OF_SPEED, skillCalcDiminishing.bind(null, 15, 60, 0, -1), tv.BURST_OF_SPEED),
+	WEREWOLF: new AttackSpeedSkill(number.WEREWOLF, skillCalcDiminishing.bind(null, 10, 80, 0, -1), tv.WEREWOLF, (_character, wereform, _skill) => wereform == wf.WEREWOLF),
+	MAUL: new AttackSpeedSkill(number.MAUL, maulCalc.bind(null), tv.MAUL, (_character, wereform, _skill) => wereform == wf.WEREBEAR),
+	FRENZY: new AttackSpeedSkill(number.FRENZY, skillCalcDiminishing.bind(null, 0, 50, 0, -1), tv.FRENZY, (character, _wereform, _skill) => character == char.BARBARIAN || character == char.BASH_BARBARIAN),
+	HOLY_FREEZE: new AttackSpeedSkill(number.HOLY_FREEZE, skillCalcDiminishing.bind(null, 25, 60, 0, 50)), // -50 cap cuz chill effectiveness
+	PURGE: new AttackSpeedSkill(number.PURGE, skillCalcLinear.bind(null, 10, 1, 0, 30)),
+	CLEAVE: new AttackSpeedSkill(number.CLEAVE, skillCalcDiminishing.bind(null, 10, 30, 0, -1), null, (_character, _wereform, skill) => skill == skills.CLEAVE),
+	MIRRORED_BLADES: new AttackSpeedSkill(number.MIRRORED_BLADES, skillCalcDiminishing.bind(null, 10, 30, 0, -1), null, (_character, _wereform, skill) => skill == skills.MIRRORED_BLADES)
 };
+
+function skillCalcLinear(par1, par2, min, max, lvl) {
+	let value = par1 + (lvl - 1) * par2;
+	if (value < min) value = min;
+	else if (max != -1 && value > max) value = max;
+	return value;
+}
+
+function skillCalcDiminishing(par1, par2, min, max, lvl) {
+	let value = par1 + parseInt(110 * lvl * (par2 - par1) / (100 * (lvl + 6)));
+	//let value = par1 + parseInt((par2 - par1) * parseInt((110 * lvl) / (lvl + 6)) / 100); // it was originally written this way but idk why, its not whats written in skillcalc, values are still the same (seemingly)
+	if (value < min) value = min;
+	else if (max != -1 && value > max) value = max;
+	return value;
+}
+
+function maulCalc(lvl) {
+	return lvl == 0 ? 0 : 3 * (parseInt(lvl / 2) + 3); 
+}
 
 const skillsMap = new Map();
 const skills = {
@@ -806,6 +824,7 @@ export function setupUpdateTableInputElements(eventListener) {
 	setupInputElement(number.WEREWOLF, eventListener);
 	setupInputElement(number.MAUL, eventListener);
 	setupInputElement(number.FRENZY, eventListener);
+	setupInputElement(number.PURGE, eventListener);
 	setupInputElement(number.CLEAVE, eventListener);
 	setupInputElement(number.MIRRORED_BLADES, eventListener);
 	setupInputElement(number.HOLY_FREEZE, eventListener);

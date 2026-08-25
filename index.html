@@ -11,12 +11,13 @@
 <body>
   <h3>v1.2.0</h3>
   <p>Last updated for: D2R 3.3 (<a href="https://github.com/Warren1001/IAS_Calculator/blob/master/README.md">Changelog</a>)</p>
+  <p>I made a notable amount of code changes, so if something is different from before or broken, it's probably a bug.</p>
   <br>
   <p>If you have questions or found a bug, <a href="https://github.com/Warren1001/IAS_Calculator/issues">make an issue</a> or contact me on Discord (Warren1001).</p>
   <p><a href="https://github.com/Warren1001/IAS_Calculator/tree/master">View the source code</a>.</p>
   <p>Please full refresh with CTRL + F5 (or equivalent) every so often, especially if you know there was an update recently.</p>
   <p>This calculator is meant to show you everything possible in-game. If there is a combination in this calculator that is not possible in-game OR there is a combination missing that is possible in-game, please report it as a bug.</p>
-  <p class="hoverable" title="not this one...                      act 6 is real">Text with this appearance means hovering cursor displays additional context or information.</p>
+  <p class="hoverable" title="act 6 is real">Text with this appearance means hovering cursor displays additional context or information.</p>
   <br>
   <div id="calculator" class="halfWindow">
     <label for="characterSelect">Character:</label>
@@ -64,8 +65,8 @@
       </select>
       <br>
     </div>
-    <div id="primaryWeaponContainer" style="display: initial">
-      <label for="primaryWeaponSelect" title="Primary Weapon, Gloves-side" class="hoverable">P Weapon:</label>
+    <div id="primaryWeaponContainer" title="Primary Weapon, Gloves-side" style="display: initial">
+      <label for="primaryWeaponSelect" class="hoverable">P Weapon:</label>
       <select id="primaryWeaponSelect"></select>
       <br>
     </div>
@@ -78,8 +79,8 @@
       <input type="number" id="primaryWeaponIAS" value="0" min="0" max="120">
       <br>
     </div>
-    <div id="secondaryWeaponContainer" style="display: none">
-      <label for="secondaryWeaponSelect" title="Secondary Weapon, Boots-side" class="hoverable">S Weapon:</label>
+    <div id="secondaryWeaponContainer" title="Secondary Weapon, Boots-side" style="display: none">
+      <label for="secondaryWeaponSelect" class="hoverable">S Weapon:</label>
       <select id="secondaryWeaponSelect"></select>
       <br>
     </div>
@@ -98,8 +99,8 @@
       <input type="number" id="fanaticismLevel" value="0" min="0" max="60">
       <br>
     </div>
-    <div id="burstOfSpeedContainer">
-      <label for="burstOfSpeedLevel" title="Mania (Hustle) grants BoS to all classes" class="hoverable">Burst of Speed:</label>
+    <div id="burstOfSpeedContainer" title="Mania (Hustle) grants BoS to all classes">
+      <label for="burstOfSpeedLevel" class="hoverable">Burst of Speed:</label>
       <input type="number" id="burstOfSpeedLevel" value="0" min="0" max="60">
       <br>
     </div>
@@ -108,19 +109,24 @@
       <input type="number" id="werewolfLevel" value="0" min="0" max="60">
       <br>
     </div>
-    <div id="maulContainer" style="display: none">
-      <label for="maulLevel">Maul:</label>
+    <div id="maulContainer" title="Assumes maximum charge count" style="display: none">
+      <label for="maulLevel" class="hoverable">Maul:</label>
       <input type="number" id="maulLevel" value="0" min="0" max="60">
       <br>
     </div>
-    <div id="frenzyContainer" style="display: none">
-      <label for="frenzyLevel">Frenzy:</label>
+    <div id="frenzyContainer" title="Assumes maximum charge count" style="display: none">
+      <label for="frenzyLevel" class="hoverable">Frenzy:</label>
       <input type="number" id="frenzyLevel" value="0" min="0" max="60">
       <br>
     </div>
     <div id="markOfBearContainer" title="Metamorphosis grants Mark of the Bear (25 EIAS) to Werebear">
       <input type="checkbox" id="markOfBear" class="hoverable">
       <label for="markOfBear" class="hoverable">Mark of the Bear</label>
+      <br>
+    </div>
+    <div id="purgeContainer" title="EIAS benefit reaches maximum at level 21, additional points worthless" style="display: none">
+      <label for="purgeLevel" class="hoverable">Hex: Purge:</label>
+      <input type="number" id="purgeLevel" value="0" min="0" max="60">
       <br>
     </div>
     <div id="cleaveContainer" title="Cleave grants diminishingly scaling EIAS per skill level" style="display: none">
@@ -133,13 +139,13 @@
       <input type="number" id="mirroredBladesLevel" value="1" min="1" max="60">
       <br>
     </div>
-    <div id="holyFreezeContainer">
-      <label for="holyFreezeLevel">Holy Freeze:</label>
+    <div id="holyFreezeContainer" title="Holy Freeze slow is capped to 50 due to chill effectiveness of 50 for players">
+      <label for="holyFreezeLevel" class="hoverable">Holy Freeze:</label>
       <input type="number" id="holyFreezeLevel" value="0" min="0" max="60">
       <br>
     </div>
-    <div id="slowedByContainer">
-      <label for="slowedByLevel" title="Slows Target % in PvP" class="hoverable">Slowed By:</label>
+    <div id="slowedByContainer" title="Slows Target % in PvP, capped to 50 due to chill effectiveness of 50 for players">
+      <label for="slowedByLevel" class="hoverable">Slowed By:</label>
       <input type="number" id="slowedByLevel" value="0" min="0" max="50">
       <br>
     </div>
@@ -151,11 +157,12 @@
       <input type="checkbox" id="chilled">Chilled
       <br>
     </div>
-    <div id="lethargyContainer" title="Obtainable through charges">
+    <div id="lethargyContainer" title="For PvP, also obtainable through charges">
       <input type="checkbox" id="lethargy" class="hoverable">
       <label for="lethargy" class="hoverable">Sigil: Lethargy</label>
       <br>
     </div>
+    <br>
     <button type="button" id="generateLink">Copy Link</button>
   </div>
   <div id="tableContainer" class="halfWindow"></div>
