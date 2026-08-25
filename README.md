@@ -1,9 +1,9 @@
 ## [IAS Calculator](https://warren1001.github.io/IAS_Calculator/)
 
-Credits to RuffnecKk for dumping the hardcoded player sequence animation table data for D2R 3.3.
-Credits to ChthonVII and ubeogesh for helping with the calculator.
-Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
-Credits to Phrozen Keep for information.
+- Credits to RuffnecKk for dumping the hardcoded player sequence animation table data for D2R 3.3.
+- Credits to ChthonVII and ubeogesh for helping with the calculator.
+- Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
+- Credits to Phrozen Keep for information.
 
 ### v1.2.0
 
