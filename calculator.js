@@ -151,7 +151,7 @@ function load() {
 			}
 		}
 
-		//if (character == char.BARBARIAN || character == char.DRUID) unhideElement(option.WEREFORM_WEREWOLF); TODO holiday event
+		if (character == char.BARBARIAN || character == char.DRUID) unhideElement(option.WEREFORM_WEREWOLF); // disable if holiday event allows anyone to shapeshift
 		if (isCharacterSelected()) {
 			unhideElement(option.WEREFORM_WEREWOLF);
 		}
