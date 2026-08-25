@@ -1,5 +1,5 @@
 
-import { container, select, number, checkbox, option, button, skill as speed, other, debug, tv, char, wf, skills, wt, ic } from './constants.js'
+import { container, select, number, checkbox, option, button, skill as speed, other, debug, tv, char, wf, skills, wt, ic, weapons } from './constants.js'
 import * as constants from './constants.js'
 
 window.addEventListener("load", load, false);
@@ -10,8 +10,8 @@ function load() {
 	let character = char.AMAZON;
 	let wereform = wf.HUMAN;
 	let skill = skills.STANDARD;
-	let primaryWeapon = constants.getWeapon("None");
-	let secondaryWeapon = constants.getWeapon("None");
+	let primaryWeapon = weapons.NONE;
+	let secondaryWeapon = weapons.NONE;
 
 	let maxAccelerationIncrease = other.MAX_IAS_ACCELERATION_CHARACTER;
 
@@ -242,7 +242,7 @@ function load() {
 
 	function onPrimaryWeaponChange(updateTable) {
 		let selection = select.PRIMARY_WEAPON.value;
-		primaryWeapon = constants.getWeapon(selection.substring(0, selection.indexOf(" [")));
+		primaryWeapon = constants.getWeapon(selection);
 		let type = primaryWeapon.type;
 
 		if (tableVariable == tv.IAS) {
@@ -257,7 +257,7 @@ function load() {
 			}
 		}
 
-		if (character == char.BARBARIAN && type == wt.TWO_HANDED_SWORD && !isDualWieldedSequenceSkill() && skill != skills.WHIRLWIND) {
+		if (character == char.BARBARIAN && type == wt.TWO_HANDED_SWORD && !skill.isDualWieldedSequenceSkill() && skill != skills.WHIRLWIND) {
 			unhideElement(container.IS_ONE_HANDED);
 		} else {
 			hideElement(container.IS_ONE_HANDED);
@@ -280,7 +280,7 @@ function load() {
 
 	function onSecondaryWeaponChange(updateTable) {
 		let selection = select.SECONDARY_WEAPON.value;
-		secondaryWeapon = constants.getWeapon(selection.substring(0, selection.indexOf(" [")));
+		secondaryWeapon = constants.getWeapon(selection);
 		//log(secondaryWeapon);
 
 		if (secondaryWeapon.type != wt.UNARMED) {
@@ -440,10 +440,10 @@ function load() {
 		let previousValue = select.PRIMARY_WEAPON.value;
 		let reselect = false;
 		clear(select.PRIMARY_WEAPON);
-		for (const [key, weapon] of constants.weaponsMap) {
+		for (const weapon of constants.weaponsMap.values()) {
 			if (canBeEquipped(weapon, false)) {
-				select.PRIMARY_WEAPON.add(createOption(key, weapon.name + " [" + weapon.WSM + "]"));
-				if (previousValue == key) reselect = true;
+				select.PRIMARY_WEAPON.add(createOption(weapon.name, weapon.name + " [" + weapon.WSM + "]"));
+				if (previousValue == weapon.name) reselect = true;
 			}
 		}
 		if (reselect) {
@@ -458,19 +458,19 @@ function load() {
 		let reselect = false;
 		clear(select.SECONDARY_WEAPON);
 		if (character == char.BARBARIAN || character == char.FRENZY_BARBARIAN) {
-			for (const [key, weapon] of constants.weaponsMap) {
+			for (const weapon of constants.weaponsMap.values()) {
 				if ((weapon.type.isOneHand && weapon.type != wt.CLAW) || (character == char.BARBARIAN && weapon.type == wt.TWO_HANDED_SWORD)) {
 					if (canBeEquipped(weapon, true)) {
-						select.SECONDARY_WEAPON.add(createOption(key, weapon.name + " [" + weapon.WSM + "]"));
-						if (previousValue == key) reselect = true;
+						select.SECONDARY_WEAPON.add(createOption(weapon.name, weapon.name + " [" + weapon.WSM + "]"));
+						if (previousValue == weapon.name) reselect = true;
 					}
 				}
 			}
 		} else if (character == char.ASSASSIN) {
-			for (const [key, weapon] of constants.weaponsMap) {
+			for (const weapon of constants.weaponsMap.values()) {
 				if (canBeEquipped(weapon, true)) {
-					select.SECONDARY_WEAPON.add(createOption(key, weapon.name + " [" + weapon.WSM + "]"));
-					if (previousValue == key) reselect = true;
+					select.SECONDARY_WEAPON.add(createOption(weapon.name, weapon.name + " [" + weapon.WSM + "]"));
+					if (previousValue == weapon.name) reselect = true;
 				}
 			}
 		}
@@ -638,8 +638,10 @@ function load() {
 		}
 
 		currentSkills.forEach(s => {
-			if (s == "divider") createOptionDivider();
-			else createOption(s.name, s.name);
+			let option;
+			if (s == "divider") option = createOptionDivider();
+			else option = createOption(s.name, s.name);
+			select.SKILL.add(option);
 		});
 
 		if (!currentSkills.includes(skill)) {
@@ -953,11 +955,11 @@ function load() {
 		}
 
 		if (skill.isDualWieldedSequenceSkill() || skill == skills.WHIRLWIND) {
-			displayTableInfo("This skill is a dual wielded sequence skill, which means its impacted by a major bug that all these skills have in common. Weapon stats do not swap within the animation as they should, resulting in a lot of funky stuff, including when the primary and secondary weapon's IAS are calculated.");
+			displayTableInfo("This skill is a dual wielded sequence skill, which means its impacted by a major bug that all these skills have in common. Weapon stats do not swap within the animation as they should, resulting in a lot of funky stuff, including breaking when the primary and secondary weapon's IAS are supposed to be calculated.");
 		}
 
 		if (skill == skills.KICK) {
-			displayTableInfo("Kicking barrels/etc. Might be wrong if in wereform.");
+			displayTableInfo("Kicking barrels/etc. Might be wrong in wereform.");
 		} if (skill == skills.JAB) {
 			displayTableInfo("Unfortunately, for the Amazon, Jab has been incorrect all this time (prior to calc version 1.2.0). It is now fixed, and is faster than shown before. It also varies based on using a one handed or two handed weapon.");
 		} else if (skill == skills.DODGE) {
@@ -970,9 +972,12 @@ function load() {
 			} else {
 				displayTableInfo("The first two Whirlwind hits are on the 4th and 8th frame, then the table is used to decide the rest.");
 			}
-		}
-		else if (skill == skills.STRAFE && primaryWeapon.type == wt.CROSSBOW) {
+		} else if (skill == skills.STRAFE && primaryWeapon.type == wt.CROSSBOW) {
 			displayTableInfo("The first table is Strafing an even amount of arrows with a Crossbow, the second table is Strafing an odd amount of arrows with a Crossbow.");
+		} else if (skill == skills.CLEAVE) {
+			displayTableInfo("Be sure to set your Cleave skill level on the left!");
+		} else if (skill == skills.MIRRORED_BLADES) {
+			displayTableInfo("Be sure to set your Mirrored Blades skill level on the left!");
 		}
 
 	}
@@ -1072,7 +1077,7 @@ function load() {
 		log("SIAS=%s", SIAS);
 		let GIAS = tableVariable != tv.IAS ? parseInt(number.IAS.value) : 0;
 		log("GIAS=%s", GIAS);
-		if ((isDualWieldedSequenceSkill() && (character == char.BARBARIAN || character == char.ASSASSIN)) || (character == char.FRENZY_BARBARIAN && isSecondWeaponSet())) { // TODO act 5 merc?
+		if ((skill.isDualWieldedSequenceSkill() && (character == char.BARBARIAN || character == char.ASSASSIN)) || (character == char.FRENZY_BARBARIAN && isSecondWeaponSet())) { // TODO act 5 merc?
 			let WSM1 = getWSM(isPrimary);
 			log("WSM1=%s", WSM1);
 			let WSM2 = getWSM(!isPrimary);
@@ -1153,9 +1158,12 @@ function load() {
 
 	function calculateSIAS() {
 
-		let SIAS = speed.FANATICISM.calculate(tableVariable, character, wereform) + speed.BURST_OF_SPEED.calculate(tableVariable, character, wereform)
-			+ speed.WEREWOLF.calculate(tableVariable, character, wereform) + speed.FRENZY.calculate(tableVariable, character, wereform) + speed.MAUL.calculate(tableVariable, character, wereform)
-			- speed.HOLY_FREEZE.calculate(tableVariable, character, wereform);
+		let SIAS = speed.FANATICISM.calculate(tableVariable, character, wereform, skill) + speed.BURST_OF_SPEED.calculate(tableVariable, character, wereform, skill)
+			+ speed.WEREWOLF.calculate(tableVariable, character, wereform, skill) + speed.FRENZY.calculate(tableVariable, character, wereform, skill) + speed.MAUL.calculate(tableVariable, character, wereform, skill)
+			- speed.HOLY_FREEZE.calculate(tableVariable, character, wereform, skill);
+
+		if (!isElementHidden(container.CLEAVE)) SIAS += speed.CLEAVE.calculate(tableVariable, character, wereform, skill);
+		if (!isElementHidden(container.MIRRORED_BLADES)) SIAS += speed.MIRRORED_BLADES.calculate(tableVariable, character, wereform, skill);
 
 		if (skill != skills.DODGE && constants.checkbox.DECREPIFY.checked) SIAS -= 50;
 		if (constants.checkbox.CHILLED.checked) SIAS -= 50;

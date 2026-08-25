@@ -476,306 +476,309 @@ const ic = {
 	THROWING: "Throwing"
 };
 
-const weaponsMap = new Map([
-	["None", new Weapon("None", 0, wt.UNARMED, ic.NONE, 0)],
-	["Ancient Axe", new Weapon("Ancient Axe", 10, wt.TWO_HANDED, ic.AXE, 6)],
-	["Ancient Sword", new Weapon("Ancient Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 3)],
-	["Arbalest", new Weapon("Arbalest", -10, wt.CROSSBOW, ic.MISSILE, 3)],
-	["Archon Staff", new Weapon("Archon Staff", 10, wt.TWO_HANDED, ic.STAFF, 6)],
-	["Ashwood Bow", new Weapon("Ashwood Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Ataghan", new Weapon("Ataghan", -20, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Axe", new Weapon("Axe", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 4)],
-	["Balanced Axe", new Weapon("Balanced Axe", -10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0)],
-	["Balanced Knife", new Weapon("Balanced Knife", -20, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0)],
-	["Ballista", new Weapon("Ballista", 10, wt.CROSSBOW, ic.MISSILE, 6)],
-	["Balrog Blade", new Weapon("Balrog Blade", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 4)],
-	["Balrog Spear", new Weapon("Balrog Spear", 10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Barbed Club", new Weapon("Barbed Club", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 3)],
-	["Bardiche", new Weapon("Bardiche", 10, wt.TWO_HANDED, ic.POLEARM, 3)],
-	["Bastard Sword", new Weapon("Bastard Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 4)],
-	["Battle Axe", new Weapon("Battle Axe", 10, wt.TWO_HANDED, ic.AXE, 5)],
-	["Battle Cestus", new Weapon("Battle Cestus", -10, wt.CLAW, ic.CLAW, 2)],
-	["Battle Dart", new Weapon("Battle Dart", 0, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0)],
-	["Battle Hammer", new Weapon("Battle Hammer", 20, wt.ONE_HANDED_SWINGING, ic.MACE, 4)],
-	["Battle Scythe", new Weapon("Battle Scythe", -10, wt.TWO_HANDED, ic.POLEARM, 5)],
-	["Battle Staff", new Weapon("Battle Staff", 0, wt.TWO_HANDED, ic.STAFF, 4)],
-	["Battle Sword", new Weapon("Battle Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 4)],
-	["Bearded Axe", new Weapon("Bearded Axe", 0, wt.TWO_HANDED, ic.AXE, 5)],
-	["Bec-de-Corbin", new Weapon("Bec-de-Corbin", 0, wt.TWO_HANDED, ic.POLEARM, 6)],
-	["Berserker Axe", new Weapon("Berserker Axe", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 6)],
-	["Bill", new Weapon("Bill", 0, wt.TWO_HANDED, ic.POLEARM, 4)],
-	["Blade Bow", new Weapon("Blade Bow", -10, wt.BOW, ic.MISSILE, 4)],
-	["Blade Talons", new Weapon("Blade Talons", -20, wt.CLAW, ic.CLAW, 3)],
-	["Blade", new Weapon("Blade", -10, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 2)],
-	["Bone Knife", new Weapon("Bone Knife", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1)],
-	["Bone Wand", new Weapon("Bone Wand", -20, wt.ONE_HANDED_SWINGING, ic.STAFF, 2)],
-	["Brandistock", new Weapon("Brandistock", -20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 5)],
-	["Broad Axe", new Weapon("Broad Axe", 0, wt.TWO_HANDED, ic.AXE, 5)],
-	["Broad Sword", new Weapon("Broad Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 4)],
-	["Burnt Wand", new Weapon("Burnt Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 1)],
-	["Caduceus", new Weapon("Caduceus", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5)],
-	["Cedar Bow", new Weapon("Cedar Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Cedar Staff", new Weapon("Cedar Staff", 10, wt.TWO_HANDED, ic.STAFF, 4)],
-	["Ceremonial Bow", new Weapon("Ceremonial Bow", 10, wt.BOW, ic.MISSILE, 5)],
-	["Ceremonial Javelin", new Weapon("Ceremonial Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Ceremonial Pike", new Weapon("Ceremonial Pike", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Ceremonial Spear", new Weapon("Ceremonial Spear", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Cestus", new Weapon("Cestus", 0, wt.CLAW, ic.CLAW, 2)],
-	["Champion Axe", new Weapon("Champion Axe", -10, wt.TWO_HANDED, ic.AXE, 6)],
-	["Champion Sword", new Weapon("Champion Sword", -10, wt.TWO_HANDED_SWORD, ic.SWORD, 4)],
-	["Chu-Ko-Nu", new Weapon("Chu-Ko-Nu", -60, wt.CROSSBOW, ic.MISSILE, 5)],
-	["Cinquedeas", new Weapon("Cinquedeas", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 3)],
-	["Clasped Orb", new Weapon("Clasped Orb", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Claws", new Weapon("Claws", -10, wt.CLAW, ic.CLAW, 3)],
-	["Claymore", new Weapon("Claymore", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 4)],
-	["Cleaver", new Weapon("Cleaver", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 4)],
-	["Cloudy Sphere", new Weapon("Cloudy Sphere", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Club", new Weapon("Club", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Colossus Blade", new Weapon("Colossus Blade", 5, wt.TWO_HANDED_SWORD, ic.SWORD, 6)],
-	["Colossus Crossbow", new Weapon("Colossus Crossbow", 10, wt.CROSSBOW, ic.MISSILE, 6)],
-	["Colossus Sword", new Weapon("Colossus Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 5)],
-	["Colossus Voulge", new Weapon("Colossus Voulge", 10, wt.TWO_HANDED, ic.POLEARM, 4)],
-	["Composite Bow", new Weapon("Composite Bow", -10, wt.BOW, ic.MISSILE, 4)],
-	["Conquest Sword", new Weapon("Conquest Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 4)],
-	["Crossbow", new Weapon("Crossbow", 0, wt.CROSSBOW, ic.MISSILE, 4)],
-	["Crowbill", new Weapon("Crowbill", -10, wt.ONE_HANDED_SWINGING, ic.AXE, 6)],
-	["Crusader Bow", new Weapon("Crusader Bow", 10, wt.BOW, ic.MISSILE, 6)],
-	["Cryptic Axe", new Weapon("Cryptic Axe", 10, wt.TWO_HANDED, ic.POLEARM, 5)],
-	["Cryptic Sword", new Weapon("Cryptic Sword", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 4)],
-	["Crystal Sword", new Weapon("Crystal Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 6)],
-	["Crystalline Globe", new Weapon("Crystalline Globe", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Cudgel", new Weapon("Cudgel", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Cutlass", new Weapon("Cutlass", -30, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Dacian Falx", new Weapon("Dacian Falx", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 4)],
-	["Dagger", new Weapon("Dagger", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1)],
-	["Decapitator", new Weapon("Decapitator", 10, wt.TWO_HANDED, ic.AXE, 5)],
-	["Demon Crossbow", new Weapon("Demon Crossbow", -60, wt.CROSSBOW, ic.MISSILE, 5)],
-	["Demon Heart", new Weapon("Demon Heart", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Devil Star", new Weapon("Devil Star", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3)],
-	["Diamond Bow", new Weapon("Diamond Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Dimensional Blade", new Weapon("Dimensional Blade", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 6)],
-	["Dimensional Shard", new Weapon("Dimensional Shard", 10, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Dirk", new Weapon("Dirk", 0, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1)],
-	["Divine Scepter", new Weapon("Divine Scepter", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5)],
-	["Double Axe", new Weapon("Double Axe", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 5)],
-	["Double Bow", new Weapon("Double Bow", -10, wt.BOW, ic.MISSILE, 4)],
-	["Eagle Orb", new Weapon("Eagle Orb", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Edge Bow", new Weapon("Edge Bow", 5, wt.BOW, ic.MISSILE, 3)],
-	["Elder Staff", new Weapon("Elder Staff", 0, wt.TWO_HANDED, ic.STAFF, 4)],
-	["Eldritch Orb", new Weapon("Eldritch Orb", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Elegant Blade", new Weapon("Elegant Blade", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Espandon", new Weapon("Espandon", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 3)],
-	["Ettin Axe", new Weapon("Ettin Axe", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 5)],
-	["Executioner Sword", new Weapon("Executioner Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 6)],
-	["Falcata", new Weapon("Falcata", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Falchion", new Weapon("Falchion", 20, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Fanged Knife", new Weapon("Fanged Knife", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 3)],
-	["Fascia", new Weapon("Fascia", 10, wt.CLAW, ic.CLAW, 2)],
-	["Feral Axe", new Weapon("Feral Axe", -15, wt.TWO_HANDED, ic.AXE, 4)],
-	["Feral Claws", new Weapon("Feral Claws", -20, wt.CLAW, ic.CLAW, 3)],
-	["Flail", new Weapon("Flail", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5)],
-	["Flamberge", new Weapon("Flamberge", -10, wt.TWO_HANDED_SWORD, ic.SWORD, 5)],
-	["Flanged Mace", new Weapon("Flanged Mace", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Flying Axe", new Weapon("Flying Axe", 10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0)],
-	["Flying Knife", new Weapon("Flying Knife", 0, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0)],
-	["Francisca", new Weapon("Francisca", 10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0)],
-	["Fuscina", new Weapon("Fuscina", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 4)],
-	["Ghost Glaive", new Weapon("Ghost Glaive", 20, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Ghost Spear", new Weapon("Ghost Spear", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Ghost Wand", new Weapon("Ghost Wand", 10, wt.ONE_HANDED_SWINGING, ic.STAFF, 2)],
-	["Giant Axe", new Weapon("Giant Axe", 10, wt.TWO_HANDED, ic.AXE, 6)],
-	["Giant Sword", new Weapon("Giant Sword", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 4)],
-	["Giant Thresher", new Weapon("Giant Thresher", -10, wt.TWO_HANDED, ic.POLEARM, 6)],
-	["Gladius", new Weapon("Gladius", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Glaive", new Weapon("Glaive", 20, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Glorious Axe", new Weapon("Glorious Axe", 10, wt.TWO_HANDED, ic.AXE, 6)],
-	["Glowing Orb", new Weapon("Glowing Orb", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Gnarled Staff", new Weapon("Gnarled Staff", 10, wt.TWO_HANDED, ic.STAFF, 4)],
-	["Gorgon Crossbow", new Weapon("Gorgon Crossbow", 0, wt.CROSSBOW, ic.MISSILE, 4)],
-	["Gothic Axe", new Weapon("Gothic Axe", -10, wt.TWO_HANDED, ic.AXE, 6)],
-	["Gothic Bow", new Weapon("Gothic Bow", 10, wt.BOW, ic.MISSILE, 6)],
-	["Gothic Staff", new Weapon("Gothic Staff", 0, wt.TWO_HANDED, ic.STAFF, 4)],
-	["Gothic Sword", new Weapon("Gothic Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 4)],
-	["Grand Matron Bow", new Weapon("Grand Matron Bow", 10, wt.BOW, ic.MISSILE, 5)],
-	["Grand Scepter", new Weapon("Grand Scepter", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3)],
-	["Grave Wand", new Weapon("Grave Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 2)],
-	["Great Axe", new Weapon("Great Axe", -10, wt.TWO_HANDED, ic.AXE, 6)],
-	["Great Bow", new Weapon("Great Bow", -10, wt.BOW, ic.MISSILE, 4)],
-	["Great Maul", new Weapon("Great Maul", 20, wt.TWO_HANDED, ic.MACE, 6)],
-	["Great Pilum", new Weapon("Great Pilum", 0, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Great Poleaxe", new Weapon("Great Poleaxe", 0, wt.TWO_HANDED, ic.POLEARM, 6)],
-	["Great Sword", new Weapon("Great Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 6)],
-	["Greater Claws", new Weapon("Greater Claws", -20, wt.CLAW, ic.CLAW, 3)],
-	["Greater Talons", new Weapon("Greater Talons", -30, wt.CLAW, ic.CLAW, 3)],
-	["Grim Scythe", new Weapon("Grim Scythe", -10, wt.TWO_HANDED, ic.POLEARM, 6)],
-	["Grim Wand", new Weapon("Grim Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 2)],
-	["Halberd", new Weapon("Halberd", 0, wt.TWO_HANDED, ic.POLEARM, 6)],
-	["Hand Axe", new Weapon("Hand Axe", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 2)],
-	["Hand Scythe", new Weapon("Hand Scythe", -10, wt.CLAW, ic.CLAW, 2)],
-	["Harpoon", new Weapon("Harpoon", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Hatchet Hands", new Weapon("Hatchet Hands", 10, wt.CLAW, ic.CLAW, 2)],
-	["Hatchet", new Weapon("Hatchet", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 2)],
-	["Heavenly Stone", new Weapon("Heavenly Stone", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Heavy Crossbow", new Weapon("Heavy Crossbow", 10, wt.CROSSBOW, ic.MISSILE, 6)],
-	["Highland Blade", new Weapon("Highland Blade", -5, wt.TWO_HANDED_SWORD, ic.SWORD, 4)],
-	["Holy Water Sprinkler", new Weapon("Holy Water Sprinkler", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3)],
-	["Hunter's Bow", new Weapon("Hunter's Bow", -10, wt.BOW, ic.MISSILE, 4)],
-	["Hurlbat", new Weapon("Hurlbat", -10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0)],
-	["Hydra Bow", new Weapon("Hydra Bow", 10, wt.BOW, ic.MISSILE, 6)],
-	["Hydra Edge", new Weapon("Hydra Edge", 10, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Hyperion Javelin", new Weapon("Hyperion Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Hyperion Spear", new Weapon("Hyperion Spear", -10, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 3)],
-	["Jagged Star", new Weapon("Jagged Star", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3)],
-	["Jared's Stone", new Weapon("Jared's Stone", 10, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Javelin", new Weapon("Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Jo Staff", new Weapon("Jo Staff", -10, wt.TWO_HANDED, ic.STAFF, 2)],
-	["Katar", new Weapon("Katar", -10, wt.CLAW, ic.CLAW, 2)],
-	["Knout", new Weapon("Knout", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5)],
-	["Kris", new Weapon("Kris", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 3)],
-	["Lance", new Weapon("Lance", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Large Axe", new Weapon("Large Axe", -10, wt.TWO_HANDED, ic.AXE, 4)],
-	["Large Siege Bow", new Weapon("Large Siege Bow", 10, wt.BOW, ic.MISSILE, 6)],
-	["Legend Spike", new Weapon("Legend Spike", -10, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 2)],
-	["Legend Sword", new Weapon("Legend Sword", -15, wt.TWO_HANDED_SWORD, ic.SWORD, 3)],
-	["Legendary Mallet", new Weapon("Legendary Mallet", 20, wt.ONE_HANDED_SWINGING, ic.MACE, 4)],
-	["Lich Wand", new Weapon("Lich Wand", -20, wt.ONE_HANDED_SWINGING, ic.STAFF, 2)],
-	["Light Crossbow", new Weapon("Light Crossbow", -10, wt.CROSSBOW, ic.MISSILE, 3)],
-	["Lochaber Axe", new Weapon("Lochaber Axe", 10, wt.TWO_HANDED, ic.POLEARM, 3)],
-	["Long Battle Bow", new Weapon("Long Battle Bow", 10, wt.BOW, ic.MISSILE, 6)],
-	["Long Bow", new Weapon("Long Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Long Staff", new Weapon("Long Staff", 0, wt.TWO_HANDED, ic.STAFF, 3)],
-	["Long Sword", new Weapon("Long Sword", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 4)],
-	["Long War Bow", new Weapon("Long War Bow", 10, wt.BOW, ic.MISSILE, 6)],
-	["Mace", new Weapon("Mace", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Maiden Javelin", new Weapon("Maiden Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Maiden Pike", new Weapon("Maiden Pike", 10, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Maiden Spear", new Weapon("Maiden Spear", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Mancatcher", new Weapon("Mancatcher", -20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 5)],
-	["Martel de Fer", new Weapon("Martel de Fer", 20, wt.TWO_HANDED, ic.MACE, 6)],
-	["Matriarchal Bow", new Weapon("Matriarchal Bow", -10, wt.BOW, ic.MISSILE, 5)],
-	["Matriarchal Javelin", new Weapon("Matriarchal Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Matriarchal Pike", new Weapon("Matriarchal Pike", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Matriarchal Spear", new Weapon("Matriarchal Spear", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Maul", new Weapon("Maul", 10, wt.TWO_HANDED, ic.MACE, 6)],
-	["Mighty Scepter", new Weapon("Mighty Scepter", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Military Axe", new Weapon("Military Axe", -10, wt.TWO_HANDED, ic.AXE, 4)],
-	["Military Pick", new Weapon("Military Pick", -10, wt.ONE_HANDED_SWINGING, ic.AXE, 6)],
-	["Mithril Point", new Weapon("Mithril Point", 0, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1)],
-	["Morning Star", new Weapon("Morning Star", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3)],
-	["Mythical Sword", new Weapon("Mythical Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 3)],
-	["Naga", new Weapon("Naga", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 6)],
-	["Ogre Axe", new Weapon("Ogre Axe", 0, wt.TWO_HANDED, ic.POLEARM, 3)],
-	["Ogre Maul", new Weapon("Ogre Maul", 10, wt.TWO_HANDED, ic.MACE, 6)],
-	["Partizan", new Weapon("Partizan", 10, wt.TWO_HANDED, ic.POLEARM, 5)],
-	["Pellet Bow", new Weapon("Pellet Bow", -10, wt.CROSSBOW, ic.MISSILE, 3)],
-	["Petrified Wand", new Weapon("Petrified Wand", 10, wt.ONE_HANDED_SWINGING, ic.STAFF, 2)],
-	["Phase Blade", new Weapon("Phase Blade", -30, wt.ONE_HANDED_SWINGING, ic.SWORD, 6)],
-	["Pike", new Weapon("Pike", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Pilum", new Weapon("Pilum", 0, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Poignard", new Weapon("Poignard", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1)],
-	["Poleaxe", new Weapon("Poleaxe", 10, wt.TWO_HANDED, ic.POLEARM, 5)],
-	["Polished Wand", new Weapon("Polished Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 2)],
-	["Quarterstaff", new Weapon("Quarterstaff", 0, wt.TWO_HANDED, ic.STAFF, 3)],
-	["Quhab", new Weapon("Quhab", 0, wt.CLAW, ic.CLAW, 3)],
-	["Razor Bow", new Weapon("Razor Bow", -10, wt.BOW, ic.MISSILE, 4)],
-	["Reflex Bow", new Weapon("Reflex Bow", 10, wt.BOW, ic.MISSILE, 5)],
-	["Reinforced Mace", new Weapon("Reinforced Mace", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Repeating Crossbow", new Weapon("Repeating Crossbow", -40, wt.CROSSBOW, ic.MISSILE, 5)],
-	["Rondel", new Weapon("Rondel", 0, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1)],
-	["Rune Bow", new Weapon("Rune Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Rune Scepter", new Weapon("Rune Scepter", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Rune Staff", new Weapon("Rune Staff", 20, wt.TWO_HANDED, ic.STAFF, 6)],
-	["Rune Sword", new Weapon("Rune Sword", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 4)],
-	["Runic Talons", new Weapon("Runic Talons", -30, wt.CLAW, ic.CLAW, 3)],
-	["Sabre", new Weapon("Sabre", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Sacred Globe", new Weapon("Sacred Globe", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Scepter", new Weapon("Scepter", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Scimitar", new Weapon("Scimitar", -20, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Scissors Katar", new Weapon("Scissors Katar", -10, wt.CLAW, ic.CLAW, 3)],
-	["Scissors Quhab", new Weapon("Scissors Quhab", 0, wt.CLAW, ic.CLAW, 3)],
-	["Scissors Suwayyah", new Weapon("Scissors Suwayyah", 0, wt.CLAW, ic.CLAW, 3)],
-	["Scourge", new Weapon("Scourge", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5)],
-	["Scythe", new Weapon("Scythe", -10, wt.TWO_HANDED, ic.POLEARM, 5)],
-	["Seraph Rod", new Weapon("Seraph Rod", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3)],
-	["Shadow Bow", new Weapon("Shadow Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Shamshir", new Weapon("Shamshir", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Shillelagh", new Weapon("Shillelagh", 0, wt.TWO_HANDED, ic.STAFF, 4)],
-	["Short Battle Bow", new Weapon("Short Battle Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Short Bow", new Weapon("Short Bow", 5, wt.BOW, ic.MISSILE, 3)],
-	["Short Siege Bow", new Weapon("Short Siege Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Short Spear", new Weapon("Short Spear", 10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Short Staff", new Weapon("Short Staff", -10, wt.TWO_HANDED, ic.STAFF, 2)],
-	["Short Sword", new Weapon("Short Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Short War Bow", new Weapon("Short War Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Siege Crossbow", new Weapon("Siege Crossbow", 0, wt.CROSSBOW, ic.MISSILE, 4)],
-	["Silver-edged Axe", new Weapon("Silver-edged Axe", 0, wt.TWO_HANDED, ic.AXE, 5)],
-	["Simbilan", new Weapon("Simbilan", 10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Small Crescent", new Weapon("Small Crescent", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 4)],
-	["Smoked Sphere", new Weapon("Smoked Sphere", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Sparkling Ball", new Weapon("Sparkling Ball", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Spear", new Weapon("Spear", -10, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 3)],
-	["Spetum", new Weapon("Spetum", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Spiculum", new Weapon("Spiculum", 20, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Spider Bow", new Weapon("Spider Bow", 5, wt.BOW, ic.MISSILE, 3)],
-	["Spiked Club", new Weapon("Spiked Club", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Stag Bow", new Weapon("Stag Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Stalagmite", new Weapon("Stalagmite", 10, wt.TWO_HANDED, ic.STAFF, 3)],
-	["Stiletto", new Weapon("Stiletto", -10, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 2)],
-	["Stygian Pike", new Weapon("Stygian Pike", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 4)],
-	["Stygian Pilum", new Weapon("Stygian Pilum", 0, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Suwayyah", new Weapon("Suwayyah", 0, wt.CLAW, ic.CLAW, 3)],
-	["Swirling Crystal", new Weapon("Swirling Crystal", 10, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Tabar", new Weapon("Tabar", 10, wt.TWO_HANDED, ic.AXE, 5)],
-	["Thresher", new Weapon("Thresher", -10, wt.TWO_HANDED, ic.POLEARM, 5)],
-	["Throwing Axe", new Weapon("Throwing Axe", 10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0)],
-	["Throwing Knife", new Weapon("Throwing Knife", 0, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0)],
-	["Throwing Spear", new Weapon("Throwing Spear", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Thunder Maul", new Weapon("Thunder Maul", 20, wt.TWO_HANDED, ic.MACE, 6)],
-	["Tomahawk", new Weapon("Tomahawk", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 2)],
-	["Tomb Wand", new Weapon("Tomb Wand", -20, wt.ONE_HANDED_SWINGING, ic.STAFF, 2)],
-	["Trident", new Weapon("Trident", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 4)],
-	["Truncheon", new Weapon("Truncheon", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 2)],
-	["Tulwar", new Weapon("Tulwar", 20, wt.ONE_HANDED_SWINGING, ic.SWORD, 2)],
-	["Tusk Sword", new Weapon("Tusk Sword", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 4)],
-	["Twin Axe", new Weapon("Twin Axe", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 5)],
-	["Two-Handed Sword", new Weapon("Two-Handed Sword", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 3)],
-	["Tyrant Club", new Weapon("Tyrant Club", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 3)],
-	["Unearthed Wand", new Weapon("Unearthed Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 2)],
-	["Vortex Orb", new Weapon("Vortex Orb", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3)],
-	["Voulge", new Weapon("Voulge", 0, wt.TWO_HANDED, ic.POLEARM, 4)],
-	["Walking Stick", new Weapon("Walking Stick", -10, wt.TWO_HANDED, ic.STAFF, 2)],
-	["Wand", new Weapon("Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 1)],
-	["War Axe", new Weapon("War Axe", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 6)],
-	["War Club", new Weapon("War Club", 10, wt.TWO_HANDED, ic.MACE, 6)],
-	["War Dart", new Weapon("War Dart", -20, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0)],
-	["War Fist", new Weapon("War Fist", 10, wt.CLAW, ic.CLAW, 2)],
-	["War Fork", new Weapon("War Fork", -20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 5)],
-	["War Hammer", new Weapon("War Hammer", 20, wt.ONE_HANDED_SWINGING, ic.MACE, 4)],
-	["War Javelin", new Weapon("War Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["War Pike", new Weapon("War Pike", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["War Scepter", new Weapon("War Scepter", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5)],
-	["War Scythe", new Weapon("War Scythe", -10, wt.TWO_HANDED, ic.POLEARM, 6)],
-	["War Spear", new Weapon("War Spear", -10, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 3)],
-	["War Spike", new Weapon("War Spike", -10, wt.ONE_HANDED_SWINGING, ic.AXE, 6)],
-	["War Staff", new Weapon("War Staff", 20, wt.TWO_HANDED, ic.STAFF, 6)],
-	["War Sword", new Weapon("War Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 3)],
-	["Ward Bow", new Weapon("Ward Bow", 0, wt.BOW, ic.MISSILE, 5)],
-	["Winged Axe", new Weapon("Winged Axe", -10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0)],
-	["Winged Harpoon", new Weapon("Winged Harpoon", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0)],
-	["Winged Knife", new Weapon("Winged Knife", -20, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0)],
-	["Wrist Blade", new Weapon("Wrist Blade", 0, wt.CLAW, ic.CLAW, 2)],
-	["Wrist Spike", new Weapon("Wrist Spike", -10, wt.CLAW, ic.CLAW, 2)],
-	["Wrist Sword", new Weapon("Wrist Sword", -10, wt.CLAW, ic.CLAW, 3)],
-	["Yari", new Weapon("Yari", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6)],
-	["Yew Wand", new Weapon("Yew Wand", 10, wt.ONE_HANDED_SWINGING, ic.STAFF, 1)],
-	["Zweihander", new Weapon("Zweihander", -10, wt.TWO_HANDED_SWORD, ic.SWORD, 5)]
-]);
+const weaponsMap = new Map();
+const weapons = {
+	NONE: addWeapon(new Weapon("None", 0, wt.UNARMED, ic.NONE, 0))
+}
+addWeapon(new Weapon("Ancient Axe", 10, wt.TWO_HANDED, ic.AXE, 6));
+addWeapon(new Weapon("Ancient Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 3));
+addWeapon(new Weapon("Arbalest", -10, wt.CROSSBOW, ic.MISSILE, 3));
+addWeapon(new Weapon("Archon Staff", 10, wt.TWO_HANDED, ic.STAFF, 6));
+addWeapon(new Weapon("Ashwood Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Ataghan", -20, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Axe", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 4));
+addWeapon(new Weapon("Balanced Axe", -10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0));
+addWeapon(new Weapon("Balanced Knife", -20, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0));
+addWeapon(new Weapon("Ballista", 10, wt.CROSSBOW, ic.MISSILE, 6));
+addWeapon(new Weapon("Balrog Blade", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 4));
+addWeapon(new Weapon("Balrog Spear", 10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Barbed Club", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 3));
+addWeapon(new Weapon("Bardiche", 10, wt.TWO_HANDED, ic.POLEARM, 3));
+addWeapon(new Weapon("Bastard Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 4));
+addWeapon(new Weapon("Battle Axe", 10, wt.TWO_HANDED, ic.AXE, 5));
+addWeapon(new Weapon("Battle Cestus", -10, wt.CLAW, ic.CLAW, 2));
+addWeapon(new Weapon("Battle Dart", 0, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0));
+addWeapon(new Weapon("Battle Hammer", 20, wt.ONE_HANDED_SWINGING, ic.MACE, 4));
+addWeapon(new Weapon("Battle Scythe", -10, wt.TWO_HANDED, ic.POLEARM, 5));
+addWeapon(new Weapon("Battle Staff", 0, wt.TWO_HANDED, ic.STAFF, 4));
+addWeapon(new Weapon("Battle Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 4));
+addWeapon(new Weapon("Bearded Axe", 0, wt.TWO_HANDED, ic.AXE, 5));
+addWeapon(new Weapon("Bec-de-Corbin", 0, wt.TWO_HANDED, ic.POLEARM, 6));
+addWeapon(new Weapon("Berserker Axe", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 6));
+addWeapon(new Weapon("Bill", 0, wt.TWO_HANDED, ic.POLEARM, 4));
+addWeapon(new Weapon("Blade Bow", -10, wt.BOW, ic.MISSILE, 4));
+addWeapon(new Weapon("Blade Talons", -20, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Blade", -10, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 2));
+addWeapon(new Weapon("Bone Knife", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1));
+addWeapon(new Weapon("Bone Wand", -20, wt.ONE_HANDED_SWINGING, ic.STAFF, 2));
+addWeapon(new Weapon("Brandistock", -20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 5));
+addWeapon(new Weapon("Broad Axe", 0, wt.TWO_HANDED, ic.AXE, 5));
+addWeapon(new Weapon("Broad Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 4));
+addWeapon(new Weapon("Burnt Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 1));
+addWeapon(new Weapon("Caduceus", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5));
+addWeapon(new Weapon("Cedar Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Cedar Staff", 10, wt.TWO_HANDED, ic.STAFF, 4));
+addWeapon(new Weapon("Ceremonial Bow", 10, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Ceremonial Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Ceremonial Pike", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Ceremonial Spear", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Cestus", 0, wt.CLAW, ic.CLAW, 2));
+addWeapon(new Weapon("Champion Axe", -10, wt.TWO_HANDED, ic.AXE, 6));
+addWeapon(new Weapon("Champion Sword", -10, wt.TWO_HANDED_SWORD, ic.SWORD, 4));
+addWeapon(new Weapon("Chu-Ko-Nu", -60, wt.CROSSBOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Cinquedeas", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 3));
+addWeapon(new Weapon("Clasped Orb", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Claws", -10, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Claymore", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 4));
+addWeapon(new Weapon("Cleaver", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 4));
+addWeapon(new Weapon("Cloudy Sphere", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Club", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Colossus Blade", 5, wt.TWO_HANDED_SWORD, ic.SWORD, 6));
+addWeapon(new Weapon("Colossus Crossbow", 10, wt.CROSSBOW, ic.MISSILE, 6));
+addWeapon(new Weapon("Colossus Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 5));
+addWeapon(new Weapon("Colossus Voulge", 10, wt.TWO_HANDED, ic.POLEARM, 4));
+addWeapon(new Weapon("Composite Bow", -10, wt.BOW, ic.MISSILE, 4));
+addWeapon(new Weapon("Conquest Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 4));
+addWeapon(new Weapon("Crossbow", 0, wt.CROSSBOW, ic.MISSILE, 4));
+addWeapon(new Weapon("Crowbill", -10, wt.ONE_HANDED_SWINGING, ic.AXE, 6));
+addWeapon(new Weapon("Crusader Bow", 10, wt.BOW, ic.MISSILE, 6));
+addWeapon(new Weapon("Cryptic Axe", 10, wt.TWO_HANDED, ic.POLEARM, 5));
+addWeapon(new Weapon("Cryptic Sword", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 4));
+addWeapon(new Weapon("Crystal Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 6));
+addWeapon(new Weapon("Crystalline Globe", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Cudgel", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Cutlass", -30, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Dacian Falx", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 4));
+addWeapon(new Weapon("Dagger", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1));
+addWeapon(new Weapon("Decapitator", 10, wt.TWO_HANDED, ic.AXE, 5));
+addWeapon(new Weapon("Demon Crossbow", -60, wt.CROSSBOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Demon Heart", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Devil Star", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3));
+addWeapon(new Weapon("Diamond Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Dimensional Blade", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 6));
+addWeapon(new Weapon("Dimensional Shard", 10, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Dirk", 0, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1));
+addWeapon(new Weapon("Divine Scepter", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5));
+addWeapon(new Weapon("Double Axe", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 5));
+addWeapon(new Weapon("Double Bow", -10, wt.BOW, ic.MISSILE, 4));
+addWeapon(new Weapon("Eagle Orb", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Edge Bow", 5, wt.BOW, ic.MISSILE, 3));
+addWeapon(new Weapon("Elder Staff", 0, wt.TWO_HANDED, ic.STAFF, 4));
+addWeapon(new Weapon("Eldritch Orb", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Elegant Blade", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Espandon", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 3));
+addWeapon(new Weapon("Ettin Axe", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 5));
+addWeapon(new Weapon("Executioner Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 6));
+addWeapon(new Weapon("Falcata", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Falchion", 20, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Fanged Knife", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 3));
+addWeapon(new Weapon("Fascia", 10, wt.CLAW, ic.CLAW, 2));
+addWeapon(new Weapon("Feral Axe", -15, wt.TWO_HANDED, ic.AXE, 4));
+addWeapon(new Weapon("Feral Claws", -20, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Flail", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5));
+addWeapon(new Weapon("Flamberge", -10, wt.TWO_HANDED_SWORD, ic.SWORD, 5));
+addWeapon(new Weapon("Flanged Mace", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Flying Axe", 10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0));
+addWeapon(new Weapon("Flying Knife", 0, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0));
+addWeapon(new Weapon("Francisca", 10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0));
+addWeapon(new Weapon("Fuscina", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 4));
+addWeapon(new Weapon("Ghost Glaive", 20, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Ghost Spear", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Ghost Wand", 10, wt.ONE_HANDED_SWINGING, ic.STAFF, 2));
+addWeapon(new Weapon("Giant Axe", 10, wt.TWO_HANDED, ic.AXE, 6));
+addWeapon(new Weapon("Giant Sword", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 4));
+addWeapon(new Weapon("Giant Thresher", -10, wt.TWO_HANDED, ic.POLEARM, 6));
+addWeapon(new Weapon("Gladius", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Glaive", 20, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Glorious Axe", 10, wt.TWO_HANDED, ic.AXE, 6));
+addWeapon(new Weapon("Glowing Orb", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Gnarled Staff", 10, wt.TWO_HANDED, ic.STAFF, 4));
+addWeapon(new Weapon("Gorgon Crossbow", 0, wt.CROSSBOW, ic.MISSILE, 4));
+addWeapon(new Weapon("Gothic Axe", -10, wt.TWO_HANDED, ic.AXE, 6));
+addWeapon(new Weapon("Gothic Bow", 10, wt.BOW, ic.MISSILE, 6));
+addWeapon(new Weapon("Gothic Staff", 0, wt.TWO_HANDED, ic.STAFF, 4));
+addWeapon(new Weapon("Gothic Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 4));
+addWeapon(new Weapon("Grand Matron Bow", 10, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Grand Scepter", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3));
+addWeapon(new Weapon("Grave Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 2));
+addWeapon(new Weapon("Great Axe", -10, wt.TWO_HANDED, ic.AXE, 6));
+addWeapon(new Weapon("Great Bow", -10, wt.BOW, ic.MISSILE, 4));
+addWeapon(new Weapon("Great Maul", 20, wt.TWO_HANDED, ic.MACE, 6));
+addWeapon(new Weapon("Great Pilum", 0, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Great Poleaxe", 0, wt.TWO_HANDED, ic.POLEARM, 6));
+addWeapon(new Weapon("Great Sword", 10, wt.TWO_HANDED_SWORD, ic.SWORD, 6));
+addWeapon(new Weapon("Greater Claws", -20, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Greater Talons", -30, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Grim Scythe", -10, wt.TWO_HANDED, ic.POLEARM, 6));
+addWeapon(new Weapon("Grim Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 2));
+addWeapon(new Weapon("Halberd", 0, wt.TWO_HANDED, ic.POLEARM, 6));
+addWeapon(new Weapon("Hand Axe", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 2));
+addWeapon(new Weapon("Hand Scythe", -10, wt.CLAW, ic.CLAW, 2));
+addWeapon(new Weapon("Harpoon", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Hatchet Hands", 10, wt.CLAW, ic.CLAW, 2));
+addWeapon(new Weapon("Hatchet", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 2));
+addWeapon(new Weapon("Heavenly Stone", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Heavy Crossbow", 10, wt.CROSSBOW, ic.MISSILE, 6));
+addWeapon(new Weapon("Highland Blade", -5, wt.TWO_HANDED_SWORD, ic.SWORD, 4));
+addWeapon(new Weapon("Holy Water Sprinkler", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3));
+addWeapon(new Weapon("Hunter's Bow", -10, wt.BOW, ic.MISSILE, 4));
+addWeapon(new Weapon("Hurlbat", -10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0));
+addWeapon(new Weapon("Hydra Bow", 10, wt.BOW, ic.MISSILE, 6));
+addWeapon(new Weapon("Hydra Edge", 10, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Hyperion Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Hyperion Spear", -10, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 3));
+addWeapon(new Weapon("Jagged Star", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3));
+addWeapon(new Weapon("Jared's Stone", 10, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Jo Staff", -10, wt.TWO_HANDED, ic.STAFF, 2));
+addWeapon(new Weapon("Katar", -10, wt.CLAW, ic.CLAW, 2));
+addWeapon(new Weapon("Knout", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5));
+addWeapon(new Weapon("Kris", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 3));
+addWeapon(new Weapon("Lance", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Large Axe", -10, wt.TWO_HANDED, ic.AXE, 4));
+addWeapon(new Weapon("Large Siege Bow", 10, wt.BOW, ic.MISSILE, 6));
+addWeapon(new Weapon("Legend Spike", -10, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 2));
+addWeapon(new Weapon("Legend Sword", -15, wt.TWO_HANDED_SWORD, ic.SWORD, 3));
+addWeapon(new Weapon("Legendary Mallet", 20, wt.ONE_HANDED_SWINGING, ic.MACE, 4));
+addWeapon(new Weapon("Lich Wand", -20, wt.ONE_HANDED_SWINGING, ic.STAFF, 2));
+addWeapon(new Weapon("Light Crossbow", -10, wt.CROSSBOW, ic.MISSILE, 3));
+addWeapon(new Weapon("Lochaber Axe", 10, wt.TWO_HANDED, ic.POLEARM, 3));
+addWeapon(new Weapon("Long Battle Bow", 10, wt.BOW, ic.MISSILE, 6));
+addWeapon(new Weapon("Long Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Long Staff", 0, wt.TWO_HANDED, ic.STAFF, 3));
+addWeapon(new Weapon("Long Sword", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 4));
+addWeapon(new Weapon("Long War Bow", 10, wt.BOW, ic.MISSILE, 6));
+addWeapon(new Weapon("Mace", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Maiden Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Maiden Pike", 10, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Maiden Spear", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Mancatcher", -20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 5));
+addWeapon(new Weapon("Martel de Fer", 20, wt.TWO_HANDED, ic.MACE, 6));
+addWeapon(new Weapon("Matriarchal Bow", -10, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Matriarchal Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Matriarchal Pike", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Matriarchal Spear", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Maul", 10, wt.TWO_HANDED, ic.MACE, 6));
+addWeapon(new Weapon("Mighty Scepter", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Military Axe", -10, wt.TWO_HANDED, ic.AXE, 4));
+addWeapon(new Weapon("Military Pick", -10, wt.ONE_HANDED_SWINGING, ic.AXE, 6));
+addWeapon(new Weapon("Mithril Point", 0, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1));
+addWeapon(new Weapon("Morning Star", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3));
+addWeapon(new Weapon("Mythical Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 3));
+addWeapon(new Weapon("Naga", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 6));
+addWeapon(new Weapon("Ogre Axe", 0, wt.TWO_HANDED, ic.POLEARM, 3));
+addWeapon(new Weapon("Ogre Maul", 10, wt.TWO_HANDED, ic.MACE, 6));
+addWeapon(new Weapon("Partizan", 10, wt.TWO_HANDED, ic.POLEARM, 5));
+addWeapon(new Weapon("Pellet Bow", -10, wt.CROSSBOW, ic.MISSILE, 3));
+addWeapon(new Weapon("Petrified Wand", 10, wt.ONE_HANDED_SWINGING, ic.STAFF, 2));
+addWeapon(new Weapon("Phase Blade", -30, wt.ONE_HANDED_SWINGING, ic.SWORD, 6));
+addWeapon(new Weapon("Pike", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Pilum", 0, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Poignard", -20, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1));
+addWeapon(new Weapon("Poleaxe", 10, wt.TWO_HANDED, ic.POLEARM, 5));
+addWeapon(new Weapon("Polished Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 2));
+addWeapon(new Weapon("Quarterstaff", 0, wt.TWO_HANDED, ic.STAFF, 3));
+addWeapon(new Weapon("Quhab", 0, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Razor Bow", -10, wt.BOW, ic.MISSILE, 4));
+addWeapon(new Weapon("Reflex Bow", 10, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Reinforced Mace", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Repeating Crossbow", -40, wt.CROSSBOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Rondel", 0, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 1));
+addWeapon(new Weapon("Rune Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Rune Scepter", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Rune Staff", 20, wt.TWO_HANDED, ic.STAFF, 6));
+addWeapon(new Weapon("Rune Sword", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 4));
+addWeapon(new Weapon("Runic Talons", -30, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Sabre", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Sacred Globe", -10, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Scepter", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Scimitar", -20, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Scissors Katar", -10, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Scissors Quhab", 0, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Scissors Suwayyah", 0, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Scourge", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5));
+addWeapon(new Weapon("Scythe", -10, wt.TWO_HANDED, ic.POLEARM, 5));
+addWeapon(new Weapon("Seraph Rod", 10, wt.ONE_HANDED_SWINGING, ic.MACE, 3));
+addWeapon(new Weapon("Shadow Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Shamshir", -10, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Shillelagh", 0, wt.TWO_HANDED, ic.STAFF, 4));
+addWeapon(new Weapon("Short Battle Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Short Bow", 5, wt.BOW, ic.MISSILE, 3));
+addWeapon(new Weapon("Short Siege Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Short Spear", 10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Short Staff", -10, wt.TWO_HANDED, ic.STAFF, 2));
+addWeapon(new Weapon("Short Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Short War Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Siege Crossbow", 0, wt.CROSSBOW, ic.MISSILE, 4));
+addWeapon(new Weapon("Silver-edged Axe", 0, wt.TWO_HANDED, ic.AXE, 5));
+addWeapon(new Weapon("Simbilan", 10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Small Crescent", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 4));
+addWeapon(new Weapon("Smoked Sphere", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Sparkling Ball", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Spear", -10, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 3));
+addWeapon(new Weapon("Spetum", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Spiculum", 20, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Spider Bow", 5, wt.BOW, ic.MISSILE, 3));
+addWeapon(new Weapon("Spiked Club", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Stag Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Stalagmite", 10, wt.TWO_HANDED, ic.STAFF, 3));
+addWeapon(new Weapon("Stiletto", -10, wt.ONE_HANDED_THRUSTING, ic.DAGGER, 2));
+addWeapon(new Weapon("Stygian Pike", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 4));
+addWeapon(new Weapon("Stygian Pilum", 0, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Suwayyah", 0, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Swirling Crystal", 10, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Tabar", 10, wt.TWO_HANDED, ic.AXE, 5));
+addWeapon(new Weapon("Thresher", -10, wt.TWO_HANDED, ic.POLEARM, 5));
+addWeapon(new Weapon("Throwing Axe", 10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0));
+addWeapon(new Weapon("Throwing Knife", 0, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0));
+addWeapon(new Weapon("Throwing Spear", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Thunder Maul", 20, wt.TWO_HANDED, ic.MACE, 6));
+addWeapon(new Weapon("Tomahawk", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 2));
+addWeapon(new Weapon("Tomb Wand", -20, wt.ONE_HANDED_SWINGING, ic.STAFF, 2));
+addWeapon(new Weapon("Trident", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 4));
+addWeapon(new Weapon("Truncheon", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 2));
+addWeapon(new Weapon("Tulwar", 20, wt.ONE_HANDED_SWINGING, ic.SWORD, 2));
+addWeapon(new Weapon("Tusk Sword", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 4));
+addWeapon(new Weapon("Twin Axe", 10, wt.ONE_HANDED_SWINGING, ic.AXE, 5));
+addWeapon(new Weapon("Two-Handed Sword", 0, wt.TWO_HANDED_SWORD, ic.SWORD, 3));
+addWeapon(new Weapon("Tyrant Club", 0, wt.ONE_HANDED_SWINGING, ic.MACE, 3));
+addWeapon(new Weapon("Unearthed Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 2));
+addWeapon(new Weapon("Vortex Orb", 0, wt.ONE_HANDED_SWINGING, ic.ORB, 3));
+addWeapon(new Weapon("Voulge", 0, wt.TWO_HANDED, ic.POLEARM, 4));
+addWeapon(new Weapon("Walking Stick", -10, wt.TWO_HANDED, ic.STAFF, 2));
+addWeapon(new Weapon("Wand", 0, wt.ONE_HANDED_SWINGING, ic.STAFF, 1));
+addWeapon(new Weapon("War Axe", 0, wt.ONE_HANDED_SWINGING, ic.AXE, 6));
+addWeapon(new Weapon("War Club", 10, wt.TWO_HANDED, ic.MACE, 6));
+addWeapon(new Weapon("War Dart", -20, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0));
+addWeapon(new Weapon("War Fist", 10, wt.CLAW, ic.CLAW, 2));
+addWeapon(new Weapon("War Fork", -20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 5));
+addWeapon(new Weapon("War Hammer", 20, wt.ONE_HANDED_SWINGING, ic.MACE, 4));
+addWeapon(new Weapon("War Javelin", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("War Pike", 20, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("War Scepter", -10, wt.ONE_HANDED_SWINGING, ic.MACE, 5));
+addWeapon(new Weapon("War Scythe", -10, wt.TWO_HANDED, ic.POLEARM, 6));
+addWeapon(new Weapon("War Spear", -10, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 3));
+addWeapon(new Weapon("War Spike", -10, wt.ONE_HANDED_SWINGING, ic.AXE, 6));
+addWeapon(new Weapon("War Staff", 20, wt.TWO_HANDED, ic.STAFF, 6));
+addWeapon(new Weapon("War Sword", 0, wt.ONE_HANDED_SWINGING, ic.SWORD, 3));
+addWeapon(new Weapon("Ward Bow", 0, wt.BOW, ic.MISSILE, 5));
+addWeapon(new Weapon("Winged Axe", -10, wt.ONE_HANDED_SWINGING, ic.THROWING, 0));
+addWeapon(new Weapon("Winged Harpoon", -10, wt.ONE_HANDED_THRUSTING, ic.JAVELIN, 0));
+addWeapon(new Weapon("Winged Knife", -20, wt.ONE_HANDED_THRUSTING, ic.THROWING, 0));
+addWeapon(new Weapon("Wrist Blade", 0, wt.CLAW, ic.CLAW, 2));
+addWeapon(new Weapon("Wrist Spike", -10, wt.CLAW, ic.CLAW, 2));
+addWeapon(new Weapon("Wrist Sword", -10, wt.CLAW, ic.CLAW, 3));
+addWeapon(new Weapon("Yari", 0, wt.TWO_HANDED_THRUSTING, ic.SPEAR, 6));
+addWeapon(new Weapon("Yew Wand", 10, wt.ONE_HANDED_SWINGING, ic.STAFF, 1));
+addWeapon(new Weapon("Zweihander", -10, wt.TWO_HANDED_SWORD, ic.SWORD, 5));
+
+function addWeapon(weapon) { weaponsMap.set(weapon.name, weapon); return weapon; }
 
 export function getWeapon(name) {
 	return weaponsMap.get(name);
 }
 
-export { container, select, number, checkbox, option, button, skill, other, debug, tv, char, wf, skills, wt, ic, weaponsMap, LINK_SEPARATOR };
+export { container, select, number, checkbox, option, button, skill, other, debug, tv, char, wf, skills, wt, ic, weapons, weaponsMap, LINK_SEPARATOR };
 
 export function setupInputElement(element, eventListener) {
     if (element.type == "button") {
@@ -803,6 +806,8 @@ export function setupUpdateTableInputElements(eventListener) {
 	setupInputElement(number.WEREWOLF, eventListener);
 	setupInputElement(number.MAUL, eventListener);
 	setupInputElement(number.FRENZY, eventListener);
+	setupInputElement(number.CLEAVE, eventListener);
+	setupInputElement(number.MIRRORED_BLADES, eventListener);
 	setupInputElement(number.HOLY_FREEZE, eventListener);
 	setupInputElement(number.SLOWED_BY, eventListener);
     
@@ -810,6 +815,7 @@ export function setupUpdateTableInputElements(eventListener) {
 	setupInputElement(checkbox.MARK_OF_BEAR, eventListener);
 	setupInputElement(checkbox.DECREPIFY, eventListener);
 	setupInputElement(checkbox.CHILLED, eventListener);
+	setupInputElement(checkbox.LETHARGY, eventListener);
 }
 
 export function convertIAStoEIAS(IAS) {

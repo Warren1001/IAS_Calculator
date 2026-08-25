@@ -11,11 +11,12 @@
 <body>
   <h3>v1.2.0</h3>
   <p>Last updated for: D2R 3.3 (<a href="https://github.com/Warren1001/IAS_Calculator/blob/master/README.md">Changelog</a>)</p>
-  <p></p>
+  <br>
   <p>If you have questions or found a bug, <a href="https://github.com/Warren1001/IAS_Calculator/issues">make an issue</a> or contact me on Discord (Warren1001).</p>
   <p><a href="https://github.com/Warren1001/IAS_Calculator/tree/master">View the source code</a>.</p>
   <p>Please full refresh with CTRL + F5 or applicable every so often, especially if you know there was an update recently.</p>
   <p>This calculator is meant to show you everything possible in-game. If there is a combination in this calculator that is not possible in-game OR there is a combination missing that is possible in-game, please report it as a bug.</p>
+  <p class="hoverable" title="hi">Text with this appearance means hovering cursor displays additional context or information.</p>
   <br>
   <div id="calculator" class="halfWindow">
     <label for="characterSelect">Character:</label>
@@ -98,7 +99,7 @@
       <br>
     </div>
     <div id="burstOfSpeedContainer">
-      <label for="burstOfSpeedLevel" title="Hustle grants BoS to all classes" class="hoverable">Burst of Speed:</label>
+      <label for="burstOfSpeedLevel" title="Mania (Hustle) grants BoS to all classes" class="hoverable">Burst of Speed:</label>
       <input type="number" id="burstOfSpeedLevel" value="0" min="0" max="60">
       <br>
     </div>
@@ -117,19 +118,19 @@
       <input type="number" id="frenzyLevel" value="0" min="0" max="60">
       <br>
     </div>
-    <div id="markOfBearContainer">
-      <input type="checkbox" id="markOfBear" title="Metamorphosis grants Mark of the Bear (25 EIAS) to Werebear" class="hoverable">
-      <label for="markOfBear" title="Metamorphosis grants Mark of the Bear (25 EIAS) to Werebear" class="hoverable">Mark of the Bear</label>
+    <div id="markOfBearContainer" title="Metamorphosis grants Mark of the Bear (25 EIAS) to Werebear">
+      <input type="checkbox" id="markOfBear" class="hoverable">
+      <label for="markOfBear" class="hoverable">Mark of the Bear</label>
       <br>
     </div>
-    <div id="cleaveContainer">
-      <label for="cleaveLevel" title="Cleave grants diminishingly scaling EIAS per skill level">Cleave:</label>
-      <input type="number" id="cleaveLevel" value="0" min="0" max="60">
+    <div id="cleaveContainer" title="Cleave grants diminishingly scaling EIAS per skill level" style="display: none">
+      <label for="cleaveLevel" class="hoverable">Cleave:</label>
+      <input type="number" id="cleaveLevel" value="1" min="1" max="60">
       <br>
     </div>
-    <div id="mirroredBladesContainer">
-      <label for="mirroredBladesLevel" title="Mirrored Blades grants diminishingly scaling EIAS per skill level">Mirrored Blades:</label>
-      <input type="number" id="mirroredBladesLevel" value="0" min="0" max="60">
+    <div id="mirroredBladesContainer" title="Mirrored Blades grants diminishingly scaling EIAS per skill level" style="display: none">
+      <label for="mirroredBladesLevel" class="hoverable">Mirrored Blades:</label>
+      <input type="number" id="mirroredBladesLevel" value="1" min="1" max="60">
       <br>
     </div>
     <div id="holyFreezeContainer">
@@ -150,8 +151,9 @@
       <input type="checkbox" id="chilled">Chilled
       <br>
     </div>
-    <div id="lethargyContainer">
-      <input type="checkbox" id="lethargy" title="Obtainable through charges">Sigil: Lethargy
+    <div id="lethargyContainer" title="Obtainable through charges">
+      <input type="checkbox" id="lethargy" class="hoverable">
+      <label for="lethargy" class="hoverable">Sigil: Lethargy</label>
       <br>
     </div>
     <button type="button" id="generateLink">Copy Link</button>
