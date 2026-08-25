@@ -152,9 +152,9 @@ function load() {
 		}
 
 		if (character == char.BARBARIAN || character == char.DRUID) unhideElement(option.WEREFORM_WEREWOLF); // disable if holiday event allows anyone to shapeshift
-		if (isCharacterSelected()) {
+		/*if (isCharacterSelected()) {
 			unhideElement(option.WEREFORM_WEREWOLF);
-		}
+		}*/ // enable if holiday event allows anyone to shapeshift
 		else {
 			hideElement(option.WEREFORM_WEREWOLF);
 			if (select.WEREFORM.value == wf.WEREWOLF) {
@@ -948,13 +948,11 @@ function load() {
 
 	function preinfo() {
 
-		if (wereform != wf.HUMAN) {
-			displayTableInfo("All Wereform skills have undergone basic testing and should be correct.");
-		} else if (character == char.FRENZY_BARBARIAN) {
+		if (character == char.FRENZY_BARBARIAN) {
 			displayTableInfo("No testing has been done for " + skill.name + " yet for the Act 5 Mercenary. It's extremely likely correct, though.");
 		}
 
-		if (skill.isDualWieldedSequenceSkill() || skill == skills.WHIRLWIND) {
+		if (isCharacterSelected() && (skill.isDualWieldedSequenceSkill() || skill == skills.WHIRLWIND)) {
 			displayTableInfo("This skill is a dual wielded sequence skill, which means its impacted by a major bug that all these skills have in common. Weapon stats do not swap within the animation as they should, resulting in a lot of funky stuff, including breaking when the primary and secondary weapon's IAS are supposed to be calculated.");
 		}
 
