@@ -16,10 +16,13 @@ const container = {
 	MAUL: document.getElementById("maulContainer"),
 	FRENZY: document.getElementById("frenzyContainer"),
 	MARK_OF_BEAR: document.getElementById("markOfBearContainer"),
+	CLEAVE: document.getElementById("cleaveContainer"),
+	MIRRORED_BLADES: document.getElementById("mirroredBladesContainer"),
 	HOLY_FREEZE: document.getElementById("holyFreezeContainer"),
 	SLOWED_BY: document.getElementById("slowedByContainer"),
 	DECREPIFY: document.getElementById("decrepifyContainer"),
 	CHILLED: document.getElementById("chilledContainer"),
+	LETHARGY: document.getElementById("lethargyContainer"),
 	TABLE: document.getElementById("tableContainer")
 };
 
@@ -41,6 +44,8 @@ const number = {
 	WEREWOLF: document.getElementById("werewolfLevel"),
 	MAUL: document.getElementById("maulLevel"),
 	FRENZY: document.getElementById("frenzyLevel"),
+	CLEAVE: document.getElementById("cleaveLevel"),
+	MIRRORED_BLADES: document.getElementById("mirroredBladesLevel"),
 	HOLY_FREEZE: document.getElementById("holyFreezeLevel"),
 	SLOWED_BY: document.getElementById("slowedByLevel")
 };
@@ -49,7 +54,8 @@ const checkbox = {
     IS_ONE_HANDED: document.getElementById("isOneHanded"),
 	MARK_OF_BEAR: document.getElementById("markOfBear"),
 	DECREPIFY: document.getElementById("decrepify"),
-	CHILLED: document.getElementById("chilled")
+	CHILLED: document.getElementById("chilled"),
+	LETHARGY: document.getElementById("lethargy")
 };
 
 const char = {
@@ -60,6 +66,7 @@ const char = {
     NECROMANCER: 4,
     PALADIN: 5,
     SORCERESS: 6,
+	WARLOCK: 11,
 	// mercs
     ROGUE_SCOUT: 7,
     DESERT_MERCENARY: 8,
@@ -248,8 +255,8 @@ class AttackSpeedSkill {
 		}
 	}
 
-	calculate(tableVariable, character, wereform) {
-		if (this.tableVariable == tableVariable || (this.predicate != null && !this.predicate(character, wereform))) return 0;
+	calculate(tableVariable, character, wereform, skill) {
+		if (this.tableVariable == tableVariable || (this.predicate != null && !this.predicate(character, wereform, skill))) return 0;
 		let level = parseInt(this.input.value);
 		if (this.min == -1) return level == 0 ? 0 : this.factor * (parseInt(level / 2) + 3); 
 		return level == 0 ? 0 : Math.min(this.min + parseInt(this.factor * parseInt((110 * level) / (level + 6)) / 100), this.max);
@@ -278,7 +285,9 @@ const skill = {
 	WEREWOLF: new AttackSpeedSkill(number.WEREWOLF, 10, 70, 80, tv.WEREWOLF, (_character, wereform) => wereform == wf.WEREWOLF),
 	MAUL: new AttackSpeedSkill(number.MAUL, -1, 3, 99, tv.MAUL, (_character, wereform) => wereform == wf.WEREBEAR),
 	FRENZY: new AttackSpeedSkill(number.FRENZY, 0, 50, 50, tv.FRENZY, (character, _wereform) => character == char.BARBARIAN || character == char.BASH_BARBARIAN),
-	HOLY_FREEZE: new AttackSpeedSkill(number.HOLY_FREEZE, 25, 35, 50) // -50 cap cuz chill effectiveness
+	HOLY_FREEZE: new AttackSpeedSkill(number.HOLY_FREEZE, 25, 35, 50), // -50 cap cuz chill effectiveness
+	CLEAVE: new AttackSpeedSkill(number.CLEAVE, 10, 20, 30, null, (_character, _wereform, skill) => skill == skills.CLEAVE),
+	MIRRORED_BLADES: new AttackSpeedSkill(number.MIRRORED_BLADES, 10, 20, 30, null, (_character, _wereform, skill) => skill == skills.MIRRORED_BLADES)
 };
 
 const skillsMap = new Map();
@@ -300,10 +309,10 @@ const skills = {
     FISTS_OF_FIRE: addSkill(new Skill("Fists of Fire", true, false, true, false)),
     CLAWS_OF_THUNDER: addSkill(new Skill("Claws of Thunder", true, false, true, false)),
     BLADES_OF_ICE: addSkill(new Skill("Blades of Ice", true, false, true, false)),
-    DRAGON_CLAW: addSkill(new Skill("Dragon Claw", true, true, false)),
-    DRAGON_TAIL: addSkill(new Skill("Dragon Tail", false, false, false)),
-    DRAGON_TALON: addSkill(new Skill("Dragon Talon", false, false, true)),
-    LAYING_TRAPS: addSkill(new Skill("Laying Traps", false, false, false)),
+    DRAGON_CLAW: addSkill(new Skill("Dragon Claw", true, true, true, false)),
+    DRAGON_TAIL: addSkill(new Skill("Dragon Tail", false, false, false, false)),
+    DRAGON_TALON: addSkill(new Skill("Dragon Talon", false, false, false, true)),
+    LAYING_TRAPS: addSkill(new Skill("Laying Traps", false, false, false, false)),
     // barbarian
     DOUBLE_SWING: addSkill(new Skill("Double Swing", true, true, true, false)),
     FRENZY: addSkill(new Skill("Frenzy", true, true, true, false)),
@@ -324,7 +333,10 @@ const skills = {
     SMITE: addSkill(new Skill("Smite", false, false, false, false)),
     SACRIFICE: addSkill(new Skill("Sacrifice", false, false, false, false)),
     VENGEANCE: addSkill(new Skill("Vengeance", false, false, false, false)),
-    CONVERSION: addSkill(new Skill("Conversion", false, false, false, false))
+    CONVERSION: addSkill(new Skill("Conversion", false, false, false, false)),
+	// warlock
+	CLEAVE: addSkill(new Skill("Cleave", false, false, true, false)),
+	MIRRORED_BLADES: addSkill(new Skill("Mirrored Blades", false, false, true, false))
 };
 
 function addSkill(skill) { skillsMap.set(skill.name, skill); return skill; }
@@ -334,6 +346,7 @@ export function getSkill(name) {
 }
 
 const wt = { // weapon types
+	// HTH
     UNARMED: new WeaponType(true, true, [
         [char.AMAZON, [13, 8]],
         [char.ASSASSIN, [11, 12, 6]],
@@ -342,12 +355,15 @@ const wt = { // weapon types
         [char.NECROMANCER, [15, 8]],
         [char.PALADIN, [14, 7]],
         [char.SORCERESS, [16, 9]],
+		[char.WARLOCK, [16, 9]], // A2 has AF=7 but i don't display action frames currently
         [char.ROGUE_SCOUT, 15], // assumed
         [char.DESERT_MERCENARY, 16], // assumed
         [char.BASH_BARBARIAN, 16],  // assumed
         [char.FRENZY_BARBARIAN, 16]  // assumed
     ]),
+	// HT1, HT2 (HT1 if single wield, HT2 if dual wield)
     CLAW: new WeaponType(true, true, [[char.ASSASSIN, [11, 12, 6]]]),
+	// 1HS
     ONE_HANDED_SWINGING: new WeaponType(true, true, [
         [char.AMAZON, [16, 10]],
         [char.ASSASSIN, [15, 7]],
@@ -356,9 +372,11 @@ const wt = { // weapon types
         [char.NECROMANCER, [19, 9]],
         [char.PALADIN, [15, 7]],
         [char.SORCERESS, [20, 12]],
+		[char.WARLOCK, [16, 9]],
         [char.BASH_BARBARIAN, 16],
         [char.FRENZY_BARBARIAN, 16]
     ]),
+	// 1HT
     ONE_HANDED_THRUSTING: new WeaponType(true, true, [
         [char.AMAZON, [15, 9]],
         [char.ASSASSIN, [15, 7]],
@@ -367,8 +385,10 @@ const wt = { // weapon types
         [char.NECROMANCER, [19, 9]],
         [char.PALADIN, [17, 8]],
         [char.SORCERESS, [19, 11]],
+		[char.WARLOCK, [16, 8]],
         [char.DESERT_MERCENARY, 16]
     ]),
+	// 2HS
     TWO_HANDED_SWORD: new WeaponType(true, false, [
         [char.AMAZON, [20, 12]],
         [char.ASSASSIN, [23, 11]],
@@ -377,9 +397,11 @@ const wt = { // weapon types
         [char.NECROMANCER, [23, 11]],
         [char.PALADIN, [18, 19, 8]],
         [char.SORCERESS, [24, 14]],
+		[char.WARLOCK, [19, 11]], // A2 has AF=12 but i don't display action frames currently
         [char.BASH_BARBARIAN, 16],
         [char.FRENZY_BARBARIAN, 16]
     ]),
+	// 2HT
     TWO_HANDED_THRUSTING: new WeaponType(true, false, [
         [char.AMAZON, [18, 11]],
         [char.ASSASSIN, [23, 10]],
@@ -388,9 +410,10 @@ const wt = { // weapon types
         [char.NECROMANCER, [24, 10]],
         [char.PALADIN, [20, 8]],
         [char.SORCERESS, [23, 13]],
+		[char.WARLOCK, [21, 23, 11]],
         [char.DESERT_MERCENARY, 16]
     ]),
-    // all other two handed weapons
+    // STF
     TWO_HANDED: new WeaponType(true, false, [ // original calc suggests this is STF while two handed sword is 2HS
         [char.AMAZON, [20, 12]],
         [char.ASSASSIN, [19, 9]],
@@ -399,6 +422,7 @@ const wt = { // weapon types
         [char.NECROMANCER, [20, 11]],
         [char.PALADIN, [18, 9]],
         [char.SORCERESS, [18, 11]],
+		[char.WARLOCK, [17, 10]],
         [char.DESERT_MERCENARY, 16]
     ]),
     BOW: new WeaponType(false, false, [
@@ -409,8 +433,10 @@ const wt = { // weapon types
         [char.NECROMANCER, [18, 9]],
         [char.PALADIN, [16, 8]],
         [char.SORCERESS, [17, 9]],
+		[char.WARLOCK, [17, 11]],
         [char.ROGUE_SCOUT, 15]
     ]),
+	// XBW
     CROSSBOW: new WeaponType(false, false, [
         [char.AMAZON, [20, 9]],
         [char.ASSASSIN, [21, 10]],
@@ -418,8 +444,10 @@ const wt = { // weapon types
         [char.DRUID, [20, 10]],
         [char.NECROMANCER, [20, 11]],
         [char.PALADIN, [20, 10]],
-        [char.SORCERESS, [20, 11]]
+        [char.SORCERESS, [20, 11]],
+		[char.WARLOCK, [18, 10]]
     ]),
+	// TH
     THROWING: new WeaponType(true, true, [
         [char.AMAZON, 16],
         [char.ASSASSIN, 16],
@@ -427,7 +455,8 @@ const wt = { // weapon types
         [char.DRUID, 18],
         [char.NECROMANCER, 20],
         [char.PALADIN, 16],
-        [char.SORCERESS, 20]
+        [char.SORCERESS, 20],
+		[char.WARLOCK, [20, 10]]
     ])
 };
 

@@ -32,10 +32,16 @@ function load() {
 				hideElement(container.FANATICISM);
 				hideElement(container.BURST_OF_SPEED);
 				hideElement(container.FRENZY);
+				hideElement(container.WEREWOLF);
+				hideElement(container.MAUL);
+				hideElement(container.MARK_OF_BEAR);
+				hideElement(container.CLEAVE);
+				hideElement(container.MIRRORED_BLADES);
 				hideElement(container.DECREPIFY);
 				hideElement(container.HOLY_FREEZE);
 				hideElement(container.SLOWED_BY);
 				hideElement(container.CHILLED);
+				hideElement(container.LETHARGY);
 				break;
 			case tv.IAS:
 				hideElement(container.IAS);
@@ -99,10 +105,18 @@ function load() {
 			if (tableVariable != tv.FRENZY && (character == char.BARBARIAN || character == char.FRENZY_BARBARIAN)) {
 				unhideElement(container.FRENZY);
 			}
+
+			if (skill == skills.CLEAVE) {
+				unhideElement(container.CLEAVE);
+			} else if (skill == skills.MIRRORED_BLADES) {
+				unhideElement(container.MIRRORED_BLADES);
+			}
+
 			unhideElement(container.DECREPIFY);
 			unhideElement(container.HOLY_FREEZE);
 			unhideElement(container.SLOWED_BY);
 			unhideElement(container.CHILLED);
+			unhideElement(container.LETHARGY);
 		}
 		if (updateTable) displayFrames();
 	}
@@ -322,6 +336,7 @@ function load() {
 			hideElement(container.BURST_OF_SPEED);
 			hideElement(container.FRENZY);
 			hideElement(container.DECREPIFY);
+			hideElement(container.LETHARGY); // unknown if lethargy impacts dodge animations or not
 			hideElement(container.PRIMARY_WEAPON);
 			hideElement(container.WEREFORM);
 			select.TABLE_VARIABLE.value = tv.FANATICISM;
@@ -334,6 +349,7 @@ function load() {
 			if (/*character == char.ASSASSIN && */tableVariable != tv.BURST_OF_SPEED) unhideElement(container.BURST_OF_SPEED);
 			if (character == char.BARBARIAN && tableVariable != tv.FRENZY) unhideElement(container.FRENZY);
 			unhideElement(container.DECREPIFY);
+			unhideElement(container.LETHARGY);
 
 			if (skill == skills.FRENZY) {
 				unhideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
@@ -406,18 +422,28 @@ function load() {
 			hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 		}
 
+		if (skill == skills.CLEAVE) {
+			unhideElement(container.CLEAVE);
+			if (previousSkill == skills.MIRRORED_BLADES) hideElement(container.MIRRORED_BLADES);
+		} else if (skill == skills.MIRRORED_BLADES) {
+			unhideElement(container.MIRRORED_BLADES);
+			if (previousSkill == skills.CLEAVE) hideElement(container.CLEAVE);
+		} else {
+			hideElement(container.CLEAVE);
+			hideElement(container.MIRRORED_BLADES);
+		}
+
 		if (updateTable) displayFrames();
 	}
 
 	function setPrimaryWeapons() {
 		let previousValue = select.PRIMARY_WEAPON.value;
-		let previousValueName = previousValue.substring(0, previousValue.indexOf(" ["));
 		let reselect = false;
 		clear(select.PRIMARY_WEAPON);
-		for (const weapon of constants.weaponsMap.values()) {
+		for (const [key, weapon] of constants.weaponsMap) {
 			if (canBeEquipped(weapon, false)) {
-				select.PRIMARY_WEAPON.add(createOption(weapon.name + " [" + weapon.WSM + "]"));
-				if (previousValueName == weapon.name) reselect = true;
+				select.PRIMARY_WEAPON.add(createOption(key, weapon.name + " [" + weapon.WSM + "]"));
+				if (previousValue == key) reselect = true;
 			}
 		}
 		if (reselect) {
@@ -429,23 +455,22 @@ function load() {
 
 	function setSecondaryWeapons() {
 		let previousValue = select.SECONDARY_WEAPON.value;
-		let previousValueName = previousValue.substring(0, previousValue.indexOf(" ["));
 		let reselect = false;
 		clear(select.SECONDARY_WEAPON);
 		if (character == char.BARBARIAN || character == char.FRENZY_BARBARIAN) {
-			for (const weapon of constants.weaponsMap.values()) {
+			for (const [key, weapon] of constants.weaponsMap) {
 				if ((weapon.type.isOneHand && weapon.type != wt.CLAW) || (character == char.BARBARIAN && weapon.type == wt.TWO_HANDED_SWORD)) {
 					if (canBeEquipped(weapon, true)) {
-						select.SECONDARY_WEAPON.add(createOption(weapon.name + " [" + weapon.WSM + "]"));
-						if (previousValueName == weapon.name) reselect = true;
+						select.SECONDARY_WEAPON.add(createOption(key, weapon.name + " [" + weapon.WSM + "]"));
+						if (previousValue == key) reselect = true;
 					}
 				}
 			}
 		} else if (character == char.ASSASSIN) {
-			for (const weapon of constants.weaponsMap.values()) {
+			for (const [key, weapon] of constants.weaponsMap) {
 				if (canBeEquipped(weapon, true)) {
-					select.SECONDARY_WEAPON.add(createOption(weapon.name + " [" + weapon.WSM + "]"));
-					if (previousValueName == weapon.name) reselect = true;
+					select.SECONDARY_WEAPON.add(createOption(key, weapon.name + " [" + weapon.WSM + "]"));
+					if (previousValue == key) reselect = true;
 				}
 			}
 		}
@@ -569,6 +594,12 @@ function load() {
 					currentSkills.push(skills.HUNGER);
 				}*/
 				break;
+			case char.WARLOCK:
+				if (wereform == wf.HUMAN) {
+					currentSkills.push(skills.CLEAVE);
+					currentSkills.push(skills.MIRRORED_BLADES);
+				}
+				break;
 			case char.DESERT_MERCENARY:
 				currentSkills.push(skills.JAB);
 				break;
@@ -606,7 +637,10 @@ function load() {
 
 		}
 
-		currentSkills.forEach(s => select.SKILL.add(createOption(s == "divider" ? s : s.name)));
+		currentSkills.forEach(s => {
+			if (s == "divider") createOptionDivider();
+			else createOption(s.name, s.name);
+		});
 
 		if (!currentSkills.includes(skill)) {
 			onSkillChange(false);
@@ -638,26 +672,26 @@ function load() {
 		preinfo();
 
 		log("----------- start primary table ------------");
-		let table1 = d(primaryWeapon, fpd1(primaryWeapon.type, false, true), true);
+		let table1 = doCoreTableLogic(primaryWeapon, fpd1(primaryWeapon.type, false, true), true);
 		log("----------- end primary table ------------");
 
 		if (wereform == wf.HUMAN && isCharacterSelected() && skill == skills.STANDARD) {
 			displayTable(table1[0]);
 			if (primaryWeapon.type.hasAlternateAnimation(character)) {
 				log("----------- start primary alt table ------------");
-				let altTable1 = d(primaryWeapon, fpd1(primaryWeapon.type, true, true), true);
+				let altTable1 = doCoreTableLogic(primaryWeapon, fpd1(primaryWeapon.type, true, true), true);
 				log("----------- end primary alt table ------------");
 				if (checkTablesNotEqual(table1[0], altTable1[0])) displayTable(altTable1[0]);
 			}
 			if (isSecondWeaponSet()) {
 				log("----------- start secondary table ------------");
-				let table2 = d(secondaryWeapon, fpd1(secondaryWeapon.type, false, false), false);
+				let table2 = doCoreTableLogic(secondaryWeapon, fpd1(secondaryWeapon.type, false, false), false);
 				log("----------- end secondary table ------------");
 				displayTable(table2[0]);
 			}
 		} else if (skill == skills.WHIRLWIND && isSecondWeaponSet()) {
 			log("----------- start secondary table ------------");
-			let table2 = d(secondaryWeapon, fpd1(secondaryWeapon.type, false, false), false);
+			let table2 = doCoreTableLogic(secondaryWeapon, fpd1(secondaryWeapon.type, false, false), false);
 			log("----------- end secondary table ------------");
 			log("----------- start ww merge table ------------");
 			let merge = mergeAccelerationTables([table1[0], table2[0]]);
@@ -731,7 +765,7 @@ function load() {
 		}
 	}
 
-	function d(weapon, fpd1, isPrimary) {
+	function doCoreTableLogic(weapon, fpd1, isPrimary) {
 
 		let weaponType = weapon.type;
 
@@ -918,21 +952,26 @@ function load() {
 			displayTableInfo("No testing has been done for " + skill.name + " yet for the Act 5 Mercenary. It's extremely likely correct, though.");
 		}
 
+		if (skill.isDualWieldedSequenceSkill() || skill == skills.WHIRLWIND) {
+			displayTableInfo("This skill is a dual wielded sequence skill, which means its impacted by a major bug that all these skills have in common. Weapon stats do not swap within the animation as they should, resulting in a lot of funky stuff, including when the primary and secondary weapon's IAS are calculated.");
+		}
+
 		if (skill == skills.KICK) {
-			displayTableInfo("Kicking barrels/etc. Tested, should be correct based on given information, except for in Wereform, not tested.");
+			displayTableInfo("Kicking barrels/etc. Might be wrong if in wereform.");
+		} if (skill == skills.JAB) {
+			displayTableInfo("Unfortunately, for the Amazon, Jab has been incorrect all this time (prior to calc version 1.2.0). It is now fixed, and is faster than shown before. It also varies based on using a one handed or two handed weapon.");
 		} else if (skill == skills.DODGE) {
-			displayTableInfo("Dodge/Avoid/Evade. Tested, should be correct based on given information.");
+			displayTableInfo("Dodge/Avoid/Evade.");
+		} else if (skill == skills.DOUBLE_THROW) {
+			displayTableInfo("Double Throw is heavily impacted by the dual wielded sequence skill bug. Even the distance you stand from the monster you're targeting will have different bug outcomes.");
 		} else if (skill == skills.WHIRLWIND) {
 			if (isSecondWeaponSet()) {
-				displayTableInfo("Whirlwind is correct in all tested scenarios. The third table is the table that both weapons swing at ingame, it's a combination of the first two tables. This table is calculated too simply and doesn't consider combinations of frames more than 1 frame apart (ie 4 + 6) so you'll need to combine manually in those cases.");
+				displayTableInfo("The first two Whirlwind hits are on the 4th and 8th frame, then the table is used to decide the rest. The third table is the table that both weapons swing at ingame, it's a combination of the first two tables (but occasionally combines incorrectly).");
 			} else {
-				displayTableInfo("Whirlwind is correct in all tested scenarios.");
+				displayTableInfo("The first two Whirlwind hits are on the 4th and 8th frame, then the table is used to decide the rest.");
 			}
-		} else if (skill == skills.FRENZY) {
-			displayTableInfo("With the dual wield attack speed changes in 2.4, Frenzy got an unintentional minor buff.");
-		} else if (skill == skills.IMPALE) {
-			displayTableInfo("Impale should be correct based on modifications in the files. No testing was made, though.");
-		} else if (skill == skills.STRAFE && primaryWeapon.type == wt.CROSSBOW) {
+		}
+		else if (skill == skills.STRAFE && primaryWeapon.type == wt.CROSSBOW) {
 			displayTableInfo("The first table is Strafing an even amount of arrows with a Crossbow, the second table is Strafing an odd amount of arrows with a Crossbow.");
 		}
 
@@ -987,7 +1026,8 @@ function load() {
 			if (skill == skills.DRAGON_TALON || skill == skills.STRAFE || skill == skills.ZEAL || skill == skills.FEND || skill == skills.WHIRLWIND) return calculateActionFrame(weaponType);
 			return calculateFramesPerDirection(weaponType);
 		}
-		return 12; // off hand normal attack swings are 12 FPD across the board
+		// TODO this is wrong, i think 12 is for AIA2HT1 and HT2, but barb's is completely different
+		return 12; // off hand normal attack swings are 12 FPD across the board (WHAT DOES THIS MEAN I FORGOT? normal attack while duel wielding?)
 	}
 
 	function fpd2(weaponType) {
@@ -1065,17 +1105,12 @@ function load() {
 
 	function isCharacterSelected() {
 		return character == char.AMAZON || character == char.ASSASSIN || character == char.BARBARIAN
-			|| character == char.DRUID || character == char.NECROMANCER || character == char.PALADIN || character == char.SORCERESS; // readability
+			|| character == char.DRUID || character == char.NECROMANCER || character == char.PALADIN
+			|| character == char.SORCERESS || character == char.WARLOCK; // readability
 	}
 
 	function isMercenarySelected() {
 		return !isCharacterSelected();
-	}
-
-	function isDualWieldedSequenceSkill() {
-		return skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER ||
-			skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW ||
-			skill == skills.DOUBLE_SWING || skill == skills.FRENZY || skill == skills.DOUBLE_THROW;
 	}
 
 	function calculateFramesPerDirection(weaponType) {
@@ -1096,18 +1131,8 @@ function load() {
 			framesPerDirection = 12;
 		} else if (skill == skills.LAYING_TRAPS) {
 			framesPerDirection = 8;
-		} else if (skill == skills.IMPALE || skill == skills.JAB || skill == skills.FISTS_OF_FIRE ||
-				skill == skills.CLAWS_OF_THUNDER || skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW ||
-				skill == skills.DOUBLE_SWING || skill == skills.FRENZY || skill == skills.DOUBLE_THROW) {
-
-			if ((skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER || skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW) && isSecondWeaponSet()) { // TODO only if dual wielded?
-				framesPerDirection = 16;
-			} else if (character == char.DESERT_MERCENARY) {
-				framesPerDirection = 14;
-			} else {
-				framesPerDirection = getSequence(weaponType);
-			}
-
+		} else if (skill.isSequence) {
+			framesPerDirection = getSequence(weaponType);
 		}
 
 		return framesPerDirection;
@@ -1119,6 +1144,7 @@ function load() {
 			animationSpeed = 128;
 		} else if (weaponType == wt.CLAW && !(skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER ||
 				skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW || skill == skills.DRAGON_TAIL || skill == skills.DRAGON_TALON)) {
+			// good chance this is flawed
 			if (fpd1 == 12) animationSpeed = 227; // fpd1 == 12 - patch 2.5 (PTR v1) changed AIA2HT1 and AIA2HT2's AnimationSpeed to 227 from 208.
 			else animationSpeed = 208;
 		}
@@ -1134,18 +1160,20 @@ function load() {
 		if (skill != skills.DODGE && constants.checkbox.DECREPIFY.checked) SIAS -= 50;
 		if (constants.checkbox.CHILLED.checked) SIAS -= 50;
 		if (!isElementHidden(container.MARK_OF_BEAR) && constants.checkbox.MARK_OF_BEAR.checked) SIAS += 25;
+		if (!isElementHidden(container.LETHARGY) && constants.checkbox.LETHARGY.checked) SIAS -= 50;
 
 		SIAS -= number.SLOWED_BY.value;
 
-		if (skill == skills.DOUBLE_SWING) {
-			SIAS += 20;
-		} else if (skill == skills.DRAGON_TAIL) {
-			SIAS -= 40;
-		} else if ((skill == skills.JAB || skill == skills.FISTS_OF_FIRE ||
-				skill == skills.CLAWS_OF_THUNDER || skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW ||
-				skill == skills.FRENZY || skill == skills.DOUBLE_THROW) && isCharacterSelected()) {
-			// sequence skills get a -30 EIAS debuff, easiest to put it here. does not apply to whirlwind. impale has a 30 EIAS buff, so the debuff is canceled out
-			SIAS -= 30;
+		if (isCharacterSelected()) {
+			if (skill.isSequence) SIAS -= 30; // sequence skills get a -30 EIAS debuff except whirlwind.
+
+			if (skill == skills.DOUBLE_SWING) {
+				SIAS += 50;
+			} else if (skill == skills.DRAGON_TAIL) {
+				SIAS -= 40;
+			} else if (skill == skills.IMPALE) {
+				SIAS += 30;
+			}
 		}
 
 		return SIAS;
@@ -1160,13 +1188,54 @@ function load() {
 	}
 
 	function getSequence(weaponType) {
-		if (skill == skills.DOUBLE_THROW) return 12;
+		//if (skill == skills.JAB) return 23; was this wrong all this time? i think i got this from the original calc
+		if (skill == skills.JAB) {
+			if (character == char.DESERT_MERCENARY) return 14;
+			if (weaponType == wt.ONE_HANDED_THRUSTING) return 19;
+			if (weaponType == wt.TWO_HANDED_THRUSTING) return 21;
+			if (weaponType == wt.UNARMED) {
+				log("Reached HTH sequence table for Jab but this is not used in vanilla. A bug likely occurred.")
+				return 13; // not used in live game, can't jab without weapon
+			}
+			log("Jab sequence not found for weapon type: %s", weaponType.name);
+			return -1;
+		}
+		if (skill == skills.IMPALE) {
+			if (weaponType == wt.ONE_HANDED_THRUSTING) return 21;
+			if (weaponType == wt.TWO_HANDED_THRUSTING) return 24;
+			if (weaponType == wt.UNARMED) {
+				log("Reached HTH sequence table for Impale but this is not used in vanilla. A bug likely occurred.")
+				return 13; // not used in live game, can't impale without weapon
+			}
+			log("Impale sequence not found for weapon type: %s", weaponType.name);
+			return -1;
+		}
 		if (skill == skills.DOUBLE_SWING || skill == skills.FRENZY) return 17;
-		if (skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER
-				|| skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW) return (weaponType == wt.UNARMED || weaponType == wt.CLAW) ? 12 : 16;
-		if (skill == skills.JAB) return weaponType == wt.ONE_HANDED_THRUSTING ? 18 : 21;
-		if (weaponType == wt.ONE_HANDED_THRUSTING) return 21;
-		if (weaponType == wt.TWO_HANDED_THRUSTING) return 24;
+		if (skill == skills.DOUBLE_THROW) return 12;
+		if (skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER || skill == skills.BLADES_OF_ICE || skill == skills.DRAGON_CLAW) {
+			if (isSecondWeaponSet()) return 16; // HT2
+			log("Reached HTH/HT1 sequence table for Assassin sequence skills but these are not used in vanilla. A bug likely occurred.")
+			return 12; // not used in live game, can't use these skills without having two claws
+		}
+		if (skill == skills.CLEAVE) {
+			if (weaponType == wt.ONE_HANDED_SWINGING || weaponType == wt.ONE_HANDED_THRUSTING) return 16;
+			if (weaponType == wt.TWO_HANDED_THRUSTING) return 20;
+			if (weaponType == wt.TWO_HANDED_SWORD) return 18;
+			if (weaponType == wt.TWO_HANDED) return 22;
+			log("Cleave sequence not found for weapon type: %s", weaponType.name);
+			return -1;
+		}
+		if (skill == skills.MIRRORED_BLADES) {
+			if (weaponType == wt.UNARMED) return 17;
+			if (weaponType == wt.ONE_HANDED_SWINGING || weaponType == wt.ONE_HANDED_THRUSTING) return 16;
+			if (weaponType == wt.TWO_HANDED_THRUSTING) return 21;
+			if (weaponType == wt.TWO_HANDED_SWORD) return 19;
+			if (weaponType == wt.BOW || weaponType == wt.CROSSBOW) return 18;
+			if (weaponType == wt.TWO_HANDED) return 17;
+			log("Mirrored Blades sequence not found for weapon type: %s", weaponType.name);
+			return -1;
+		}
+		log("Sequence not found for skill %s, weapon type: %s", skill.name, weaponType.name);
 		return -1;
 	}
 
@@ -1212,6 +1281,8 @@ function load() {
 		if (character == char.ASSASSIN && (skill == skills.FISTS_OF_FIRE || skill == skills.CLAWS_OF_THUNDER || skill == skills.BLADES_OF_ICE || skill == skills.WHIRLWIND) && !((isSecondary && weaponType == wt.UNARMED) || weaponType == wt.CLAW)) return false;
 		if (character == char.BARBARIAN && (skill == skills.DOUBLE_SWING || skill == skills.FRENZY) && (weaponType == wt.UNARMED || !(weaponType.isOneHand || weaponType == wt.TWO_HANDED_SWORD))) return false;
 		if (skill == skills.DOUBLE_THROW && !weapon.canBeThrown()) return false;
+		if (skill == skills.CLEAVE && (!weaponType.isMelee || weaponType == wt.UNARMED)) return false;
+		if (skill == skills.MIRRORED_BLADES && weaponType == wt.UNARMED) return false;
 		return true;
 	}
 
@@ -1239,10 +1310,13 @@ function load() {
 			number.MAUL.value + constants.LINK_SEPARATOR +
 			number.FRENZY.value + constants.LINK_SEPARATOR +
 			(constants.checkbox.MARK_OF_BEAR.checked ? 1 : 0) + constants.LINK_SEPARATOR +
+			number.CLEAVE.value + constants.LINK_SEPARATOR +
+			number.MIRRORED_BLADES.value + constants.LINK_SEPARATOR +
 			number.HOLY_FREEZE.value + constants.LINK_SEPARATOR +
 			number.SLOWED_BY.value + constants.LINK_SEPARATOR +
 			(constants.checkbox.DECREPIFY.checked ? 1 : 0) + constants.LINK_SEPARATOR +
-			(constants.checkbox.CHILLED.checked ? 1 : 0);
+			(constants.checkbox.CHILLED.checked ? 1 : 0) + constants.LINK_SEPARATOR +
+			(constants.checkbox.LETHARGY.checked ? 1 : 0);
 		let link = window.location.href;
 		if (link.includes("?data=")) link = link.substring(0, link.indexOf("?data="));
 		copyToClipboard(link + "?data=" + data.replace(/\ /g, "_"));
@@ -1269,10 +1343,13 @@ function load() {
 		let maul = parser.readInt();
 		let frenzy = parser.readInt();
 		let markOfBear = parser.readBoolean();
+		let cleave = parser.readInt();
+		let mirroredBlades = parser.readInt();
 		let holyFreeze = parser.readInt();
 		let slowedBy = parser.readInt();
 		let decrepify = parser.readBoolean();
 		let chilled = parser.readBoolean();
+		let lethargy = parser.readBoolean();
 
 		character = characterL;
 		select.CHARACTER.value = character;
@@ -1310,10 +1387,13 @@ function load() {
 		number.MAUL.value = maul;
 		number.FRENZY.value = frenzy;
 		checkbox.MARK_OF_BEAR.checked = markOfBear;
+		number.CLEAVE.value = cleave;
+		number.MIRRORED_BLADES.value = mirroredBlades;
 		number.HOLY_FREEZE.value = holyFreeze;
 		number.SLOWED_BY.value = slowedBy;
 		checkbox.DECREPIFY.checked = decrepify;
 		checkbox.CHILLED.checked = chilled;
+		checkbox.LETHARGY.checked = lethargy;
 
 	}
 
@@ -1455,11 +1535,17 @@ function clear(select) {
 	}
 }
 
-function createOption(value) {
+function createOptionDivider() {
 	let option = document.createElement("option");
-	if (value == "divider") option.disabled = true;
-	else option.setAttribute("value", value);
-	option.text = value == "divider" ? "───────────" : value;
+	option.disabled = true;
+	option.text = "───────────";
+	return option;
+}
+
+function createOption(value, display) {
+	let option = document.createElement("option");
+	option.setAttribute("value", value);
+	option.text = display;
 	return option;
 }
 
