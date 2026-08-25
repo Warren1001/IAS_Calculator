@@ -986,7 +986,7 @@ function load() {
 		} if (skill == skills.JAB) {
 			displayTableInfo("Unfortunately, for the Amazon, Jab has been incorrect all this time (prior to calc version 1.2.0). It is now fixed, and is faster than shown before. It also varies based on using a one handed or two handed weapon.");
 		} else if (skill == skills.DODGE) {
-			displayTableInfo("Dodge/Avoid/Evade.");
+			displayTableInfo("This table applies to Dodge, Avoid, and Evade.");
 		} else if (skill == skills.DOUBLE_THROW) {
 			displayTableInfo("Double Throw is heavily impacted by the dual wielded sequence skill bug. Even the distance you stand from the monster you're targeting will have different bug outcomes.");
 		} else if (skill == skills.WHIRLWIND) {
