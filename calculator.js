@@ -335,7 +335,7 @@ function load() {
 	}
 
 	function onSkillChange(updateTable) {
-		log("onSkillChange(updateTable=%s)", updateTable)
+		//log("onSkillChange(updateTable=%s)", updateTable)
 		let previousSkill = skill;
 		skill = constants.getSkill(select.SKILL.value);
 
@@ -405,6 +405,14 @@ function load() {
 						onTableVariableChange(false);
 					}
 					hideElement(option.TABLE_VARIABLE_IAS);
+				} else {
+					unhideElement(option.TABLE_VARIABLE_IAS);
+					if (tableVariable == tv.PRIMARY_WEAPON_IAS || tableVariable == tv.SECONDARY_WEAPON_IAS) {
+						select.TABLE_VARIABLE.value = tv.IAS;
+						onTableVariableChange(false);
+					}
+					hideElement(option.TABLE_VARIABLE_PRIMARY_WEAPON_IAS);
+					hideElement(option.TABLE_VARIABLE_SECONDARY_WEAPON_IAS);
 				}
 				if (tableVariable != tv.PRIMARY_WEAPON_IAS) unhideElement(container.PRIMARY_WEAPON_IAS);
 				if (tableVariable != tv.SECONDARY_WEAPON_IAS) unhideElement(container.SECONDARY_WEAPON_IAS);
@@ -821,6 +829,8 @@ function load() {
 			previousFrameLengths.push([0]);
 		}
 
+		let lastSpeedIncrease = 0;
+
 		for (let acceleration = startingAcceleration; acceleration <= trueMaxAccelerationIncrease; acceleration++) {
 				
 			let accelerationModified = tableVariable == (isPrimary ? tv.SECONDARY_WEAPON_IAS : tv.PRIMARY_WEAPON_IAS) ? 0 : acceleration;
@@ -830,6 +840,13 @@ function load() {
 			} else {
 				speedIncrease = trun((animationSpeed + trun(animationSpeed * limitEIAS(EIAS + accelerationModified) / 100)) * speedReduction);
 			}
+			if (speedIncrease == lastSpeedIncrease) {
+				//log("speedIncrease was the same (%s), skipping", speedIncrease);
+				continue;
+			}
+			lastSpeedIncrease = speedIncrease;
+
+			//log("Stepping to accelation=%s with speedIncrease=%s", acceleration, speedIncrease);
 
 			let firstHitLength = 256 * (framesPerDirection1 - startingFrame) / speedIncrease;
 			if (skill == skills.WHIRLWIND) firstHitLength = trun(firstHitLength);

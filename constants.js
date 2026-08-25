@@ -242,6 +242,8 @@ class Skill {
 
 }
 
+const LEVEL_SKILL_MAXIMUM = 60;
+
 class AttackSpeedSkill {
 
 	constructor(input, calcFunction, tableVariable, predicate) {
@@ -249,8 +251,9 @@ class AttackSpeedSkill {
 		this.calcFunction = calcFunction;
 		this.tableVariable = tableVariable;
 		this.predicate = predicate;
+		this.max = this.getEIASFromLevel(LEVEL_SKILL_MAXIMUM);
 		this.reverse = new Map();
-		for (let level = 60; level >= 0; level--) {
+		for (let level = LEVEL_SKILL_MAXIMUM; level >= 0; level--) {
 			this.reverse.set(this.getEIASFromLevel(level), level);
 		}
 	}
@@ -267,7 +270,7 @@ class AttackSpeedSkill {
 	}
 
 	getLevelFromEIAS(EIAS) {
-		let lastLevel = 60;
+		let lastLevel = LEVEL_SKILL_MAXIMUM;
 		for (const [levelEIAS, level] of this.reverse) {
 			if (EIAS > levelEIAS) return lastLevel;
 			lastLevel = level;
