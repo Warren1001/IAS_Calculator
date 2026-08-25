@@ -1,6 +1,6 @@
 ## [IAS Calculator](https://warren1001.github.io/IAS_Calculator/)
 
-Credits to RuffnecKk for dumping the hardcoded player sequence animation table data.
+Credits to RuffnecKk for dumping the hardcoded player sequence animation table data for D2R 3.3.
 Credits to ChthonVII and ubeogesh for helping with the calculator.
 Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 Credits to Phrozen Keep for information.
@@ -13,11 +13,13 @@ The hardcoded sequence tables for Cleave and Mirrored Blades are now known (at l
 
 Up until this point, Amazon's Jab tables have been completely incorrect. I was using a base animation length in frames (FramesPerDirection, FPD) of 23. I think I got that number from the original D2L calculator, but I don't remember. [D2MOO has always had the sequence tables](https://github.com/ThePhrozenKeep/D2MOO/blob/master/source/D2Common/src/DataTbls/SequenceTbls.cpp) for D2L available, however... Jab tables were listed for 1HS (one-handed swinging weapons, like swords) and BOW (bows), which always confused me, as obviously you can't Jab with swords or bows. I didn't know what to make of this so I simply left it as is and continued using the 23 value. It turns out that the table names are simply called that, but 1HT (one-handed thrusting weapons, like javelins) uses the BOW table and 2HT (two-handed thrusting weapons, like spears) use the 1HS table. The base animation length in frames should have been 19 and 21 respectively. Jab tables for Amazon are now accurate, faster than shown before, and differ between one handed and two handed weapons.
 
-- Added all Warlock tables
-- Fixed Jab tables
-- Added Sigil: Lethargy slow for PvP
-- Various bug fixes with calculator usage
-- Improved some text/descriptions displayed above some tables
+- Added all Warlock tables.
+- Fixed Jab tables for Amazon.
+- Added Hex: Purge for Warlock.
+- Added Sigil: Lethargy slow for PvP.
+- Various bug fixes with calculator usage.
+- Improved some text/descriptions across the board.
+- Removed Werewolf access to all player classes added in 1.1.1. The Winter event a year or two ago allowed everyone to shapeshift for a brief time and I never got around to removing the access afterwards.
 
 ### v1.1.2
 - Allowed non-Paladins to select any melee weapon when using Zeal, since Zeal charges exist.
