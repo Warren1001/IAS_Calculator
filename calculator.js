@@ -978,7 +978,7 @@ function load() {
 		}
 
 		if (isCharacterSelected() && (skill.isDualWieldedSequenceSkill() || skill == skills.WHIRLWIND)) {
-			displayTableInfo("This skill is a dual wielded sequence skill, which means its impacted by a major bug that all these skills have in common. Weapon stats do not swap within the animation as they should, resulting in a lot of funky stuff, including breaking when the primary and secondary weapon's IAS are supposed to be calculated.");
+			displayTableInfo("This skill is a dual wielded sequence skill, which means it's impacted by a major bug that all similar skills have in common. Weapon stats do not swap on hit frames as they should, resulting in a lot of funky stuff. The bug impacts when the primary and secondary weapon IAS is supposed to be calculated (except for Whirlwind).");
 		}
 
 		if (skill == skills.KICK) {
