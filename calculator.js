@@ -984,7 +984,7 @@ function load() {
 		if (skill == skills.KICK) {
 			displayTableInfo("Kicking barrels/etc. Might be wrong in wereform.");
 		} if (skill == skills.JAB) {
-			displayTableInfo("Unfortunately, for the Amazon, Jab has been incorrect all this time (prior to calc version 1.2.0). It is now fixed, and is faster than shown before. It also varies based on using a one handed or two handed weapon.");
+			displayTableInfo("Turns out I'm an idiot and Jab tables were always correct except for one-handed tables in 1.2.0. Problem is now fixed, restored to how it has always been, and verified Jab tables are 100% correct.");
 		} else if (skill == skills.DODGE) {
 			displayTableInfo("This table applies to Dodge, Avoid, and Evade.");
 		} else if (skill == skills.DOUBLE_THROW) {
@@ -1228,7 +1228,7 @@ function load() {
 		//if (skill == skills.JAB) return 23; was this wrong all this time? i think i got this from the original calc
 		if (skill == skills.JAB) {
 			if (character == char.DESERT_MERCENARY) return 14;
-			if (weaponType == wt.ONE_HANDED_THRUSTING) return 19;
+			if (weaponType == wt.ONE_HANDED_THRUSTING) return 18;
 			if (weaponType == wt.TWO_HANDED_THRUSTING) return 21;
 			if (weaponType == wt.UNARMED) {
 				log("Reached HTH sequence table for Jab but this is not used in vanilla. A bug likely occurred.");

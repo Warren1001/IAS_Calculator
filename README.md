@@ -5,6 +5,14 @@
 - Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 - Credits to Phrozen Keep for information.
 
+### v1.2.1
+
+Well, unfortunately, I'm an idiot. I thought I had the Jab tables wrong because in the function within this calculator I use to fetch the base sequence animation length for sequence skills (and Jab is one of them), I had 24 written. I took this as all Jab tables had been incorrect. But based on what the community showed me, the old animation table is the same as the 'new' one. The original code base was a bit messy and there were instances of me handling the same logic for some skills in two different places. I'm guessing I had the right base sequence animation length for Jab listed this entire time and it was just in some other random function for some crazy reason. I cleaned up the code base a decent bit in 1.2.0 so I don't have that possible duplicate code anymore to verify that hypothetical so maybe I've simply gone off the deep end.
+
+On top of that, 1.2.0 introduced a minor counting bug when I redid the function for sequences. The one-handed Jab table base animation length has 18 frames but I mistakenly counted 19 and wrote that instead. So rather than Jab being wrong all this time, one-handed Jab tables were wrong only in 1.2.0. end me
+
+- Fixed stupid Jab table actually this time. I verified it both manually myself in-game and with Amazon Basin's Jab table. All match.
+
 ### v1.2.0
 
 This update was made possible by RuffnecKk over at [D2RLoader](https://d2rloader.net) (one of the plugin devs in the Discord). He dumped all the hardcoded player sequence animation tables for D2R and (unintentionally) provided some clarifying logic on how some sequence tables were utilized.
