@@ -1225,7 +1225,6 @@ function load() {
 	}
 
 	function getSequence(weaponType) {
-		//if (skill == skills.JAB) return 23; was this wrong all this time? i think i got this from the original calc
 		if (skill == skills.JAB) {
 			if (character == char.DESERT_MERCENARY) return 14;
 			if (weaponType == wt.ONE_HANDED_THRUSTING) return 18;
