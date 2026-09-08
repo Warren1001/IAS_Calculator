@@ -300,8 +300,8 @@ function skillCalcLinear(par1, par2, min, max, lvl) {
 }
 
 function skillCalcDiminishing(par1, par2, min, max, lvl) {
-	let value = par1 + parseInt(110 * lvl * (par2 - par1) / (100 * (lvl + 6)));
-	//let value = par1 + parseInt((par2 - par1) * parseInt((110 * lvl) / (lvl + 6)) / 100); // it was originally written this way but idk why, its not whats written in skillcalc, values are still the same (seemingly)
+	//let value = par1 + parseInt(110 * lvl * (par2 - par1) / (100 * (lvl + 6))); // THIS IS WRONG AND RESULTS IN ROUNDING ERRORS
+	let value = par1 + parseInt((par2 - par1) * parseInt((110 * lvl) / (lvl + 6)) / 100); // this is how it needs to be written in spite of how its written in skillcalc.txt
 	if (value < min) value = min;
 	else if (max != -1 && value > max) value = max;
 	return value;
