@@ -5,6 +5,12 @@
 - Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 - Credits to Phrozen Keep for information.
 
+### v1.2.2
+
+The diminishing returns calculation in skillcalc was written differently from how it is written in the softcode files of D2 pre v1.2.0, so I thought maybe there was a mistake. I did some testing with both calculations and they seemed to match, so I went with what seemed more accurate. But I should just trust my old self. The calculation I had written that was slightly different was correct, the one D2 has results in a slight rounding error.
+
+- Fixed all EIAS values granted by attack speed skills (other than Maul and Hex: Purge as they don't use the diminishing returns calculation). Several skill levels for each skill were plagued with off-by-1 rounding errors.
+
 ### v1.2.1
 
 Well, unfortunately, I'm an idiot. I thought I had the Jab tables wrong because in the function within this calculator I use to fetch the base sequence animation length for sequence skills (and Jab is one of them), I had 24 written. I took this as all Jab tables had been incorrect. But based on what the community showed me, the old animation table is the same as the 'new' one. The original code base was a bit messy and there were instances of me handling the same logic for some skills in two different places. I'm guessing I had the right base sequence animation length for Jab listed this entire time and it was just in some other random function for some crazy reason. I cleaned up the code base a decent bit in 1.2.0 so I don't have that possible duplicate code anymore to verify that hypothetical so maybe I've simply gone off the deep end.
