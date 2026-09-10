@@ -5,6 +5,11 @@
 - Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 - Credits to Phrozen Keep for information.
 
+### v1.2.3
+
+- Minor display fixes, no tables changed.
+  - Fixed Mirrored Blades and Cleave skill level inputs being available when the table is set to EIAS (they aren't suppose to be there and do nothing for that table).
+
 ### v1.2.2
 
 The diminishing returns calculation in skillcalc was written differently from how it is written in the softcode files of D2 pre v1.2.0, so I thought maybe there was a mistake. I did some testing with both calculations and they seemed to match, so I went with what seemed more accurate. But I should just trust my old self. The calculation I had written that was slightly different was correct, the one D2 has results in a slight rounding error.

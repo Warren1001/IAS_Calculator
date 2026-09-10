@@ -43,6 +43,7 @@ function load() {
 				hideElement(container.SLOWED_BY);
 				hideElement(container.CHILLED);
 				hideElement(container.LETHARGY);
+				if (skill == skills.MIRRORED_BLADES) 
 				break;
 			case tv.IAS:
 				hideElement(container.IAS);
@@ -442,10 +443,10 @@ function load() {
 		}
 
 		if (skill == skills.CLEAVE) {
-			unhideElement(container.CLEAVE);
+			if (tableVariable != tv.EIAS) unhideElement(container.CLEAVE);
 			if (previousSkill == skills.MIRRORED_BLADES) hideElement(container.MIRRORED_BLADES);
 		} else if (skill == skills.MIRRORED_BLADES) {
-			unhideElement(container.MIRRORED_BLADES);
+			if (tableVariable != tv.EIAS) unhideElement(container.MIRRORED_BLADES);
 			if (previousSkill == skills.CLEAVE) hideElement(container.CLEAVE);
 		} else {
 			hideElement(container.CLEAVE);
@@ -997,10 +998,12 @@ function load() {
 			}
 		} else if (skill == skills.STRAFE && primaryWeapon.type == wt.CROSSBOW) {
 			displayTableInfo("The first table is Strafing an even amount of arrows with a Crossbow, the second table is Strafing an odd amount of arrows with a Crossbow.");
-		} else if (skill == skills.CLEAVE) {
-			displayTableInfo("Be sure to set your Cleave skill level on the left!");
-		} else if (skill == skills.MIRRORED_BLADES) {
-			displayTableInfo("Be sure to set your Mirrored Blades skill level on the left!");
+		} else if (tableVariable != tv.EIAS) {
+			if (skill == skills.CLEAVE) {
+				displayTableInfo("Be sure to set your Cleave skill level on the left!");
+			} else if (skill == skills.MIRRORED_BLADES) {
+				displayTableInfo("Be sure to set your Mirrored Blades skill level on the left!");
+			}
 		}
 
 	}
