@@ -1,0 +1,78 @@
+
+:root {
+  color-scheme: dark light;
+}
+
+#calculator {
+  float: left;
+  min-width: 325px;
+}
+
+#tableContainer {
+  float: left;
+}
+
+h2 {
+  margin: 10px 0;
+}
+
+p {
+  margin: 5px 0;
+  margin-top: 0px;
+  word-break: normal;
+  white-space: normal;
+}
+
+.halfWindow {
+  max-width: 45%;
+}
+
+.tablesDesc {
+  max-width: 90%;
+}
+
+.hoverable {
+  color: #CC5500;
+  text-decoration: underline #CC5500;
+}
+
+table {
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px solid;
+  text-align: center;
+  border-color: rgb(75, 75, 75);
+  min-width: 132px;
+  padding-top: 0px;
+}
+
+h4 {
+  padding-bottom: 0;
+  margin: 0;
+  word-break: normal;
+  white-space: normal;
+  width: 132px;
+}
+
+.headerDiv {
+  display: flex;
+  align-items: flex-end;
+  height: 37px;
+}
+
+.tableHeader {
+  float: left;
+  text-align: center;
+}
+
+th, td {
+  text-align: center;
+  border: 2px solid;
+  border-color: rgb(55, 55, 55);
+  min-width: 50px;
+  padding: 0px 2px;
+}
+
+input[type='number'] {
+  width: 40px;
+}

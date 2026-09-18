@@ -157,10 +157,10 @@ function load() {
 			}
 		}
 
-		if (character == char.BARBARIAN || character == char.DRUID) unhideElement(option.WEREFORM_WEREWOLF); // disable if holiday event allows anyone to shapeshift
-		/*if (isCharacterSelected()) {
+		//if (character == char.BARBARIAN || character == char.DRUID) unhideElement(option.WEREFORM_WEREWOLF); // disable if holiday event allows anyone to shapeshift
+		if (isCharacterSelected()) {
 			unhideElement(option.WEREFORM_WEREWOLF);
-		}*/ // enable if holiday event allows anyone to shapeshift
+		} // enable if holiday event allows anyone to shapeshift
 		else {
 			hideElement(option.WEREFORM_WEREWOLF);
 			if (select.WEREFORM.value == wf.WEREWOLF) {

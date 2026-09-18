@@ -5,6 +5,9 @@
 - Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 - Credits to Phrozen Keep for information.
 
+### v1.2.4
+- Re-added Werewolf to all forms at request for BKDiablo mod.
+
 ### v1.2.3
 
 - Minor display fixes, no tables changed.
