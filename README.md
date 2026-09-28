@@ -5,6 +5,10 @@
 - Credits to The Amazon Basin/similar D2 forums (mostly TitanSeal, onderduiker, and Hammerman) for information.
 - Credits to Phrozen Keep for information.
 
+### v1.2.5
+- Fixed Assassin in Werebear wielding a claw using the wrong animation speed with Standard skill.
+  - Assassin uses different animation speeds depending on the animation (no other classes are like this). Standard attack has two separate animations for all characters, A1 and A2. They're all typically the same length, but Assassin's have different base lengths and different animation speeds. I hardcoded the lookup of the animation speed for A2 based on A2's base length. It also turns out that is the same length characters use as a base length in Werebear, so it was mistakenly using A2's animation speed when it should have been using A1's. A2 has a faster animation speed so it was displaying faster than you were actually getting in-game. It is now fixed and ensures this hardcoded lookup only happens when not in a wereform.
+
 ### v1.2.4
 - Re-added Werewolf to all forms at request for BKDiablo mod.
 
